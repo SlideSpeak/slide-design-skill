@@ -1,5 +1,6 @@
 import type { Skill, SlideTreeNode } from "./types.ts";
 import { normalizeDensity } from "./density.ts";
+import { lintSlideTree } from "./quality-lint.ts";
 
 export interface ValidationResult {
   ok: boolean;
@@ -25,7 +26,7 @@ export function validateSlideTree(
   raw: unknown,
   skill: Skill,
   expectedSlideCount: number,
-  options?: { strict?: boolean },
+  options?: { strict?: boolean; userPrompt?: string; illustrative?: boolean },
 ): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -66,6 +67,19 @@ export function validateSlideTree(
   const variety = checkCompositionVariety(slides, skill, strict);
   errors.push(...variety.errors);
   warnings.push(...variety.warnings);
+
+  // Content-level anti-slop lint. Advisory by default (warnings); in strict
+  // mode, error-severity findings (em-dashes) block.
+  const { findings } = lintSlideTree(slides, {
+    userPrompt: options?.userPrompt,
+    illustrative: options?.illustrative,
+  });
+  for (const f of findings) {
+    const where = f.slideIndex >= 0 ? `Slide ${f.slideIndex}` : "Deck";
+    const msg = `${where}: ${f.message} [${f.rule}]`;
+    if (strict && f.severity === "error") errors.push(msg);
+    else warnings.push(msg);
+  }
 
   return { ok: strict ? errors.length === 0 : true, slides, errors, warnings };
 }

@@ -116,7 +116,9 @@ export async function generateDeck(
   });
 
   const raw = await deps.llm.generateSlideTree(systemPrompt);
-  const validation = validateSlideTree(raw, skill, args.slideCount);
+  const validation = validateSlideTree(raw, skill, args.slideCount, {
+    userPrompt: args.userPrompt,
+  });
   warnings.push(...validation.warnings);
 
   if (!validation.ok) {

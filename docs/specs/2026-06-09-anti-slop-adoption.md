@@ -78,15 +78,42 @@ Verifikation: eigenes tsx-Smoke (`scripts/quality-lint-smoke.ts`), in `npm test`
 
 ---
 
-## 4. Phase 2+ — Roadmap (nicht in dieser Lieferung)
+## 4. Phase 2 — `deck-plan.ts` (DONE 2026-06-09)
 
-- `deck-plan.ts`: `designRead`, `designVariance`, `assetAppetite`, `densityRhythm`,
-  `compositionPlan`, `paletteFamily`, `copyRegister` — aus `style-intake`-Signalen abgeleitet,
-  injiziert in `composeSystemPrompt` vor den Slide-Types.
+Reine, deterministische Planungsschicht VOR der Generierung. `planDeck({userPrompt, slideCount, skill})`
+liest den Brief (Keyword-Inferenz aus User-Prompt + Skill-Frontmatter, ehrlich heuristisch, `general`-
+Fallback) und leitet einen **expliziten, pro-Deck Design Read** ab, der via `deckPlanPromptBlock`
+in `composeSystemPrompt` VOR den Slide-Types injiziert wird. Damit unterscheiden sich zwei Decks in
+ihren Marschbefehlen, nicht nur in der Token-Palette — die Wurzel von "alle Decks sehen gleich aus".
+
+`DesignRead`:
+- `presentationType` — pitch / report / teaching / editorial / keynote / general.
+- `audience` — executive / academic / customer / team / general.
+- `register` (abgeleitet) — punchy / formal / technical / warm / plain. Typ schlägt Audience
+  (Investor-Pitch = punchy, obwohl Investoren executive sind).
+- `assetAppetite` (abgeleitet) — image-led (editorial/keynote) / data-led (report/teaching) / balanced.
+
+`densityRhythm`: ein Density-Tier pro Slide-Position (Länge === slideCount). Endpunkte immer
+`editorial` (Cover/Closing atmen), Interior zyklisch nach Appetit, erste Interior-Slide NIE editorial
+→ garantiert nicht-monoton (besteht den `density-monotony`-Lint aus Phase 1). Als *Vorschlag* geframt:
+"folge dem Rhythmus, außer der Inhalt verlangt eine andere Stufe".
+
+NICHT in Phase 2 (bewusst): kein zweiter LLM-Call, kein Co-Generation-Outline (WS-3),
+keine Generierungs-History.
+
+Verifikation: `scripts/deck-plan-smoke.ts` (25 Checks, in `npm test` als `test:deck-plan`),
+`tsc` clean, `npm test` exit 0. Echt-Output gegen 3 geladene Skills (pitch/consulting/academic)
+geprüft → drei klar verschiedene Pläne.
+
+## 5. Phase 3+ — Roadmap (nicht geliefert)
+
 - Generierungs-History für Palette/Composition-Rotation über aufeinanderfolgende Decks.
-- Asset-Appetit-Contract: full-bleed/cover/statement ohne echtes Bild → Warnung.
+- Asset-Appetit-Contract: full-bleed/cover/statement ohne echtes Bild → Warnung (verbindet
+  `assetAppetite` mit dem Validator).
+- `compositionPlan`: konkrete, aus der Grammar-Family abgeleitete Sequenz statt nur Varietäts-Regel.
+- WS-3 Co-Generation: Intake → annotierter Outline (Density + Asset-Typ pro Slide) → User justiert.
 
-## 5. Über-Adoption-Risiken (bewusst vermieden)
+## 6. Über-Adoption-Risiken (bewusst vermieden)
 Web-Checkliste in dutzende brüchige Regeln gießen · "keine 3 Cards" universell (Consulting braucht
 Peer-Grids) · Palette-Rotation überindexieren während Layout-Grammar die Sameness-Quelle ist ·
 Fotos in academic/data-Decks erzwingen · Varianz durch Deko statt durch andere Slide-Jobs.

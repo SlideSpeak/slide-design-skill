@@ -1,5 +1,6 @@
 import type { Skill } from "./types.ts";
 import { densityPromptBlock } from "./density.ts";
+import { planDeck, deckPlanPromptBlock } from "./deck-plan.ts";
 
 const MAX_BG_PROMPT_CHARS = 600;
 
@@ -26,6 +27,10 @@ export function composeSystemPrompt(skill: Skill, args: {
   const rules = grammar.rules.map((r) => `- ${r}`).join("\n");
 
   const varietySection = composeVarietySection(grammar.slideTypes, args.slideCount);
+
+  const deckPlanSection = deckPlanPromptBlock(
+    planDeck({ userPrompt: args.userPrompt, slideCount: args.slideCount, skill }),
+  );
 
   const bgSection = bleedSlideTypes.length
     ? backgroundArtDirection(skill, bleedSlideTypes)
@@ -66,7 +71,7 @@ FORBIDDEN: ${frontmatter.forbidden}
 
 SKILL INSTRUCTIONS
 ${systemPromptBody}
-
+${deckPlanSection}
 SLIDE TYPES YOU MAY USE
 ${slideTypeList}
 

@@ -1,0 +1,173 @@
+<!-- Product-Marketing components -->
+
+<template id="slide-cover">
+<section class="slide slide-cover" style="background: var(--color-signal); color: var(--color-card);">
+  <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%; color: var(--color-card);">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); opacity: 0.7;">{{company-name}} · {{launch-date}}</div>
+    <div style="display:flex; flex-direction:column; gap: 32px;">
+      <h1 style="font-size: 192px; line-height: 0.9; letter-spacing: -0.04em; color: var(--color-card);">{{product-name}}</h1>
+      <div style="font-size: 32px; line-height: 1.3; max-width: 1500px; opacity: 0.9;">{{positioning-line}}</div>
+    </div>
+    <div></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-status-quo">
+<section class="slide slide-status-quo">
+  <div style="display:flex; flex-direction:column; justify-content:center; height:100%; max-width: 1500px; gap: 32px;">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">The world today</div>
+    <h1 style="line-height: 1.05; letter-spacing: -0.02em;">{{headline}}</h1>
+    <div style="font-size: 28px; line-height: 1.5; color: var(--color-muted); margin-top: 24px;">{{body}}</div>
+  </div>
+</section>
+</template>
+
+<template id="slide-the-shift">
+<section class="slide slide-shift">
+  <div style="display:flex; flex-direction:column; height:100%;">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">The shift</div>
+    <div style="flex:1; min-height:0; display:flex; align-items:center;">
+      <div style="display:flex; flex-direction:column; gap: 40px; max-width: 1500px; width:100%;">
+        <h1 style="line-height: 1.05; letter-spacing: -0.02em;">{{headline}}</h1>
+        <div style="font-size: 30px; line-height: 1.5; color: var(--color-muted);">{{body}}</div>
+        <div style="padding: 32px 40px; background: var(--color-card); border-radius: var(--radius-card); border-left: 4px solid var(--color-signal);">
+          <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal); margin-bottom: 12px;">The evidence</div>
+          <div style="font-size: 22px; line-height: 1.5; color: var(--color-ink);">{{evidence}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-product-intro">
+<section class="slide slide-product-intro">
+  <div style="display:flex; flex-direction:column; height:100%;">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Introducing</div>
+    <div style="flex:1; min-height:0; display:flex; align-items:center;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items: center; width:100%;">
+        <div>
+          <div style="font-family: var(--font-header); font-weight: 700; font-size: 144px; line-height: 0.9; letter-spacing: -0.03em; color: var(--color-signal); margin-bottom: 32px;">{{product-name}}</div>
+          <h2 style="line-height: 1.05; max-width: 700px;">{{benefit-headline}}</h2>
+        </div>
+        <div style="border-left: 4px solid var(--color-signal); padding-left: 48px;">
+          <div style="font-size: 30px; line-height: 1.5; color: var(--color-ink); font-weight: 500;">{{hero-caption}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-feature">
+<section class="slide slide-feature">
+  <div style="display:flex; flex-direction:column; height:100%;">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">{{eyebrow}}</div>
+    <div style="flex:1; min-height:0; display:flex; align-items:center;">
+      <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap: 80px; align-items: center; width:100%;">
+        <div>
+          <h2 style="font-size: 60px; line-height: 1.05; letter-spacing: -0.015em; margin-bottom: 28px;">{{headline}}</h2>
+          <div style="font-size: 24px; line-height: 1.5; color: var(--color-muted);">{{body}}</div>
+        </div>
+        <div style="background: var(--color-card); border-radius: var(--radius-card); padding: 56px; display:flex; flex-direction:column; justify-content:center; gap: 20px;">
+          <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">In numbers</div>
+          <div style="font-family: var(--font-header); font-weight: 700; font-size: 56px; line-height: 1.05; letter-spacing: -0.01em; color: var(--color-ink);">{{metric}}</div>
+          <div style="font-size: 20px; line-height: 1.5; color: var(--color-muted); border-top: 1px solid var(--color-rule); padding-top: 20px; margin-top: 8px;">{{image-caption}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-customer-proof">
+<section class="slide slide-customer-proof">
+  <div style="display:flex; flex-direction:column; justify-content:center; height: 100%; max-width: 1600px; gap: 48px;">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Customer story</div>
+    <div style="font-family: var(--font-header); font-weight: 700; font-size: 56px; line-height: 1.15; letter-spacing: -0.015em; color: var(--color-ink);">"{{quote}}"</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top: 48px; border-top: 1px solid var(--color-rule); padding-top: 24px;">
+      <div>
+        <div style="font-size: 22px; font-weight: 600;">{{attribution-name}}</div>
+        <div style="color: var(--color-muted); font-size: 18px;">{{attribution-role}}</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 72px; line-height: 0.9; color: var(--color-signal);">{{metric-value}}</div>
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted); margin-top: 8px;">{{metric-label}}</div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-pricing">
+<section class="slide slide-pricing">
+  <div style="display:flex; flex-direction:column; gap: 48px; height: 100%;">
+    <h2>{{headline}}</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 32px;">
+      <div style="background: var(--color-card); border-radius: var(--radius-card); padding: 40px; display:flex; flex-direction:column; gap: 24px;">
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{tier-1-name}}</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 72px; line-height: 1; letter-spacing: -0.02em;">{{tier-1-price}}</div>
+        <div style="display:flex; flex-direction:column; gap: 8px; margin-top: 16px;">
+          <div style="font-size: 18px;">• {{tier-1-feature-1}}</div>
+          <div style="font-size: 18px;">• {{tier-1-feature-2}}</div>
+          <div style="font-size: 18px;">• {{tier-1-feature-3}}</div>
+        </div>
+      </div>
+      <div style="background: var(--color-signal); color: var(--color-card); border-radius: var(--radius-card); padding: 40px; display:flex; flex-direction:column; gap: 24px;">
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); opacity: 0.7;">{{tier-2-name}} · popular</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 72px; line-height: 1; letter-spacing: -0.02em; color: var(--color-card);">{{tier-2-price}}</div>
+        <div style="display:flex; flex-direction:column; gap: 8px; margin-top: 16px; color: var(--color-card); opacity: 0.95;">
+          <div style="font-size: 18px;">• {{tier-2-feature-1}}</div>
+          <div style="font-size: 18px;">• {{tier-2-feature-2}}</div>
+          <div style="font-size: 18px;">• {{tier-2-feature-3}}</div>
+        </div>
+      </div>
+      <div style="background: var(--color-card); border-radius: var(--radius-card); padding: 40px; display:flex; flex-direction:column; gap: 24px;">
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{tier-3-name}}</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 72px; line-height: 1; letter-spacing: -0.02em;">{{tier-3-price}}</div>
+        <div style="display:flex; flex-direction:column; gap: 8px; margin-top: 16px;">
+          <div style="font-size: 18px;">• {{tier-3-feature-1}}</div>
+          <div style="font-size: 18px;">• {{tier-3-feature-2}}</div>
+          <div style="font-size: 18px;">• {{tier-3-feature-3}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-availability">
+<section class="slide slide-availability">
+  <div style="display:flex; flex-direction:column; gap: 48px; height: 100%; max-width: 1600px;">
+    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Availability</div>
+    <h2 style="line-height: 1.05;">{{headline}}</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 64px; margin-top: 32px;">
+      <div>
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted); margin-bottom: 12px;">Launch date</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 72px; line-height: 0.95; color: var(--color-ink);">{{launch-date}}</div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted); margin-bottom: 12px;">Regions</div>
+        <div style="font-size: 22px; line-height: 1.5;">{{region-list}}</div>
+      </div>
+    </div>
+    <div style="margin-top: auto; padding-top: 32px; border-top: 1px solid var(--color-rule);">
+      <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal); margin-bottom: 12px;">Early access</div>
+      <div style="font-size: 26px; font-weight: 600;">{{early-access-cta}}</div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-cta">
+<section class="slide slide-cta" style="background: var(--color-signal); color: var(--color-card);">
+  <div style="display:flex; flex-direction:column; justify-content:center; height:100%; color: var(--color-card); gap: 48px; max-width: 1600px;">
+    <h1 style="line-height: 1.05; letter-spacing: -0.02em; color: var(--color-card);">{{headline}}</h1>
+    <div style="margin-top: 32px; display:flex; gap: 24px; align-items:baseline;">
+      <div style="background: var(--color-card); color: var(--color-signal); padding: 24px 40px; border-radius: var(--radius-button); font-size: 28px; font-weight: 700;">{{action-label}} →</div>
+      <div style="color: var(--color-card); opacity: 0.8; font-family: var(--font-data); font-size: 18px;">{{action-url}}</div>
+    </div>
+  </div>
+</section>
+</template>

@@ -1,0 +1,335 @@
+{
+  "slides": [
+    {
+      "type": "cover",
+      "density": "editorial",
+      "slots": {
+        "doc-label": "Executive Board · Steering Committee",
+        "kicker": "Group Operations · Transformation Office",
+        "title": "Operational Excellence Program 2027",
+        "subtitle": "Standardizing processes, improving efficiency and strengthening cross-functional execution.",
+        "confidentiality": "Strictly confidential · Internal use only",
+        "date": "Board review · Q1 2027"
+      }
+    },
+    {
+      "type": "summary",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Management summary",
+        "action-title": "A shared operating model is required to support the next phase of growth.",
+        "p1-title": "Complexity limits transparency",
+        "p1-body": "Current operational complexity limits group-wide transparency and slows management decision-making.",
+        "p2-title": "Standards differ by region",
+        "p2-body": "Operational standards and ways of working differ significantly between regions and acquired entities.",
+        "p3-title": "Processes not yet harmonized",
+        "p3-body": "Procurement and production processes are not yet harmonized across the business units.",
+        "p4-title": "Reporting quality varies",
+        "p4-body": "Reporting definitions and data quality vary across business units, reducing comparability.",
+        "p5-title": "A common baseline",
+        "p5-body": "The program creates a common operational baseline in process, data and governance.",
+        "p6-title": "Phased over three years",
+        "p6-body": "Implementation is phased over three years to manage change and protect ongoing operations.",
+        "takeaway": "Operational excellence is not a cost-cutting initiative. It is the foundation for scalable growth, transparency and stronger execution across the group.",
+        "source": "Group Operations, Transformation Office. Illustrative framing.",
+        "section": "01 · Summary"
+      }
+    },
+    {
+      "type": "landscape",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Current situation",
+        "action-title": "Growth through acquisitions has increased operational complexity.",
+        "intro": "Five years of acquisitive growth have added scale and capability, but also a fragmented operating environment. The figures below describe the current footprint the program must harmonize.",
+        "caption": "Group manufacturing footprint",
+        "s1-n": "42", "s1-l": "Production sites across Europe, North America and Asia",
+        "s2-n": "11", "s2-l": "Separate ERP instances in operation",
+        "s3-n": "6", "s3-l": "Regional reporting models",
+        "s4-n": "4", "s4-l": "Major procurement process variants",
+        "s5-n": "3", "s5-l": "Different production KPI frameworks",
+        "s6-n": "12+", "s6-l": "Duplicated local improvement initiatives",
+        "source": "Group Operations baseline assessment, 2026. Illustrative figures.",
+        "section": "02 · Situation"
+      }
+    },
+    {
+      "type": "challenges",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Key challenges",
+        "action-title": "Operational fragmentation creates measurable business impact.",
+        "c1-title": "Process inconsistency",
+        "c1-body": "Core processes are executed differently across sites, making outcomes hard to predict and to improve.",
+        "c2-title": "Limited data comparability",
+        "c2-body": "Diverging KPI and cost definitions mean regional figures cannot be compared with confidence.",
+        "c3-title": "Slow cross-regional decisions",
+        "c3-body": "Without a common baseline, decisions that span regions take longer to align and to approve.",
+        "c4-title": "Duplicated work",
+        "c4-body": "Local teams independently solve the same problems, duplicating effort and tooling across the group.",
+        "c5-title": "Reduced scalability",
+        "c5-body": "Fragmented processes do not scale cleanly to new sites, acquisitions or volume increases.",
+        "source": "Group Operations baseline assessment, 2026. Illustrative.",
+        "section": "02 · Situation"
+      }
+    },
+    {
+      "type": "objectives",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Program objectives",
+        "action-title": "The program creates a common foundation for efficiency, transparency and execution.",
+        "o1": "Standardize core operational processes",
+        "o1d": "Common process definitions and standards applied consistently across all sites.",
+        "o2": "Harmonize KPI definitions across regions",
+        "o2d": "A single set of KPI definitions so performance is measured the same way everywhere.",
+        "o3": "Improve procurement transparency and leverage",
+        "o3d": "Group-wide spend visibility and consolidated demand to strengthen the negotiating position.",
+        "o4": "Reduce duplicated activities and tooling",
+        "o4d": "Eliminate parallel local initiatives and overlapping systems across business units.",
+        "o5": "Establish group-wide governance",
+        "o5d": "Clear decision rights, ownership and a review cadence for operational standards.",
+        "o6": "Strengthen digital reporting capabilities",
+        "o6d": "Reliable, automated reporting that replaces manual consolidation and adjustments.",
+        "o7": "Improve management visibility",
+        "o7d": "Timely, comparable information for faster and better-informed management decisions.",
+        "o8": "Enable faster best-practice transfer",
+        "o8d": "A mechanism to identify, document and roll out proven improvements between sites.",
+        "source": "Operational Excellence Program charter, 2026. Illustrative.",
+        "section": "03 · Program"
+      }
+    },
+    {
+      "type": "scope",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Scope of the program",
+        "action-title": "The program focuses on five core workstreams.",
+        "w1-no": "Workstream 1", "w1-name": "Process Standardization", "w1-desc": "Consistent process standards and governance across all regions.",
+        "w2-no": "Workstream 2", "w2-name": "KPI & Reporting Harmonization", "w2-desc": "One shared performance language and reporting model for the group.",
+        "w3-no": "Workstream 3", "w3-name": "Procurement Excellence", "w3-desc": "Transparency, consolidation and leverage across global procurement.",
+        "w4-no": "Workstream 4", "w4-name": "Production Performance Management", "w4-desc": "Plant-level visibility, standard KPIs and operational discipline.",
+        "w5-no": "Workstream 5", "w5-name": "Digital Enablement & ERP Alignment", "w5-desc": "Digital tools and data that support the standardized processes.",
+        "source": "Operational Excellence Program charter, 2026. Illustrative.",
+        "section": "03 · Program"
+      }
+    },
+    {
+      "type": "workstream",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Workstream 1 · Process Standardization",
+        "action-title": "Creating consistent process standards across regions.",
+        "items": "Define a global process taxonomy|Identify regional process deviations|Document current-state processes|Align target processes with business owners|Create a process governance model|Establish a review and update cadence",
+        "caption": "Process mapping workshop",
+        "source": "Workstream 1 charter. Illustrative.",
+        "section": "04 · Workstreams"
+      }
+    },
+    {
+      "type": "comparison",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Workstream 2 · KPI & Reporting Harmonization",
+        "action-title": "One shared performance language across the group.",
+        "bad-title": "Current KPI issues",
+        "bad-1": "Different definitions of output",
+        "bad-2": "Inconsistent downtime tracking",
+        "bad-3": "Non-standard cost allocation",
+        "bad-4": "Manual reporting adjustments",
+        "bad-5": "Region-specific dashboards",
+        "good-title": "Target state",
+        "good-1": "A standard KPI dictionary",
+        "good-2": "Shared reporting templates",
+        "good-3": "A monthly group performance dashboard",
+        "good-4": "Clear data ownership",
+        "good-5": "Automated data validation",
+        "source": "Workstream 2 charter. Illustrative.",
+        "section": "04 · Workstreams"
+      }
+    },
+    {
+      "type": "maturity",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Workstream 3 · Procurement Excellence",
+        "action-title": "Increasing transparency and leverage across global procurement.",
+        "col-1": "Procurement lever", "col-2": "Today", "col-3": "Target state",
+        "r1-k": "Supplier base", "r1-a": "Fragmented, managed region by region", "r1-b": "Consolidated and category-managed",
+        "r2-k": "Category management", "r2-a": "Limited and ad hoc", "r2-b": "Structured across major categories",
+        "r3-k": "Spend transparency", "r3-a": "Partial and manual", "r3-b": "Group-wide and near real-time",
+        "r4-k": "Contract management", "r4-a": "Local repositories", "r4-b": "A central contract database",
+        "r5-k": "Preferred suppliers", "r5-a": "Informal", "r5-b": "A defined preferred-supplier framework",
+        "r6-k": "Approvals", "r6-a": "Varying thresholds by region", "r6-b": "Common procurement approval standards",
+        "r7-k": "Savings tracking", "r7-a": "Inconsistent", "r7-b": "Standardized savings tracking",
+        "source": "Workstream 3 charter. Illustrative.",
+        "section": "04 · Workstreams"
+      }
+    },
+    {
+      "type": "performance",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Workstream 4 · Production Performance Management",
+        "action-title": "Improving plant-level visibility and operational discipline.",
+        "items": "Standard production KPIs|Monthly plant performance reviews|OEE tracking by line|Structured downtime categorization|Quality loss tracking|Standard shift handover|Continuous improvement routines",
+        "k1-v": "73%", "k1-l": "Average OEE, baseline",
+        "k2-v": "+8 pts", "k2-l": "OEE target by 2029",
+        "k3-v": "5", "k3-l": "Standard loss categories",
+        "chart-title": "Average OEE by region, baseline (%)",
+        "chart-data": "71 68 76 73",
+        "chart-labels": "Europe|N. America|Asia|Group",
+        "chart-unit": "%",
+        "chart-highlight": "3",
+        "source": "Production performance baseline, 2026. Illustrative figures.",
+        "section": "04 · Workstreams"
+      }
+    },
+    {
+      "type": "architecture",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Workstream 5 · Digital Enablement",
+        "action-title": "Digital tools must support standard processes, not replace them.",
+        "gov-label": "Spanning layer",
+        "gov-value": "Data governance & role-based access",
+        "t1-label": "Reporting & dashboards", "t1-sub": "Consume",
+        "t1-a": "Group performance dashboard", "t1-b": "Regional reporting", "t1-c": "Self-service analytics",
+        "t2-label": "Integration & workflow", "t2-sub": "Connect",
+        "t2-a": "Reporting system integration", "t2-b": "Workflow automation", "t2-c": "Dashboard consolidation",
+        "t3-label": "Core systems & data", "t3-sub": "Record",
+        "t3-a": "ERP landscape alignment", "t3-b": "Master data management", "t3-c": "Master data quality",
+        "note": "Digital enablement follows process standardization: tools are configured to the agreed target processes, not the other way around.",
+        "source": "Workstream 5 charter. Illustrative.",
+        "section": "04 · Workstreams"
+      }
+    },
+    {
+      "type": "governance",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Governance model",
+        "action-title": "Clear decision rights are critical for execution.",
+        "l1-name": "Executive Steering Committee", "l1-role": "Owns scope, budget and trade-offs",
+        "l2-name": "Transformation Office", "l2-role": "Runs the program day to day",
+        "l3-name": "Workstream Leads", "l3-role": "Own delivery of each workstream",
+        "l4-name": "Regional Implementation Leads", "l4-role": "Coordinate rollout per region",
+        "l5-name": "Local Site Teams", "l5-role": "Execute changes on the ground",
+        "l6-name": "Functional Experts", "l6-role": "Provide process and data expertise",
+        "cadence-label": "Meeting cadence",
+        "c1-freq": "Monthly", "c1-what": "Steering committee",
+        "c2-freq": "Bi-weekly", "c2-what": "Workstream reviews",
+        "c3-freq": "Weekly", "c3-what": "Implementation stand-ups",
+        "c4-freq": "Quarterly", "c4-what": "Board updates",
+        "source": "Program governance charter, 2026. Illustrative.",
+        "section": "05 · Governance"
+      }
+    },
+    {
+      "type": "roadmap",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Implementation roadmap",
+        "action-title": "The program will be delivered in three phases over three years.",
+        "p1-no": "Phase 1 · 2027", "p1-title": "Assess and align",
+        "p1-a": "Baseline current processes", "p1-b": "Confirm scope", "p1-c": "Define KPIs", "p1-d": "Identify pilot sites",
+        "p2-no": "Phase 2 · 2028", "p2-title": "Standardize and pilot",
+        "p2-a": "Develop target processes", "p2-b": "Pilot in selected regions", "p2-c": "Validate the reporting model", "p2-d": "Train local teams",
+        "p3-no": "Phase 3 · 2029", "p3-title": "Roll out and embed",
+        "p3-a": "Scale across all sites", "p3-b": "Establish governance", "p3-c": "Measure benefits", "p3-d": "Continuous improvement",
+        "source": "Program plan, 2026. Illustrative timeline.",
+        "section": "06 · Delivery"
+      }
+    },
+    {
+      "type": "scoring",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Pilot site selection",
+        "action-title": "Pilot sites should represent the group's operational diversity.",
+        "crit-label": "Selection criterion",
+        "site-1": "Stuttgart (DE)", "site-2": "Detroit (US) ★", "site-3": "Pune (IN)", "site-4": "Brno (CZ)",
+        "r1-c": "Regional representation", "r1-a": "●●●○○", "r1-b": "●●●●○", "r1-c2": "●●●●●", "r1-d": "●●●○○",
+        "r2-c": "ERP complexity", "r2-a": "●●●●○", "r2-b": "●●●●●", "r2-c2": "●●●○○", "r2-d": "●●○○○",
+        "r3-c": "Production volume", "r3-a": "●●●●○", "r3-b": "●●●●○", "r3-c2": "●●●○○", "r3-d": "●●○○○",
+        "r4-c": "Procurement maturity", "r4-a": "●●●○○", "r4-b": "●●●●○", "r4-c2": "●●○○○", "r4-d": "●●●○○",
+        "r5-c": "Leadership readiness", "r5-a": "●●●○○", "r5-b": "●●●●●", "r5-c2": "●●●○○", "r5-d": "●●●●○",
+        "r6-c": "Data availability", "r6-a": "●●●●○", "r6-b": "●●●●○", "r6-c2": "●●○○○", "r6-d": "●●●○○",
+        "r7-c": "Change capacity", "r7-a": "●●○○○", "r7-b": "●●●●○", "r7-c2": "●●●○○", "r7-d": "●●●○○",
+        "total-label": "Overall fit (of 35)", "t-a": "23", "t-b": "30", "t-c": "21", "t-d": "20",
+        "source": "Pilot selection assessment, 2026. Illustrative scoring.",
+        "section": "06 · Delivery"
+      }
+    },
+    {
+      "type": "benefits",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Expected benefits",
+        "action-title": "The program creates financial, operational and organizational benefits.",
+        "cat1-title": "Financial",
+        "cat1-items": "Improved procurement leverage|Reduced duplicated activities|Better cost transparency",
+        "cat2-title": "Operational",
+        "cat2-items": "Faster issue identification|More consistent performance reviews|Better best-practice transfer",
+        "cat3-title": "Organizational",
+        "cat3-items": "Clearer ownership and accountability|Improved cross-functional collaboration|Stronger management visibility",
+        "takeaway": "Benefits compound: transparency enables better decisions, standardization enables scale, and governance keeps both in place.",
+        "source": "Program business case, 2026. Illustrative.",
+        "section": "07 · Benefits"
+      }
+    },
+    {
+      "type": "risk",
+      "density": "data-dense",
+      "slots": {
+        "eyebrow": "Risks and mitigation",
+        "action-title": "Successful implementation requires active change management.",
+        "col-1": "Risk", "col-2": "Likelihood", "col-3": "Impact", "col-4": "Mitigation",
+        "r1-risk": "Local resistance to standardization", "r1-lk": "High", "r1-lk-lv": "high", "r1-im": "High", "r1-im-lv": "high",
+        "r1-mit": "Engage regional leadership early, co-design target processes with site owners, and communicate the rationale.",
+        "r2-risk": "Underestimated data-quality issues", "r2-lk": "High", "r2-lk-lv": "high", "r2-im": "Medium", "r2-im-lv": "med",
+        "r2-mit": "Run data-quality assessments up front, phase reporting, and assign clear data ownership.",
+        "r3-risk": "Insufficient leadership capacity", "r3-lk": "Medium", "r3-lk-lv": "med", "r3-im": "High", "r3-im-lv": "high",
+        "r3-mit": "Confirm dedicated capacity per region and protect program roles from day-to-day demands.",
+        "r4-risk": "ERP constraints", "r4-lk": "Medium", "r4-lk-lv": "med", "r4-im": "High", "r4-im-lv": "high",
+        "r4-mit": "Assess the ERP landscape early, align processes to a common target, and sequence technical changes.",
+        "r5-risk": "Conflicting regional priorities", "r5-lk": "Medium", "r5-lk-lv": "med", "r5-im": "Medium", "r5-im-lv": "med",
+        "r5-mit": "Use the steering committee to arbitrate and maintain a single prioritized backlog.",
+        "r6-risk": "Program fatigue", "r6-lk": "Medium", "r6-lk-lv": "med", "r6-im": "Medium", "r6-im-lv": "med",
+        "r6-mit": "Phase delivery, show early wins, and keep cadence and scope disciplined.",
+        "source": "Program risk register, 2026. Illustrative.",
+        "section": "08 · Risk"
+      }
+    },
+    {
+      "type": "decisions",
+      "density": "balanced",
+      "slots": {
+        "eyebrow": "Decisions required",
+        "action-title": "Management alignment is required before program launch.",
+        "d1-text": "Confirm the program scope", "d1-who": "Executive Board",
+        "d2-text": "Approve the governance model", "d2-who": "Executive Board",
+        "d3-text": "Nominate workstream owners", "d3-who": "Regional MDs and functions",
+        "d4-text": "Select the pilot sites", "d4-who": "Steering Committee",
+        "d5-text": "Approve the initial budget", "d5-who": "Finance Leadership",
+        "d6-text": "Confirm the reporting cadence", "d6-who": "Transformation Office",
+        "d7-text": "Mandate regional participation", "d7-who": "Executive Board",
+        "forum": "These decisions are tabled for sign-off at the Executive Board and Steering Committee review in Q1 2027, ahead of program launch.",
+        "source": "Steering committee pre-read, 2026. Illustrative.",
+        "section": "09 · Decisions"
+      }
+    },
+    {
+      "type": "closing",
+      "density": "editorial",
+      "slots": {
+        "kicker": "Operational Excellence Program 2027",
+        "closing-line": "A common operating model will make the group more transparent, efficient and scalable.",
+        "sub": "The Operational Excellence Program 2027 establishes the standards, governance and transparency required to support the next phase of profitable growth.",
+        "doc-label": "Executive Board · Steering Committee",
+        "contact": "Transformation Office · Group Operations",
+        "date": "2027"
+      }
+    }
+  ]
+}

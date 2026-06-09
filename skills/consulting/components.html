@@ -1,0 +1,185 @@
+<!-- Consulting components — slide templates. Engine matches by id="slide-{type}" -->
+
+<template id="slide-cover">
+<section class="slide slide-cover">
+  <div class="signal-bar"></div>
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 28px;">
+      <div class="eyebrow">{{client-name}} · {{date}}</div>
+      <h1 style="max-width: 1500px;">{{title}}</h1>
+      <h3 style="color: var(--color-muted); font-family: var(--font-body); font-weight: 400; max-width: 1300px; margin-top: 8px;">{{subtitle}}</h3>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 16px; font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">
+      <span>Prepared for {{client-name}}</span>
+      <span>Confidential · {{date}}</span>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-executive-summary">
+<section class="slide slide-exec-summary">
+  <div class="slide-flow">
+    <div class="eyebrow">Executive summary</div>
+    <h2 style="max-width: 1550px;">{{headline}}</h2>
+    <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:space-between; max-width: 1500px; padding: 24px 0;">
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">01</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-1}}</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">02</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-2}}</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">03</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-3}}</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">04</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-4}}</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">05</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-5}}</div></div>
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-section-divider">
+<section class="slide slide-section-divider">
+  <div class="signal-bar"></div>
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
+      <div style="font-family: var(--font-data); font-size: 128px; color: var(--color-signal); line-height: 1; font-weight: 500;">{{section-number}}</div>
+      <h1>{{section-title}}</h1>
+      <div style="font-size: 26px; color: var(--color-muted); max-width: 1200px; line-height: 1.5;">{{section-blurb}}</div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-content-3col">
+<section class="slide slide-content-3col">
+  <div class="slide-flow">
+    <h2 style="max-width: 1700px;">{{headline}}</h2>
+    <div class="flow-stretch-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 48px;">
+      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
+        <div class="eyebrow" style="color: var(--color-signal);">{{col-title-1}}</div>
+        <div style="font-size: 20px; line-height: 1.5;">{{col-body-1}}</div>
+      </div>
+      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
+        <div class="eyebrow" style="color: var(--color-signal);">{{col-title-2}}</div>
+        <div style="font-size: 20px; line-height: 1.5;">{{col-body-2}}</div>
+      </div>
+      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
+        <div class="eyebrow" style="color: var(--color-signal);">{{col-title-3}}</div>
+        <div style="font-size: 20px; line-height: 1.5;">{{col-body-3}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-data-callout">
+<section class="slide slide-data-callout">
+  <div class="slide-flow">
+    <div class="eyebrow">{{headline}}</div>
+    <div class="flow-grow" style="display:grid; grid-template-columns: 1fr 1fr; gap:96px; align-items:center;">
+      <div>
+        <div style="font-family: var(--font-header); font-weight: 600; font-size: 240px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.04em;">{{big-number}}</div>
+        <div class="eyebrow" style="margin-top: 24px; font-size: 18px;">{{number-label}}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:28px; border-left: 3px solid var(--color-signal); padding-left: 40px;">
+        <div style="font-size: 22px; line-height: 1.5;">{{context-1}}</div>
+        <div style="font-size: 22px; line-height: 1.5;">{{context-2}}</div>
+        <div style="font-size: 22px; line-height: 1.5;">{{context-3}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-framework-2x2">
+<section class="slide slide-framework">
+  <div class="slide-flow">
+    <h2>{{headline}}</h2>
+    <div class="flow-grow" style="display:grid; grid-template-columns: 56px 1fr 1fr; grid-template-rows: 1fr 1fr 48px; gap: 0;">
+      <div></div>
+      <div style="border-bottom: 1px solid var(--color-rule); border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow" style="color: var(--color-signal);">{{q2-label}}</div>
+        <div style="font-size: 18px; line-height: 1.5;">{{q2-body}}</div>
+      </div>
+      <div style="border-bottom: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow" style="color: var(--color-signal);">{{q1-label}}</div>
+        <div style="font-size: 18px; line-height: 1.5;">{{q1-body}}</div>
+      </div>
+      <div style="writing-mode: vertical-rl; transform: rotate(180deg); display:flex; align-items:center; justify-content:center;"><span class="eyebrow">{{y-axis-label}}</span></div>
+      <div style="border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow">{{q3-label}}</div>
+        <div style="font-size: 18px; line-height: 1.5;">{{q3-body}}</div>
+      </div>
+      <div style="padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow">{{q4-label}}</div>
+        <div style="font-size: 18px; line-height: 1.5;">{{q4-body}}</div>
+      </div>
+      <div></div>
+      <div></div>
+      <div style="display:flex; align-items:center; justify-content:center;"><span class="eyebrow">{{x-axis-label}}</span></div>
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-process-flow">
+<section class="slide slide-process-flow">
+  <div class="slide-flow">
+    <h2>{{headline}}</h2>
+    <div class="flow-stretch-grid" style="grid-template-columns: repeat(5, 1fr); gap: 24px;">
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 01</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-1}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-1}}</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 02</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-2}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-2}}</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 03</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-3}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-3}}</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 04</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-4}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-4}}</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 05</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-5}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-5}}</div></div>
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-content-2col-image">
+<section class="slide slide-content-2col-image">
+  <div class="slide-flow">
+    <div class="flow-grow" style="display:flex; align-items:center;">
+      <div style="display:flex; gap: 64px; width:100%; max-width: 1600px; align-items:stretch;">
+        <div style="width: 4px; background: var(--color-signal); flex: none;"></div>
+        <div style="display:flex; flex-direction:column; gap: 36px;">
+          <div class="eyebrow" style="color: var(--color-signal);">{{image-caption}}</div>
+          <h2 style="line-height: 1.1;">{{headline}}</h2>
+          <div style="font-size: 28px; line-height: 1.55; font-weight: 400; max-width: 1300px;">{{body}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-comparison-table">
+<section class="slide slide-comparison-table">
+  <div class="slide-flow">
+    <h2>{{headline}}</h2>
+    <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:center; padding-top: 16px;">
+      {{@table rows=row-headers cols=col-headers cells=cells}}
+    </div>
+  </div>
+  <div class="source">{{source}}</div>
+</section>
+</template>
+
+<template id="slide-closing">
+<section class="slide slide-closing" style="background: var(--color-card);">
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
+      <div class="eyebrow">Next step</div>
+      <h1 style="line-height: 1.05;">{{call-to-action}}</h1>
+      <div style="margin-top: 24px; border-top: 1px solid var(--color-rule); padding-top: 24px; font-size: 22px; line-height: 1.6; color: var(--color-ink); white-space: pre-line; max-width: 1300px;">{{next-steps}}</div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 16px; font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">
+      <span>{{contact-name}}</span>
+      <span>{{contact-email}}</span>
+    </div>
+  </div>
+</section>
+</template>

@@ -1,0 +1,500 @@
+<!-- Operational Excellence — slide-type templates. Base CSS is neutral; the look lives
+     in chrome.css. Every content slide is a bounded island: ox-head (flow-head) pins
+     the masthead, ox-stage (flow-stage) fills, ox-foot (flow-foot) pins the source.
+     Exhibits use the neutral fill utilities so content occupies the whole slide. -->
+
+<template id="slide-cover">
+<section class="slide dark">
+  <div class="ox-cover">
+    <div class="top">
+      <div class="brand"><span class="sq"></span><b>Meridian Industrial Group</b></div>
+      <div class="doc">{{doc-label}}</div>
+    </div>
+    <div class="mid">
+      <div class="kicker">{{kicker}}</div>
+      <h1>{{title}}</h1>
+      <div class="sub">{{subtitle}}</div>
+    </div>
+    <div class="bottom">
+      <span>{{confidentiality}}</span>
+      <span><b>{{date}}</b></span>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-summary">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-sum flow-grid-fill">
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">01</div><h4>{{p1-title}}</h4><p>{{p1-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">02</div><h4>{{p2-title}}</h4><p>{{p2-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">03</div><h4>{{p3-title}}</h4><p>{{p3-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">04</div><h4>{{p4-title}}</h4><p>{{p4-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">05</div><h4>{{p5-title}}</h4><p>{{p5-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">06</div><h4>{{p6-title}}</h4><p>{{p6-body}}</p></div>
+      </div>
+      <div class="ox-band"><span class="lbl">Core message</span><p>{{takeaway}}</p></div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-landscape">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-land flow-grow">
+        <div class="left">
+          <p>{{intro}}</p>
+          <div class="ph">{{@placeholder slot=caption}}</div>
+        </div>
+        <div class="ox-stats">
+          <div class="ox-stat"><span class="v">{{s1-n}}</span><span class="l">{{s1-l}}</span></div>
+          <div class="ox-stat"><span class="v">{{s2-n}}</span><span class="l">{{s2-l}}</span></div>
+          <div class="ox-stat"><span class="v">{{s3-n}}</span><span class="l">{{s3-l}}</span></div>
+          <div class="ox-stat"><span class="v">{{s4-n}}</span><span class="l">{{s4-l}}</span></div>
+          <div class="ox-stat"><span class="v">{{s5-n}}</span><span class="l">{{s5-l}}</span></div>
+          <div class="ox-stat"><span class="v">{{s6-n}}</span><span class="l">{{s6-l}}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-challenges">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-chal flow-grow">
+        <div class="row"><span class="n">01</span><h4>{{c1-title}}</h4><p>{{c1-body}}</p></div>
+        <div class="row"><span class="n">02</span><h4>{{c2-title}}</h4><p>{{c2-body}}</p></div>
+        <div class="row"><span class="n">03</span><h4>{{c3-title}}</h4><p>{{c3-body}}</p></div>
+        <div class="row"><span class="n">04</span><h4>{{c4-title}}</h4><p>{{c4-body}}</p></div>
+        <div class="row"><span class="n">05</span><h4>{{c5-title}}</h4><p>{{c5-body}}</p></div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-objectives">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-obj flow-grow">
+        <div class="ox-objcol">
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o1}}</span><span class="d">{{o1d}}</span></div></div>
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o2}}</span><span class="d">{{o2d}}</span></div></div>
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o3}}</span><span class="d">{{o3d}}</span></div></div>
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o4}}</span><span class="d">{{o4d}}</span></div></div>
+        </div>
+        <div class="ox-objcol">
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o5}}</span><span class="d">{{o5d}}</span></div></div>
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o6}}</span><span class="d">{{o6d}}</span></div></div>
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o7}}</span><span class="d">{{o7d}}</span></div></div>
+          <div class="ox-o"><span class="chk"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.2l2.6 2.6L10 3" stroke="#1F4E79" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="tx"><span class="t">{{o8}}</span><span class="d">{{o8d}}</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-scope">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-scope flow-grow">
+        <div class="rail"></div>
+        <div class="ws"><div class="node"><span class="dot"></span><span class="wn">{{w1-no}}</span></div><h4>{{w1-name}}</h4><p>{{w1-desc}}</p></div>
+        <div class="ws"><div class="node"><span class="dot"></span><span class="wn">{{w2-no}}</span></div><h4>{{w2-name}}</h4><p>{{w2-desc}}</p></div>
+        <div class="ws"><div class="node"><span class="dot"></span><span class="wn">{{w3-no}}</span></div><h4>{{w3-name}}</h4><p>{{w3-desc}}</p></div>
+        <div class="ws"><div class="node"><span class="dot"></span><span class="wn">{{w4-no}}</span></div><h4>{{w4-name}}</h4><p>{{w4-desc}}</p></div>
+        <div class="ws"><div class="node"><span class="dot"></span><span class="wn">{{w5-no}}</span></div><h4>{{w5-name}}</h4><p>{{w5-desc}}</p></div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-workstream">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-split flow-grow">
+        <div class="ox-acts">{{@list slot=items}}</div>
+        <div class="ox-media"><div class="ph">{{@placeholder slot=caption}}</div></div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-performance">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-split flip flow-grow">
+        <div class="ox-perf">
+          <div class="ox-kpis">
+            <div class="ox-kpi"><span class="v">{{k1-v}}</span><span class="l">{{k1-l}}</span></div>
+            <div class="ox-kpi"><span class="v">{{k2-v}}</span><span class="l">{{k2-l}}</span></div>
+            <div class="ox-kpi"><span class="v">{{k3-v}}</span><span class="l">{{k3-l}}</span></div>
+          </div>
+          <div class="ox-chartbox"><div class="ct">{{chart-title}}</div>{{@chart type=bar data=chart-data labels=chart-labels unit=chart-unit highlight=chart-highlight base=#A9B7C6 accent=#1F4E79 ink=#15263D}}</div>
+        </div>
+        <div class="ox-acts">{{@list slot=items}}</div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-comparison">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-cmp flow-grid-fill">
+        <div class="col bad flow-fill">
+          <div class="ch"><h4>{{bad-title}}</h4><span class="tag">Today</span></div>
+          <ul>
+            <li><span class="m">×</span><span>{{bad-1}}</span></li>
+            <li><span class="m">×</span><span>{{bad-2}}</span></li>
+            <li><span class="m">×</span><span>{{bad-3}}</span></li>
+            <li><span class="m">×</span><span>{{bad-4}}</span></li>
+            <li><span class="m">×</span><span>{{bad-5}}</span></li>
+          </ul>
+        </div>
+        <div class="col good flow-fill">
+          <div class="ch"><h4>{{good-title}}</h4><span class="tag">Target</span></div>
+          <ul>
+            <li><span class="m">+</span><span>{{good-1}}</span></li>
+            <li><span class="m">+</span><span>{{good-2}}</span></li>
+            <li><span class="m">+</span><span>{{good-3}}</span></li>
+            <li><span class="m">+</span><span>{{good-4}}</span></li>
+            <li><span class="m">+</span><span>{{good-5}}</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-maturity">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-tbl-wrap flow-grow">
+        <table class="ox-tbl">
+          <colgroup><col style="width:26%"><col style="width:37%"><col style="width:37%"></colgroup>
+          <thead><tr><th>{{col-1}}</th><th>{{col-2}}</th><th>{{col-3}}</th></tr></thead>
+          <tbody>
+            <tr><td class="k">{{r1-k}}</td><td class="today">{{r1-a}}</td><td>{{r1-b}}</td></tr>
+            <tr><td class="k">{{r2-k}}</td><td class="today">{{r2-a}}</td><td>{{r2-b}}</td></tr>
+            <tr><td class="k">{{r3-k}}</td><td class="today">{{r3-a}}</td><td>{{r3-b}}</td></tr>
+            <tr><td class="k">{{r4-k}}</td><td class="today">{{r4-a}}</td><td>{{r4-b}}</td></tr>
+            <tr><td class="k">{{r5-k}}</td><td class="today">{{r5-a}}</td><td>{{r5-b}}</td></tr>
+            <tr><td class="k">{{r6-k}}</td><td class="today">{{r6-a}}</td><td>{{r6-b}}</td></tr>
+            <tr><td class="k">{{r7-k}}</td><td class="today">{{r7-a}}</td><td>{{r7-b}}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-architecture">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-arch flow-grow">
+        <div class="ox-gov-rail"><span class="g-lbl">{{gov-label}}</span><span class="g-v">{{gov-value}}</span></div>
+        <div class="ox-tiers">
+          <div class="ox-tier"><div class="tl">{{t1-label}}<small>{{t1-sub}}</small></div><div class="boxes"><div class="bx">{{t1-a}}</div><div class="bx">{{t1-b}}</div><div class="bx">{{t1-c}}</div></div></div>
+          <div class="ox-tier"><div class="tl">{{t2-label}}<small>{{t2-sub}}</small></div><div class="boxes"><div class="bx">{{t2-a}}</div><div class="bx">{{t2-b}}</div><div class="bx">{{t2-c}}</div></div></div>
+          <div class="ox-tier"><div class="tl">{{t3-label}}<small>{{t3-sub}}</small></div><div class="boxes"><div class="bx">{{t3-a}}</div><div class="bx">{{t3-b}}</div><div class="bx">{{t3-c}}</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-governance">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-org flow-grow">
+        <div class="ox-levels">
+          <div class="ox-lvl"><span class="i">01</span><div class="ox-lvl-row"><span class="nm">{{l1-name}}</span><span class="ro">{{l1-role}}</span></div></div>
+          <div class="ox-lvl"><span class="i">02</span><div class="ox-lvl-row"><span class="nm">{{l2-name}}</span><span class="ro">{{l2-role}}</span></div></div>
+          <div class="ox-lvl"><span class="i">03</span><div class="ox-lvl-row"><span class="nm">{{l3-name}}</span><span class="ro">{{l3-role}}</span></div></div>
+          <div class="ox-lvl"><span class="i">04</span><div class="ox-lvl-row"><span class="nm">{{l4-name}}</span><span class="ro">{{l4-role}}</span></div></div>
+          <div class="ox-lvl"><span class="i">05</span><div class="ox-lvl-row"><span class="nm">{{l5-name}}</span><span class="ro">{{l5-role}}</span></div></div>
+          <div class="ox-lvl"><span class="i">06</span><div class="ox-lvl-row"><span class="nm">{{l6-name}}</span><span class="ro">{{l6-role}}</span></div></div>
+        </div>
+        <div class="ox-cadence">
+          <h4>{{cadence-label}}</h4>
+          <ul>
+            <li><span class="freq">{{c1-freq}}</span><span class="what">{{c1-what}}</span></li>
+            <li><span class="freq">{{c2-freq}}</span><span class="what">{{c2-what}}</span></li>
+            <li><span class="freq">{{c3-freq}}</span><span class="what">{{c3-what}}</span></li>
+            <li><span class="freq">{{c4-freq}}</span><span class="what">{{c4-what}}</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-roadmap">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-road flow-grow">
+        <div class="rail"></div>
+        <div class="ph">
+          <div class="node"><span class="dot"></span><span class="pn">{{p1-no}}</span></div>
+          <h4>{{p1-title}}</h4>
+          <ul><li>{{p1-a}}</li><li>{{p1-b}}</li><li>{{p1-c}}</li><li>{{p1-d}}</li></ul>
+        </div>
+        <div class="ph">
+          <div class="node"><span class="dot"></span><span class="pn">{{p2-no}}</span></div>
+          <h4>{{p2-title}}</h4>
+          <ul><li>{{p2-a}}</li><li>{{p2-b}}</li><li>{{p2-c}}</li><li>{{p2-d}}</li></ul>
+        </div>
+        <div class="ph">
+          <div class="node"><span class="dot"></span><span class="pn">{{p3-no}}</span></div>
+          <h4>{{p3-title}}</h4>
+          <ul><li>{{p3-a}}</li><li>{{p3-b}}</li><li>{{p3-c}}</li><li>{{p3-d}}</li></ul>
+        </div>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-scoring">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-tbl-wrap flow-grow">
+        <table class="ox-score">
+          <thead><tr>
+            <th class="crit">{{crit-label}}</th>
+            <th class="site">{{site-1}}</th>
+            <th class="site rec">{{site-2}}</th>
+            <th class="site">{{site-3}}</th>
+            <th class="site">{{site-4}}</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="crit">{{r1-c}}</td><td><span class="rate">{{r1-a}}</span></td><td class="rec"><span class="rate">{{r1-b}}</span></td><td><span class="rate">{{r1-c2}}</span></td><td><span class="rate">{{r1-d}}</span></td></tr>
+            <tr><td class="crit">{{r2-c}}</td><td><span class="rate">{{r2-a}}</span></td><td class="rec"><span class="rate">{{r2-b}}</span></td><td><span class="rate">{{r2-c2}}</span></td><td><span class="rate">{{r2-d}}</span></td></tr>
+            <tr><td class="crit">{{r3-c}}</td><td><span class="rate">{{r3-a}}</span></td><td class="rec"><span class="rate">{{r3-b}}</span></td><td><span class="rate">{{r3-c2}}</span></td><td><span class="rate">{{r3-d}}</span></td></tr>
+            <tr><td class="crit">{{r4-c}}</td><td><span class="rate">{{r4-a}}</span></td><td class="rec"><span class="rate">{{r4-b}}</span></td><td><span class="rate">{{r4-c2}}</span></td><td><span class="rate">{{r4-d}}</span></td></tr>
+            <tr><td class="crit">{{r5-c}}</td><td><span class="rate">{{r5-a}}</span></td><td class="rec"><span class="rate">{{r5-b}}</span></td><td><span class="rate">{{r5-c2}}</span></td><td><span class="rate">{{r5-d}}</span></td></tr>
+            <tr><td class="crit">{{r6-c}}</td><td><span class="rate">{{r6-a}}</span></td><td class="rec"><span class="rate">{{r6-b}}</span></td><td><span class="rate">{{r6-c2}}</span></td><td><span class="rate">{{r6-d}}</span></td></tr>
+            <tr><td class="crit">{{r7-c}}</td><td><span class="rate">{{r7-a}}</span></td><td class="rec"><span class="rate">{{r7-b}}</span></td><td><span class="rate">{{r7-c2}}</span></td><td><span class="rate">{{r7-d}}</span></td></tr>
+            <tr class="total"><td class="crit">{{total-label}}</td><td class="score-total">{{t-a}}</td><td class="rec score-total">{{t-b}}</td><td class="score-total">{{t-c}}</td><td class="score-total">{{t-d}}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-benefits">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-ben flow-grid-fill">
+        <div class="ox-bcol flow-fill"><div class="ch"><span class="nn">A</span><h4>{{cat1-title}}</h4></div>{{@list slot=cat1-items}}</div>
+        <div class="ox-bcol flow-fill"><div class="ch"><span class="nn">B</span><h4>{{cat2-title}}</h4></div>{{@list slot=cat2-items}}</div>
+        <div class="ox-bcol flow-fill"><div class="ch"><span class="nn">C</span><h4>{{cat3-title}}</h4></div>{{@list slot=cat3-items}}</div>
+      </div>
+      <div class="ox-band"><span class="lbl">In short</span><p>{{takeaway}}</p></div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-risk">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-tbl-wrap flow-grow">
+        <table class="ox-tbl">
+          <colgroup><col style="width:25%"><col style="width:13%"><col style="width:13%"><col style="width:49%"></colgroup>
+          <thead><tr><th>{{col-1}}</th><th>{{col-2}}</th><th>{{col-3}}</th><th>{{col-4}}</th></tr></thead>
+          <tbody>
+            <tr><td class="k">{{r1-risk}}</td><td><span class="sev sev-{{r1-lk-lv}}">{{r1-lk}}</span></td><td><span class="sev sev-{{r1-im-lv}}">{{r1-im}}</span></td><td class="muted">{{r1-mit}}</td></tr>
+            <tr><td class="k">{{r2-risk}}</td><td><span class="sev sev-{{r2-lk-lv}}">{{r2-lk}}</span></td><td><span class="sev sev-{{r2-im-lv}}">{{r2-im}}</span></td><td class="muted">{{r2-mit}}</td></tr>
+            <tr><td class="k">{{r3-risk}}</td><td><span class="sev sev-{{r3-lk-lv}}">{{r3-lk}}</span></td><td><span class="sev sev-{{r3-im-lv}}">{{r3-im}}</span></td><td class="muted">{{r3-mit}}</td></tr>
+            <tr><td class="k">{{r4-risk}}</td><td><span class="sev sev-{{r4-lk-lv}}">{{r4-lk}}</span></td><td><span class="sev sev-{{r4-im-lv}}">{{r4-im}}</span></td><td class="muted">{{r4-mit}}</td></tr>
+            <tr><td class="k">{{r5-risk}}</td><td><span class="sev sev-{{r5-lk-lv}}">{{r5-lk}}</span></td><td><span class="sev sev-{{r5-im-lv}}">{{r5-im}}</span></td><td class="muted">{{r5-mit}}</td></tr>
+            <tr><td class="k">{{r6-risk}}</td><td><span class="sev sev-{{r6-lk-lv}}">{{r6-lk}}</span></td><td><span class="sev sev-{{r6-im-lv}}">{{r6-im}}</span></td><td class="muted">{{r6-mit}}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-decisions">
+<section class="slide">
+  <div class="ox slide-flow">
+    <div class="ox-head flow-head">
+      <div class="ox-mast"><span class="sq"></span><b>Meridian Industrial Group</b><span class="sep">|</span><span class="muted">Operational Excellence Program 2027</span></div>
+      <div class="ox-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="ox-stage flow-stage">
+      <div class="ox-eyebrow">{{eyebrow}}</div>
+      <h2 class="ox-title">{{action-title}}</h2>
+      <div class="ox-dec flow-grow">
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d1-text}}</span><span class="who">{{d1-who}}</span></div></div>
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d2-text}}</span><span class="who">{{d2-who}}</span></div></div>
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d3-text}}</span><span class="who">{{d3-who}}</span></div></div>
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d4-text}}</span><span class="who">{{d4-who}}</span></div></div>
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d5-text}}</span><span class="who">{{d5-who}}</span></div></div>
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d6-text}}</span><span class="who">{{d6-who}}</span></div></div>
+        <div class="ox-d"><span class="box"></span><div class="tx"><span class="t">{{d7-text}}</span><span class="who">{{d7-who}}</span></div></div>
+      </div>
+      <div class="ox-band"><span class="lbl">Decision forum</span><p>{{forum}}</p></div>
+    </div>
+    <div class="ox-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-closing">
+<section class="slide dark">
+  <div class="ox-close">
+    <div class="top">
+      <div class="brand"><span class="sq"></span><span>Meridian Industrial Group</span></div>
+      <div class="doc">{{doc-label}}</div>
+    </div>
+    <div class="mid">
+      <div class="k">{{kicker}}</div>
+      <h2>{{closing-line}}</h2>
+      <p>{{sub}}</p>
+    </div>
+    <div class="bottom">
+      <span>{{contact}}</span>
+      <span><b>{{date}}</b></span>
+    </div>
+  </div>
+</section>
+</template>

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>consulting deck</title>
+
+<style>
+:root {
+  --color-page: #F7F5F2;
+  --color-card: #FFFFFF;
+  --color-ink: #1A1A1A;
+  --color-signal: #C8102E;
+  --color-signal-subtle: #8C0E27;
+  --color-muted: #6B6B6B;
+  --color-rule: #D4D0CB;
+  --font-header: 'Source Serif Pro', 'Tiempos Headline', Georgia, serif;
+  --font-body: Inter, 'Söhne', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', 'Söhne Mono', ui-monospace, monospace;
+  --font-weight-header: 600;
+  --font-weight-body: 400;
+  --font-weight-data: 500;
+  --size-h1: 64px;
+  --size-h2: 44px;
+  --size-h3: 32px;
+  --size-h4: 24px;
+  --size-body-1: 18px;
+  --size-body-2: 16px;
+  --size-body-3: 14px;
+  --size-body-4: 12px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-card: 2px;
+  --radius-button: 2px;
+  --radius-input: 2px;
+  --elevation-card: 0 1px 0 rgba(0,0,0,0.06);
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 96px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* Chrome (look) for this skill. Emitted after the neutral baseSlideCss.
+   Forked from the legacy shared default — edit freely; it only affects this skill. */
+.slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.01em; }
+.slide h1 { line-height: 1.05; }
+.slide h2 { line-height: 1.1; }
+.slide h3 { line-height: 1.15; }
+.slide h4 { line-height: 1.2; }
+.slide .eyebrow {
+  font-family: var(--font-data);
+  font-weight: var(--font-weight-data);
+  font-size: var(--size-body-4);
+  color: var(--color-muted);
+}
+.slide .source {
+  position: absolute;
+  bottom: 32px;
+  left: var(--page-safe);
+  right: var(--page-safe);
+  font-size: var(--size-body-4);
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-rule);
+  padding-top: 8px;
+}
+.slide .signal-bar {
+  height: 3px;
+  background: var(--color-signal);
+}
+.slide-flow {
+  gap: 32px;
+  padding-bottom: 72px;
+}
+.dir-table {
+  font-size: 20px;
+}
+.dir-table thead th {
+  font-family: var(--font-data);
+  font-weight: var(--font-weight-data);
+  font-size: var(--size-body-4);
+  color: var(--color-muted);
+  text-align: left;
+  padding: 14px 20px 14px 0;
+  border-bottom: 2px solid var(--color-ink);
+}
+.dir-table tbody th {
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-align: left;
+  padding: 18px 20px 18px 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+  width: 36%;
+}
+.dir-table tbody td {
+  padding: 18px 20px 18px 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+.dir-table tbody tr:last-child th,
+.dir-table tbody tr:last-child td { border-bottom: none; }
+
+
+body { margin: 0; background: #1a1a1a; padding: 40px; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<section data-slide-type="cover" class="slide slide-cover">
+  <div class="signal-bar"></div>
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 28px;">
+      <div class="eyebrow">NORTHWIND PERSONAL CARE · May 2026</div>
+      <h1 style="max-width: 1500px;">Direct-to-consumer in personal care: a 36-month entry plan</h1>
+      <h3 style="color: var(--color-muted); font-family: var(--font-body); font-weight: 400; max-width: 1300px; margin-top: 8px;">Building owned channel revenue from $0 to $48M by FY28 while protecting wholesale margin</h3>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 16px; font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">
+      <span>Prepared for NORTHWIND PERSONAL CARE</span>
+      <span>Confidential — May 2026</span>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="executive-summary" class="slide slide-exec-summary">
+  <div class="slide-flow">
+    <div class="eyebrow">Executive summary</div>
+    <h2 style="max-width: 1550px;">DTC is no longer optional — it is the only channel where Northwind controls margin, data, and brand narrative.</h2>
+    <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:space-between; max-width: 1500px; padding: 24px 0;">
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">01</span><div style="font-size: 24px; line-height: 1.5;">Wholesale margins compressed from 38% to 29% over five years; private-label share grew from 11% to 24% in the category.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">02</span><div style="font-size: 24px; line-height: 1.5;">Owned-channel competitors (independent indie brands) capture 18-26% gross-channel margin and 40% of new-customer LTV.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">03</span><div style="font-size: 24px; line-height: 1.5;">A staged 36-month entry — pilot, scale, optimize — achieves $48M run-rate revenue and 22% contribution margin by month 36.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">04</span><div style="font-size: 24px; line-height: 1.5;">Capex required is $14.2M over the period; payback occurs in month 28 under the base case, month 22 under the bull case.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">05</span><div style="font-size: 24px; line-height: 1.5;">The decision window is narrow: each additional quarter of delay reduces NPV by an estimated $6-9M as private-label share continues to expand.</div></div>
+    </div>
+  </div>
+  <div class="source">Northwind finance data, FY21-FY25 · industry benchmarks (Nielsen, Bain DTC index 2025) · team analysis</div>
+</section>
+
+<section data-slide-type="section-divider" class="slide slide-section-divider">
+  <div class="signal-bar"></div>
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
+      <div style="font-family: var(--font-data); font-size: 128px; color: var(--color-signal); line-height: 1; font-weight: 500;">01</div>
+      <h1>Why the channel mix must change now</h1>
+      <div style="font-size: 26px; color: var(--color-muted); max-width: 1200px; line-height: 1.5;">Three structural shifts in the category make wholesale-only economics unsustainable beyond FY27.</div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="data-callout" class="slide slide-data-callout">
+  <div class="slide-flow">
+    <div class="eyebrow">Wholesale margin compression</div>
+    <div class="flow-grow" style="display:grid; grid-template-columns: 1fr 1fr; gap:96px; align-items:center;">
+      <div>
+        <div style="font-family: var(--font-header); font-weight: 600; font-size: 240px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.04em;">−9pp</div>
+        <div class="eyebrow" style="margin-top: 24px; font-size: 18px;">gross margin loss in 5 years</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:28px; border-left: 3px solid var(--color-signal); padding-left: 40px;">
+        <div style="font-size: 22px; line-height: 1.5;">Retailer terms re-negotiated three times since FY21; combined slotting and co-op fees rose from 4.2% to 7.8% of net revenue.</div>
+        <div style="font-size: 22px; line-height: 1.5;">Private-label expansion now captures 24% of category dollars, up from 11% in FY20.</div>
+        <div style="font-size: 22px; line-height: 1.5;">Two of Northwind&#39;s top five retail accounts have signaled intent to expand private label in personal care by FY27.</div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Northwind P&amp;L FY21-FY25 · IRI category data Q4 2025</div>
+</section>
+
+<section data-slide-type="content-3col" class="slide slide-content-3col">
+  <div class="slide-flow">
+    <h2 style="max-width: 1700px;">Where the next 5 points of margin will come from</h2>
+    <div class="flow-stretch-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 48px;">
+      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
+        <div class="eyebrow" style="color: var(--color-signal);">Channel mix</div>
+        <div style="font-size: 20px; line-height: 1.5;">Shift 18% of unit volume to owned channel by FY28; recover 6-9 points of channel margin while building first-party data assets.</div>
+      </div>
+      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
+        <div class="eyebrow" style="color: var(--color-signal);">Product portfolio</div>
+        <div style="font-size: 20px; line-height: 1.5;">Concentrate launches behind three hero SKUs that index highest in DTC pilot regions; sunset 14 long-tail SKUs underperforming in wholesale.</div>
+      </div>
+      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
+        <div class="eyebrow" style="color: var(--color-signal);">Operating model</div>
+        <div style="font-size: 20px; line-height: 1.5;">Stand up a 22-person DTC squad (marketing, ops, data, CX) reporting directly to CEO for first 18 months to maintain decision velocity.</div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Team analysis · pilot region data Phoenix and Austin, Mar-Apr 2026</div>
+</section>
+
+<section data-slide-type="framework-2x2" class="slide slide-framework">
+  <div class="slide-flow">
+    <h2>Where Northwind plays vs. where peers are winning</h2>
+    <div class="flow-grow" style="display:grid; grid-template-columns: 56px 1fr 1fr; grid-template-rows: 1fr 1fr 48px; gap: 0;">
+      <div></div>
+      <div style="border-bottom: 1px solid var(--color-rule); border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow" style="color: var(--color-signal);">Northwind today</div>
+        <div style="font-size: 18px; line-height: 1.5;">Low ownership, high heritage margin — but margin eroding 1.8pp per year on current trajectory.</div>
+      </div>
+      <div style="border-bottom: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow" style="color: var(--color-signal);">Premium indies</div>
+        <div style="font-size: 18px; line-height: 1.5;">High ownership, high margin. Reference set: 6 brands averaging 41% gross margin via DTC-first model.</div>
+      </div>
+      <div style="writing-mode: vertical-rl; transform: rotate(180deg); display:flex; align-items:center; justify-content:center;"><span class="eyebrow">Margin per unit</span></div>
+      <div style="border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow">Mass private label</div>
+        <div style="font-size: 18px; line-height: 1.5;">Low ownership, low margin. Volume play, race to bottom.</div>
+      </div>
+      <div style="padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow">DTC-only challengers</div>
+        <div style="font-size: 18px; line-height: 1.5;">High ownership, lower unit margin — but 3-4× LTV from first-party data and subscription mechanics.</div>
+      </div>
+      <div></div>
+      <div></div>
+      <div style="display:flex; align-items:center; justify-content:center;"><span class="eyebrow">Channel ownership</span></div>
+    </div>
+  </div>
+  <div class="source">Public filings · DTC benchmark study Q1 2026</div>
+</section>
+
+<section data-slide-type="process-flow" class="slide slide-process-flow">
+  <div class="slide-flow">
+    <h2>The 36-month entry plan, in five phases</h2>
+    <div class="flow-stretch-grid" style="grid-template-columns: repeat(5, 1fr); gap: 24px;">
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 01</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">Stand up</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">Months 1-6. Recruit DTC lead, ship MVP storefront, launch in two regional markets with three hero SKUs.</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 02</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">Validate</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">Months 7-12. Reach $2M run-rate, prove CAC &lt; $42, build subscription waitlist.</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 03</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">Scale</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">Months 13-22. National launch, expand to 8 SKUs, scale paid acquisition with $4.2M media budget.</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 04</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">Diversify</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">Months 23-30. Add quiz-led discovery, launch subscription, integrate with Northwind retail loyalty program.</div></div>
+      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 05</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">Optimize</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">Months 31-36. Margin push: own-brand packaging, regional fulfillment, predictive replenishment.</div></div>
+    </div>
+  </div>
+  <div class="source">Team plan · benchmarked against three comparable category entrants 2021-2024</div>
+</section>
+
+<section data-slide-type="closing" class="slide slide-closing" style="background: var(--color-card);">
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
+      <div class="eyebrow">Next step</div>
+      <h1 style="line-height: 1.05;">Approve the 36-month plan and release Phase 1 capex by the end of Q3.</h1>
+      <div style="margin-top: 24px; border-top: 1px solid var(--color-rule); padding-top: 24px; font-size: 22px; line-height: 1.6; color: var(--color-ink); white-space: pre-line; max-width: 1300px;"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 16px; font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">
+      <span>Engagement team</span>
+      <span>northwind-dtc@firm.example</span>
+    </div>
+  </div>
+</section>
+</body>
+</html>

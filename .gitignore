@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+
+# build output
+dist/
+.cache/
+generated/
+*.log
+
+# os
+.DS_Store
+
+# internal generator seeds / reference material (not part of the public product)
+_dev-skills/
+
+# render + review artifacts (regenerated on demand, never committed)
+scripts/**/*.png
+scripts/**/*.jpg
+scripts/**/*.jpeg
+scripts/**/*.pdf
+scripts/**/*-deck.html
+scripts/**/*-fixture.html
+scripts/**/*-fal-deck.html
+scripts/**/_shots/
+scripts/**/review/
+scripts/**/scenarios/
+render-output/
+artifacts/
+tmp/

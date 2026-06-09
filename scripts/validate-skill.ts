@@ -1,0 +1,306 @@
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { loadSkill, listSkills } from "../engine/skill-loader.ts";
+import { COMPOSITION_FAMILIES } from "../engine/composition-families.ts";
+import type { Skill } from "../engine/types.ts";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const skillsRoot = resolve(__dirname, "../skills");
+
+/**
+ * Composition-family contract for GENERATED skills. Opt-in by design: legacy
+ * seed skills carry no family annotations and are skipped (they predate the
+ * contract). Any skill that declares families must satisfy the diversity gate —
+ * the generator (skill-generator.ts) now emits families, so new output is held
+ * to it. Returns hard failures.
+ */
+function checkFamilyContract(skill: Skill): string[] {
+  const fails: string[] = [];
+  const types = skill.grammar.slideTypes;
+  const withFamily = types.filter((t) => t.family);
+  if (withFamily.length === 0) return fails; // legacy skill, opt-in gate skipped
+
+  // Every type must declare a KNOWN family once any are declared.
+  const missing = types.filter((t) => !t.family).map((t) => t.name);
+  if (missing.length > 0) {
+    fails.push(`slide types missing a composition family: ${missing.join(", ")}`);
+  }
+  const unknown = withFamily
+    .filter((t) => !COMPOSITION_FAMILIES.includes(t.family as any))
+    .map((t) => `${t.name}=${t.family}`);
+  if (unknown.length > 0) {
+    fails.push(`unknown composition families: ${unknown.join(", ")}`);
+  }
+
+  const counts = new Map<string, number>();
+  for (const t of withFamily) counts.set(t.family!, (counts.get(t.family!) ?? 0) + 1);
+  const distinct = counts.size;
+  if (distinct < 6) {
+    fails.push(`composition variety too low: ${distinct} distinct families (need ≥ 6)`);
+  }
+  // No single family may dominate (~35% of types). cover/closing are bookends.
+  const cap = Math.max(2, Math.ceil(types.length * 0.35));
+  for (const [fam, n] of counts) {
+    if (fam === "cover" || fam === "closing") continue;
+    if (n > cap) {
+      fails.push(`family "${fam}" worn by ${n}/${types.length} types (cap ${cap}, ~35%)`);
+    }
+  }
+  return fails;
+}
+
+/**
+ * Structural backstop: even if families are labelled diversely, a skill whose
+ * templates are mostly the SAME morphology (a grid of N equal columns of bullet
+ * cards) reproduces the monotony the families were meant to prevent. Groups
+ * non-bleed content templates by a coarse grid signature and flags when one
+ * signature dominates. Non-fatal (blocking warning), tuned not to trip the
+ * legitimate ~30% grid reuse in hand-built decks.
+ */
+function checkTemplateMorphology(rawComponents: string): string | null {
+  const tmplRe = /<template[^>]*id=["']slide-([a-z][a-z0-9-]*)["'][^>]*>([\s\S]*?)<\/template>/gi;
+  const signatures: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = tmplRe.exec(rawComponents)) !== null) {
+    const body = m[2];
+    if (/slide-bleed/.test(body)) continue; // bleed/atmospheric slides are not the trap
+    signatures.push(gridSignature(body));
+  }
+  const content = signatures.filter((s) => s !== "flow"); // sentence/statement slides aren't grids
+  if (content.length < 6) return null;
+  const counts = new Map<string, number>();
+  for (const s of content) counts.set(s, (counts.get(s) ?? 0) + 1);
+  let topSig = "";
+  let top = 0;
+  for (const [s, n] of counts) if (n > top) (top = n), (topSig = s);
+  const share = top / content.length;
+  if (share > 0.5) {
+    return `template monotony: ${top}/${content.length} grid templates share one morphology (${topSig}) — diversify compositions, don't re-skin the same column grid`;
+  }
+  return null;
+}
+
+/** Coarse grid signature: collapse a template's column layout to "Nx1fr" / "cols" / "flow". */
+function gridSignature(body: string): string {
+  const grids = [...body.matchAll(/grid-template-columns\s*:\s*([^;"']+)/gi)].map((x) =>
+    x[1].trim().toLowerCase(),
+  );
+  if (grids.length === 0) return "flow";
+  // Use the most-columns grid in the template as its signature.
+  let best = "cols";
+  let bestN = 0;
+  for (const g of grids) {
+    const rep = g.match(/repeat\(\s*(\d+)/);
+    const n = rep ? parseInt(rep[1], 10) : g.split(/\s+/).filter((t) => /fr|px|%|minmax|auto/.test(t)).length;
+    if (n > bestN) (bestN = n), (best = `${n}col`);
+  }
+  return best;
+}
+
+async function main() {
+  const skills = await listSkills(skillsRoot);
+  console.log(`Found ${skills.length} skills: ${skills.join(", ")}\n`);
+
+  let failed = 0;
+
+  for (const name of skills) {
+    const failures: string[] = [];
+    const warnings: string[] = [];
+    try {
+      const skill = await loadSkill(resolve(skillsRoot, name));
+      const fm = skill.frontmatter;
+
+      // Basic frontmatter shape
+      if (fm.name !== name) failures.push(`frontmatter.name (${fm.name}) != folder (${name})`);
+      if (!fm.version) failures.push("frontmatter.version missing");
+      if (!fm.description?.length) failures.push("frontmatter.description missing");
+      if (!fm.forbidden?.length) failures.push("frontmatter.forbidden missing");
+
+      // Tokens
+      if (!skill.tokens.color.signal.primary) failures.push("tokens.color.signal.primary missing");
+      if (skill.tokens.page.width !== 1920 || skill.tokens.page.height !== 1080) {
+        failures.push(`tokens.page must be 1920×1080, got ${skill.tokens.page.width}×${skill.tokens.page.height}`);
+      }
+
+      // Grammar shape
+      if (skill.grammar.slideTypes.length < 5) {
+        failures.push(`grammar.slideTypes (${skill.grammar.slideTypes.length}) < 5`);
+      }
+      if (skill.grammar.rules.length < 3) {
+        failures.push(`grammar.rules (${skill.grammar.rules.length}) < 3`);
+      }
+
+      // No all-caps label typography in source (loadSkill strips it at runtime,
+      // so check the raw files to keep the seed sources themselves clean).
+      const [rawChrome, rawComponents] = await Promise.all([
+        readFile(resolve(skillsRoot, name, "chrome.css"), "utf8").catch(() => ""),
+        readFile(resolve(skillsRoot, name, "components.html"), "utf8").catch(() => ""),
+      ]);
+      if (/text-transform\s*:\s*uppercase/i.test(rawChrome + rawComponents)) {
+        failures.push(
+          "uppercased label typography (text-transform:uppercase) is banned — use sentence case",
+        );
+      }
+      // Card-edge accent line — a colored rule on a card's lip is a loud AI tell.
+      // Flag border-(top|left|right|bottom) with a non-zero width that references
+      // an accent/signal/primary color or a non-neutral hex.
+      const cardEdge = rawChrome.match(
+        /border-(?:top|left|right|bottom)\s*:\s*(?:[1-9]\d*px|0?\.\d+rem|[1-9]\d*px\s+solid)[^;]*(?:var\(--color-signal\)|var\(--color-primary\)|var\(--color-accent\))/gi,
+      );
+      if (cardEdge) {
+        failures.push(
+          `card-edge accent line(s) detected (${cardEdge.length}) — never pin an accent border to a card edge; carry accent via number/icon/chip/fill`,
+        );
+      }
+      // Em-dashes in RENDERED copy read as machine-made. Strip comments first —
+      // an em-dash inside a /* */ or <!-- --> note never reaches the slide.
+      const visibleComponents = stripComments(rawComponents);
+      const visibleChrome = stripComments(rawChrome);
+      const emFiles: string[] = [];
+      if (visibleComponents.includes("—")) emFiles.push("components.html");
+      if (visibleChrome.includes("—")) emFiles.push("chrome.css");
+      if (emFiles.length > 0) {
+        failures.push(`em-dash (—) in ${emFiles.join(", ")} — use commas/periods, not em-dashes`);
+      }
+
+      // Composition-family contract (generated skills) — hard gate, opt-in.
+      failures.push(...checkFamilyContract(skill));
+      // Morphology backstop — non-fatal warning. Grid-column-count is blunt
+      // (it conflates a phone-split, a comparison and two persona cards as "2col"),
+      // so it informs the Phase-6 review rather than blocking; families are the gate.
+      const morphology = checkTemplateMorphology(rawComponents);
+      if (morphology) warnings.push(morphology);
+
+      // Image style
+      if (!skill.imageStyle.aiPromptTemplate) failures.push("imageStyle.aiPromptTemplate missing");
+      if (!skill.imageStyle.stockQueryTemplate) failures.push("imageStyle.stockQueryTemplate missing");
+      if (Object.keys(skill.imageStyle.decisionRules).length === 0) {
+        failures.push("imageStyle.decisionRules empty");
+      }
+
+      // Grammar/template parity: every grammar slide-type MUST have a component
+      const componentIds = new Set<string>();
+      const idRe = /id=["']slide-([a-z][a-z0-9-]*)["']/g;
+      let m: RegExpExecArray | null;
+      while ((m = idRe.exec(skill.components)) !== null) {
+        componentIds.add(m[1]);
+      }
+      const missing: string[] = [];
+      const unused: string[] = [];
+      for (const t of skill.grammar.slideTypes) {
+        if (!componentIds.has(t.name)) missing.push(t.name);
+      }
+      for (const id of componentIds) {
+        if (!skill.grammar.slideTypes.some((t) => t.name === id)) unused.push(id);
+      }
+      if (missing.length > 0) {
+        failures.push(`grammar types without component: ${missing.join(", ")}`);
+      }
+      if (unused.length > 0) {
+        failures.push(`components without grammar entry: ${unused.join(", ")}`);
+      }
+
+      // Slot usage in components — every required slot should appear as {{slot}}
+      // or be consumed by a directive (e.g. {{@table rows=row-headers cols=col-headers cells=cells}}).
+      const slotMissing: string[] = [];
+      for (const t of skill.grammar.slideTypes) {
+        if (!componentIds.has(t.name)) continue;
+        const tmplRe = new RegExp(
+          `<template[^>]*id=["']slide-${t.name}["'][^>]*>([\\s\\S]*?)</template>`,
+          "i",
+        );
+        const tmpl = skill.components.match(tmplRe)?.[1] ?? "";
+        const slotsConsumedByDirectives = collectDirectiveSlots(tmpl);
+        for (const slot of t.requiredSlots) {
+          const slotRe = new RegExp(`\\{\\{\\s*${escapeRegex(slot)}\\s*\\}\\}`);
+          if (!slotRe.test(tmpl) && !slotsConsumedByDirectives.has(slot)) {
+            slotMissing.push(`${t.name}.${slot}`);
+          }
+        }
+      }
+      if (slotMissing.length > 0) {
+        failures.push(`required slots not used in template: ${slotMissing.join(", ")}`);
+      }
+
+      // Unknown placeholders — every {{x}} in a template should be a declared slot
+      // (or an image:N placeholder). Surfaces typos.
+      const unknownPlaceholders: string[] = [];
+      for (const t of skill.grammar.slideTypes) {
+        if (!componentIds.has(t.name)) continue;
+        const tmplRe = new RegExp(
+          `<template[^>]*id=["']slide-${t.name}["'][^>]*>([\\s\\S]*?)</template>`,
+          "i",
+        );
+        const tmpl = skill.components.match(tmplRe)?.[1] ?? "";
+        const allSlots = new Set([...t.requiredSlots, ...t.optionalSlots]);
+        const phRe = /\{\{\s*([\w:-]+)\s*\}\}/g;
+        let ph: RegExpExecArray | null;
+        while ((ph = phRe.exec(tmpl)) !== null) {
+          const key = ph[1];
+          if (key.startsWith("image:")) continue;
+          // Engine-injected synthetic slots (footer page numbering).
+          if (key === "page-no" || key === "page-total") continue;
+          if (!allSlots.has(key)) {
+            unknownPlaceholders.push(`${t.name}:${key}`);
+          }
+        }
+      }
+      if (unknownPlaceholders.length > 0) {
+        failures.push(`undeclared placeholders in templates: ${unknownPlaceholders.join(", ")}`);
+      }
+
+      if (failures.length === 0) {
+        console.log(
+          `✓ ${name.padEnd(20)} v${fm.version}  ${skill.grammar.slideTypes.length} types · ${skill.grammar.rules.length} rules · ${componentIds.size} components`,
+        );
+      } else {
+        failed++;
+        console.log(`✗ ${name}`);
+        for (const f of failures) console.log(`    - ${f}`);
+      }
+      for (const w of warnings) console.log(`    ⚠ ${w}`);
+    } catch (e: any) {
+      failed++;
+      console.log(`✗ ${name}  load error: ${e.message}`);
+    }
+  }
+
+  console.log(`\n${skills.length - failed}/${skills.length} skills validated`);
+  if (failed > 0) process.exit(1);
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Strip CSS /* *​/ and HTML <!-- --> comments so checks see only rendered content. */
+function stripComments(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/<!--[\s\S]*?-->/g, "");
+}
+
+function collectDirectiveSlots(tmpl: string): Set<string> {
+  const slots = new Set<string>();
+  const re = /\{\{\s*@(?:table|list|chart|gradient-bg|scrim|placeholder)\s+([^{}]+?)\s*\}\}/g;
+  const argRe = /([a-zA-Z][\w-]*)=([^\s]+)/g;
+  // arg names whose value is a slot reference (not a literal).
+  const slotRefArgs = new Set([
+    "rows", "cols", "cells", "slot", "data", "labels",
+    "highlight", "preset", "xLabel", "yLabel",
+    "compareData", "compareLabel", "primaryLabel",
+    "title", "unit", "variant", "pins", "name",
+  ]);
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(tmpl)) !== null) {
+    let a: RegExpExecArray | null;
+    while ((a = argRe.exec(m[1])) !== null) {
+      if (slotRefArgs.has(a[1])) slots.add(a[2]);
+    }
+  }
+  return slots;
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

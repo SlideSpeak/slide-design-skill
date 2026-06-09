@@ -117,6 +117,13 @@ export function baseSlideCss(_tokens: Tokens): string {
 }
 /* a card/cell that grows to fill its grid or flex track top-to-bottom */
 .flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
 /* the body inside a filling card: a full-height column that can distribute its
    own rows (center a sparse card, or space-between a header+content card) */
 .flow-fill-body {

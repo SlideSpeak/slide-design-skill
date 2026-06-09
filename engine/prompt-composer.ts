@@ -79,6 +79,7 @@ COMPOSITION RULES (hard constraints)
 ${rules}
 ${varietySection}
 ${densityPromptBlock()}
+${fillFrameBlock()}
 ${bgSection}
 GROUND-TRUTH FIDELITY (hard constraints)
 Before writing any value, decide whether it is INVENTED or GROUND-TRUTH.
@@ -107,6 +108,21 @@ Constraints:
 - Image subjects describe content, not company names.
 - Compose for ${args.slideCount} slides exactly; first must be cover, last must be closing if those types exist.
 - Return JSON ONLY, no prose, no markdown fences.`;
+}
+
+/**
+ * FILL THE FRAME — the occupancy contract. The counterpart to density: density
+ * says how much a slide carries, this says the slide must actually fill the
+ * layout it chose. Catches the underfill failure (thin content stretched across
+ * a big layout) that reads as unfinished.
+ */
+function fillFrameBlock(): string {
+  return `
+FILL THE FRAME (every slide carries its weight)
+A slide that leaves a large empty band reads as unfinished, the clearest tell of machine generation. Editorial-density slides may breathe (that space is the design); every balanced or data-dense slide MUST occupy the whole frame with real content, top to bottom.
+- Match how much you write to the layout you choose. If a slide lays out several peer items, give each item enough substance to fill it (a label AND a short supporting line), or use fewer items. A long list of one-word entries leaves big empty cells.
+- Density is a content budget, not a label. If you mark a slide data-dense, actually carry the volume (a real chart, a full table, several supported points). If you only have a single idea, mark it editorial and let it breathe, never half-fill a dense layout.
+- Never strand content at the top with an empty lower half, and never split it to the top and bottom with a hole in the middle.`;
 }
 
 /**

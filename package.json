@@ -10,7 +10,9 @@
     "test:security": "tsx scripts/security-smoke.ts",
     "test:quality": "tsx scripts/quality-lint-smoke.ts",
     "test:deck-plan": "tsx scripts/deck-plan-smoke.ts",
-    "test": "npm run validate && npm run test:image && npm run test:security && npm run test:quality && npm run test:deck-plan",
+    "test:occupancy": "tsx scripts/occupancy-smoke.ts",
+    "test": "npm run validate && npm run test:image && npm run test:security && npm run test:quality && npm run test:deck-plan && npm run test:occupancy",
+    "measure:occupancy": "tsx scripts/measure-occupancy.mts",
     "new-skill": "tsx scripts/new-skill.ts",
     "bake:dotmap": "tsx scripts/bake-dotmap.ts",
     "bake:fidelity": "tsx scripts/bake-fidelity.ts"

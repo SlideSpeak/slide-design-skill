@@ -15,12 +15,39 @@ type City = { name: string; population: number; loc: { coordinates: [number, num
 const cities = require("all-the-cities") as City[];
 const top = [...cities].sort((a, b) => b.population - a.population).slice(0, 220);
 const coords: Record<string, [number, number]> = {};
+const round2 = (n: number): number => Math.round(n * 100) / 100;
 for (const c of top) {
   const key = c.name.toLowerCase();
-  if (!coords[key]) coords[key] = [
-    Math.round(c.loc.coordinates[0] * 100) / 100,
-    Math.round(c.loc.coordinates[1] * 100) / 100,
-  ];
+  if (!coords[key]) coords[key] = [round2(c.loc.coordinates[0]), round2(c.loc.coordinates[1])];
+}
+
+// ── Europe pass: ensure major European cities resolve by their English key ──
+// They fall outside the global top-220 by population (or are stored under a
+// local name), but European route/geo decks need them. Coordinates still come
+// from all-the-cities (real), restricted to a European bounding box and the
+// most-populous match, only the KEY is normalized to the English exonym.
+const EU_ALIASES: Record<string, string[]> = {
+  amsterdam: ["amsterdam"], athens: ["athens", "athína", "athina"],
+  barcelona: ["barcelona"], belgrade: ["belgrade", "beograd"],
+  berlin: ["berlin"], bratislava: ["bratislava"], brussels: ["brussels", "brussel", "bruxelles"],
+  bucharest: ["bucharest", "bucurești", "bucuresti"], budapest: ["budapest"],
+  cologne: ["cologne", "köln", "koln"], copenhagen: ["copenhagen", "københavn", "kobenhavn"],
+  dublin: ["dublin"], frankfurt: ["frankfurt", "frankfurt am main"], geneva: ["geneva", "genève", "geneve"],
+  hamburg: ["hamburg"], helsinki: ["helsinki"], lisbon: ["lisbon", "lisboa"],
+  london: ["london"], lyon: ["lyon"], madrid: ["madrid"], marseille: ["marseille"],
+  milan: ["milan", "milano"], munich: ["munich", "münchen", "munchen"], naples: ["naples", "napoli"],
+  oslo: ["oslo"], paris: ["paris"], prague: ["prague", "praha"], rome: ["rome", "roma"],
+  rotterdam: ["rotterdam"], stockholm: ["stockholm"], turin: ["turin", "torino"],
+  venice: ["venice", "venezia"], vienna: ["vienna", "wien"], warsaw: ["warsaw", "warszawa"],
+  zurich: ["zurich", "zürich"],
+};
+const inEurope = (lon: number, lat: number): boolean =>
+  lon > -12 && lon < 30 && lat > 35 && lat < 62;
+for (const [key, names] of Object.entries(EU_ALIASES)) {
+  const cand = cities
+    .filter((c) => names.includes(c.name.toLowerCase()) && inEurope(c.loc.coordinates[0], c.loc.coordinates[1]))
+    .sort((a, b) => b.population - a.population)[0];
+  if (cand) coords[key] = [round2(cand.loc.coordinates[0]), round2(cand.loc.coordinates[1])];
 }
 
 // ── Icons: curated business/deck subset from lucide-static (vetted paths) ──

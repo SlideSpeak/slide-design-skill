@@ -1316,6 +1316,44 @@ const GRADIENT_PRESETS: Record<string, GradientPreset> = {
       { cx: 0.2, cy: 0.4, r: 0.22, color: "#141A26" },
     ],
   },
+  // Deep-blue night-train atmospheres with a warm brass pocket — on-brand
+  // fallbacks for nocturnal bleed decks when no FAL photograph is supplied.
+  night: {
+    base: "#0A0E16",
+    blobs: [
+      { cx: 0.72, cy: 0.7, r: 0.36, color: "#16213B" },
+      { cx: 0.85, cy: 0.82, r: 0.2, color: "#C6A875" },
+      { cx: 0.3, cy: 0.3, r: 0.3, color: "#11192A" },
+      { cx: 0.55, cy: 0.55, r: 0.18, color: "#1B2A45" },
+    ],
+  },
+  dusk: {
+    base: "#0C1018",
+    blobs: [
+      { cx: 0.25, cy: 0.4, r: 0.34, color: "#1B2A45" },
+      { cx: 0.8, cy: 0.3, r: 0.26, color: "#2A3A5C" },
+      { cx: 0.6, cy: 0.85, r: 0.28, color: "#10151F" },
+      { cx: 0.88, cy: 0.7, r: 0.16, color: "#C6A875" },
+    ],
+  },
+  cabin: {
+    base: "#0E0B08",
+    blobs: [
+      { cx: 0.3, cy: 0.7, r: 0.34, color: "#3A2A18" },
+      { cx: 0.78, cy: 0.4, r: 0.24, color: "#C6A875" },
+      { cx: 0.2, cy: 0.25, r: 0.22, color: "#171008" },
+      { cx: 0.65, cy: 0.8, r: 0.2, color: "#5A3F22" },
+    ],
+  },
+  lounge: {
+    base: "#0A0E16",
+    blobs: [
+      { cx: 0.7, cy: 0.35, r: 0.32, color: "#16213B" },
+      { cx: 0.35, cy: 0.7, r: 0.28, color: "#3A2A18" },
+      { cx: 0.82, cy: 0.78, r: 0.18, color: "#C6A875" },
+      { cx: 0.45, cy: 0.4, r: 0.18, color: "#11192A" },
+    ],
+  },
 };
 
 function renderFallback(node: SlideTreeNode, _ctx: RenderContext): string {

@@ -1,6 +1,7 @@
 import type { Skill } from "./types.ts";
 import { densityPromptBlock } from "./density.ts";
 import { planDeck, deckPlanPromptBlock } from "./deck-plan.ts";
+import { BOXED_FAMILIES, UNBOXED_FAMILIES, VISUAL_FAMILIES } from "./composition-families.ts";
 
 const MAX_BG_PROMPT_CHARS = 600;
 
@@ -80,6 +81,7 @@ ${rules}
 ${varietySection}
 ${densityPromptBlock()}
 ${fillFrameBlock()}
+${contentContractBlock()}
 ${bgSection}
 GROUND-TRUTH FIDELITY (hard constraints)
 Before writing any value, decide whether it is INVENTED or GROUND-TRUTH.
@@ -122,7 +124,24 @@ FILL THE FRAME (every slide carries its weight)
 A slide that leaves a large empty band reads as unfinished, the clearest tell of machine generation. Editorial-density slides may breathe (that space is the design); every balanced or data-dense slide MUST occupy the whole frame with real content, top to bottom.
 - Match how much you write to the layout you choose. If a slide lays out several peer items, give each item enough substance to fill it (a label AND a short supporting line), or use fewer items. A long list of one-word entries leaves big empty cells.
 - Density is a content budget, not a label. If you mark a slide data-dense, actually carry the volume (a real chart, a full table, several supported points). If you only have a single idea, mark it editorial and let it breathe, never half-fill a dense layout.
-- Never strand content at the top with an empty lower half, and never split it to the top and bottom with a hole in the middle.`;
+- Never strand content at the top with an empty lower half, and never split it to the top and bottom with a hole in the middle.
+- The same rule holds INSIDE every card or cell: a card whose own content is pinned to its top and bottom edges with a void between (a number up top, a caption at the bottom, nothing in the middle) is an empty box with a label. Give each card enough substance for its size, or make the card smaller. The render gate measures cell interiors too.`;
+}
+
+/**
+ * CONTENT CONTRACT — what the words must do, the counterpart to the layout
+ * contracts. Layout variety alone does not fix a deck whose copy is topic
+ * labels over paraphrased bullets; this is where the writing earns its keep.
+ */
+function contentContractBlock(): string {
+  return `
+CONTENT CONTRACT (the words carry the deck)
+- TITLES ARE CLAIMS. Every content slide's title is a complete assertion that advances the argument ("The first two weeks decide the relationship"), never a topic label ("Our approach", "Key benefits", "Six principles"). The skim test: read ONLY the titles in order — they must tell the whole story on their own.
+- EVERY DATA SLIDE ENDS WITH THE SO-WHAT. A number, chart or table never just sits there; the slide states the consequence ("…which blocks 40% of planned savings") or the decision it forces. If you cannot say why a figure matters, cut the figure.
+- BODY ADDS, NEVER RESTATES. Body copy under a title brings the mechanism, the evidence, or the consequence — not the title again in synonyms.
+- BREAK PARALLEL MONOTONY. Three or more sibling items that share one grammatical skeleton ("Verb noun phrase" × 4, every item exactly one line) read as a generated checklist. Vary structure and length; let one item carry a number, another a name, another a consequence.
+- SPECIFICS OVER CATEGORIES. "Returns drop when sizing is guesswork" beats "Improved customer experience". If a line could appear in any company's deck, rewrite it with this deck's nouns.
+- THE CLOSE IS AN ASK. The closing slide names a concrete next action (verb + object + when): "Approve the pilot for Q3", not "Thank you" or "Let's talk".`;
 }
 
 /**
@@ -152,6 +171,19 @@ function composeVarietySection(
     .map(([fam, types]) => `- ${fam}: ${types.join(", ")}`)
     .join("\n");
 
+  const boxedHere = BOXED_FAMILIES.filter((f) => byFamily.has(f));
+  const unboxedHere = UNBOXED_FAMILIES.filter((f) => byFamily.has(f));
+  const visualHere = VISUAL_FAMILIES.filter((f) => byFamily.has(f));
+
+  const textureRules = [
+    boxedHere.length && unboxedHere.length
+      ? `- TEXTURE, not just family names: boxed compositions (${boxedHere.join(", ")}) all read as the same surface. Together they may carry at MOST half of the content slides. Break the boxes with unboxed typographic slides (${unboxedHere.join(", ")}) — at least one per ~5 content slides. A statement or a big number set directly on the page, no card around it, is what makes the boxed slides land.`
+      : "",
+    visualHere.length
+      ? `- INTEGRATE imagery into the argument, not only as covers and dividers. Use ${visualHere.join(" / ")} so photographs share slides with structured content (a photo column beside the points, a figure inset in the layout, a stat over an image). A deck that only alternates full-bleed photo ↔ text grid reads as two slides repeated.`
+      : "",
+  ].filter(Boolean).join("\n");
+
   return `
 COMPOSITION VARIETY (hard constraints)
 Each slide type renders as ONE composition family. The same family used over and over is the #1 reason a deck looks machine-made: many differently-named slides that are all "a headline plus N labelled bullet columns" read as one slide repeated. Your slide types group by family as:
@@ -160,7 +192,7 @@ Rules for this ${slideCount}-slide deck:
 - ALTERNATE families as the deck progresses. Never place three slides of the same family in a row.
 - Use no single family more than ${cap} times across the whole deck (the cover and the closing are each used once and are exempt).
 - Span at least ${Math.min(6, families.length)} distinct families overall.
-- Satisfy the narrative by switching the COMPOSITION, not by re-skinning the same list: a process is a flow, two options are a comparison, one figure is a metric-hero, a sequence of dates is a timeline. Reach for a plain card-grid LAST.`;
+${textureRules ? textureRules + "\n" : ""}- Satisfy the narrative by switching the COMPOSITION, not by re-skinning the same list: a process is a flow, two options are a comparison, one figure is a metric-hero, a sequence of dates is a timeline. Reach for a plain card-grid LAST.`;
 }
 
 /**

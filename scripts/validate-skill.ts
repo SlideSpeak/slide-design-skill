@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSkill, listSkills } from "../engine/skill-loader.ts";
-import { COMPOSITION_FAMILIES } from "../engine/composition-families.ts";
+import { defaultChromeCss } from "../engine/token-compiler.ts";
+import { COMPOSITION_FAMILIES, BOXED_FAMILIES, UNBOXED_FAMILIES } from "../engine/composition-families.ts";
 import type { Skill } from "../engine/types.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -46,6 +47,22 @@ function checkFamilyContract(skill: Skill): string[] {
     if (n > cap) {
       fails.push(`family "${fam}" worn by ${n}/${types.length} types (cap ${cap}, ~35%)`);
     }
+  }
+
+  // Texture registers: boxed families all render as one surface; without an
+  // unboxed typographic register the deck is a wall of boxes regardless of how
+  // diversely the families are named.
+  const boxedCount = withFamily.filter((t) => (BOXED_FAMILIES as readonly string[]).includes(t.family!)).length;
+  if (boxedCount > Math.ceil(types.length / 2)) {
+    fails.push(
+      `texture monotony: ${boxedCount}/${types.length} types are boxed (cards-grid/table/matrix; cap ~half)`,
+    );
+  }
+  const unboxedCount = withFamily.filter((t) => (UNBOXED_FAMILIES as readonly string[]).includes(t.family!)).length;
+  if (unboxedCount < 2) {
+    fails.push(
+      `texture monotony: only ${unboxedCount} unboxed typographic types (statement/metric-hero/quote; need ≥ 2)`,
+    );
   }
   return fails;
 }
@@ -162,6 +179,17 @@ async function main() {
       if (visibleChrome.includes("—")) emFiles.push("chrome.css");
       if (emFiles.length > 0) {
         failures.push(`em-dash (—) in ${emFiles.join(", ")} — use commas/periods, not em-dashes`);
+      }
+
+      // Chrome distinctiveness — a skill whose chrome.css is the stock default
+      // look has no visual identity of its own; that shared look was the root
+      // of "all decks look the same". Non-fatal, but loud.
+      const normalize = (s: string) =>
+        s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\s+/g, " ").trim();
+      if (rawChrome && normalize(rawChrome) === normalize(defaultChromeCss())) {
+        warnings.push(
+          "chrome.css is byte-equivalent to the stock default look — author a bespoke chrome for this skill",
+        );
       }
 
       // Composition-family contract (generated skills) — hard gate, opt-in.
@@ -288,7 +316,7 @@ function collectDirectiveSlots(tmpl: string): Set<string> {
     "rows", "cols", "cells", "slot", "data", "labels",
     "highlight", "preset", "xLabel", "yLabel",
     "compareData", "compareLabel", "primaryLabel",
-    "title", "unit", "variant", "pins", "name",
+    "title", "unit", "variant", "pins", "name", "note",
   ]);
   let m: RegExpExecArray | null;
   while ((m = re.exec(tmpl)) !== null) {

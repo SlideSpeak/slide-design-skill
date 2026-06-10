@@ -19,6 +19,8 @@
 | `focus` | three connected priority initiatives | cards-grid | `eyebrow`, `action-title`, `i1-name`, `i1-role`, `i1-body`, `i2-name`, `i2-role`, `i2-body`, `i3-name`, `i3-role`, `i3-body`, `reinforce` | `source`, `section` |
 | `operating-model` | contributor grid + numbered recommendations | cards-grid | `eyebrow`, `action-title`, `contrib-label`, `f1`, `f2`, `f3`, `f4`, `f5`, `f6`, `f7`, `f8`, `recos-label`, `rec1`, `rec2`, `rec3`, `rec4`, `rec5` | `source`, `section` |
 | `roadmap` | four phased columns on a timeline | timeline | `eyebrow`, `action-title`, `p1-no`, `p1-title`, `p1-a`, `p1-b`, `p1-c`, `p1-d`, `p2-no`, `p2-title`, `p2-a`, `p2-b`, `p2-c`, `p2-d`, `p3-no`, `p3-title`, `p3-a`, `p3-b`, `p3-c`, `p3-d`, `p4-no`, `p4-title`, `p4-a`, `p4-b`, `p4-c`, `p4-d` | `source`, `section` |
+| `statement` | one governing assertion that turns the argument, set directly on the page | statement | `eyebrow`, `statement` | `support`, `source`, `section` |
+| `metric-hero` | a single dominant figure carries the slide | metric-hero | `eyebrow`, `action-title`, `metric-value`, `metric-label` | `context-1`, `context-2`, `source`, `section` |
 | `closing` | dark closing statement | closing | `closing-line` | `kicker`, `sub`, `doc-label`, `contact` |
 
 ## Composition Rules

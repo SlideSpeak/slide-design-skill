@@ -424,6 +424,54 @@
 </section>
 </template>
 
+<template id="slide-statement">
+<section class="slide" data-density="editorial">
+  <div class="nk slide-flow">
+    <div class="nk-head flow-head">
+      <div class="nk-mast"><b>BMW Group</b><span class="nk-mbar"><i></i><i></i><i></i></span><span class="muted">Neue Klasse</span></div>
+      <div class="nk-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="nk-stage flow-stage flow-center">
+      <div class="nk-stmt">
+        <span class="nk-mbar tall"><i></i><i></i><i></i></span>
+        <div class="body">
+          <div class="nk-eyebrow">{{eyebrow}}</div>
+          <h2>{{statement}}</h2>
+          <p>{{support}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="nk-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-metric-hero">
+<section class="slide" data-density="editorial">
+  <div class="nk slide-flow">
+    <div class="nk-head flow-head">
+      <div class="nk-mast"><b>BMW Group</b><span class="nk-mbar"><i></i><i></i><i></i></span><span class="muted">Neue Klasse</span></div>
+      <div class="nk-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="nk-stage flow-stage">
+      <div class="nk-eyebrow">{{eyebrow}}</div>
+      <h2 class="nk-title">{{action-title}}</h2>
+      <div class="nk-metric-wrap flow-grow flow-center">
+        <div class="nk-metric">
+          <div class="v">{{metric-value}}</div>
+          <div class="side">
+            <div class="lbl">{{metric-label}}</div>
+            <p>{{context-1}}</p>
+            <p>{{context-2}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nk-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
+  </div>
+</section>
+</template>
+
 <template id="slide-closing">
 <section class="slide dark">
   <div class="nk-close">

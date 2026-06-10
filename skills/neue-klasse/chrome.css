@@ -228,6 +228,23 @@
 .nk-road .ph li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 1.5px; background: var(--color-muted); }
 .nk-road .rail { position: absolute; top: 7px; left: 0; right: 0; height: 1px; background: var(--color-rule); z-index: 0; }
 
+/* ── statement: one governing assertion, unboxed, tricolour as the anchor ── */
+.nk-stmt { display: flex; gap: 48px; align-items: stretch; max-width: 1500px; }
+.nk-stmt .nk-mbar.tall { border-radius: 1px; }
+.nk-stmt .body { display: flex; flex-direction: column; }
+.nk-stmt h2 { font-family: var(--font-header); font-weight: 700; font-size: 66px; line-height: 1.06; letter-spacing: -0.026em; margin: 16px 0 0; }
+.nk-stmt p { font-size: 21px; line-height: 1.5; color: var(--color-muted); max-width: 1060px; margin: 28px 0 0; }
+.nk-stmt p:empty { display: none; }
+
+/* ── metric hero: one dominant number set directly on the page ── */
+.nk-metric-wrap { display: flex; justify-content: center; align-items: center; }
+.nk-metric { display: flex; align-items: center; gap: 64px; }
+.nk-metric .v { font-family: var(--font-header); font-weight: 700; font-size: 216px; line-height: 0.92; letter-spacing: -0.045em; color: var(--color-signal); font-variant-numeric: tabular-nums; }
+.nk-metric .side { border-left: 1px solid var(--color-rule); padding-left: 56px; display: flex; flex-direction: column; gap: 14px; max-width: 620px; }
+.nk-metric .side .lbl { font-family: var(--font-header); font-weight: 700; font-size: 26px; line-height: 1.15; }
+.nk-metric .side p { font-size: 17.5px; line-height: 1.5; color: var(--color-muted); margin: 0; }
+.nk-metric .side p:empty { display: none; }
+
 /* ── closing ── */
 .nk-close { display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
 .nk-close .top { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; }

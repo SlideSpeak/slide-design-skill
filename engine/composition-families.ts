@@ -18,6 +18,7 @@ export const COMPOSITION_FAMILIES = [
   "timeline", // events along an axis of time
   "matrix", // a 2-axis grid / quadrant / framework
   "image-spread", // a photograph or visual is the protagonist
+  "split-visual", // imagery and structured content share the slide (photo column, inset figure, stat over image)
   "cards-grid", // N peer items in a grid or column list (the default trap)
   "table", // a dense tabular dataset
   "closing", // the close / CTA / ask
@@ -38,6 +39,7 @@ export const FAMILY_INTENT: Record<CompositionFamily, string> = {
   timeline: "events arranged along an axis of time",
   matrix: "a two-axis grid, quadrant, or framework",
   "image-spread": "a photograph or visual is the protagonist",
+  "split-visual": "imagery integrated INTO a structured layout: a photo column beside the argument, an inset figure, a stat set over an image",
   "cards-grid": "N peer items in a grid or list (use sparingly)",
   table: "a dense tabular dataset",
   closing: "the close, CTA, or ask",
@@ -45,6 +47,16 @@ export const FAMILY_INTENT: Record<CompositionFamily, string> = {
 
 /** The family every new generation over-uses; capped hardest downstream. */
 export const DEFAULT_TRAP_FAMILY: CompositionFamily = "cards-grid";
+
+/**
+ * Perceptual registers — the axis the eye actually reads. A deck whose content
+ * slides are all BOXED surfaces (cards, tables, frameworks) reads as one
+ * texture regardless of how diversely the families are named; unboxed
+ * typographic slides and integrated visuals are what break the texture.
+ */
+export const BOXED_FAMILIES: readonly CompositionFamily[] = ["cards-grid", "table", "matrix"];
+export const UNBOXED_FAMILIES: readonly CompositionFamily[] = ["statement", "metric-hero", "quote"];
+export const VISUAL_FAMILIES: readonly CompositionFamily[] = ["image-spread", "split-visual"];
 
 export function isCompositionFamily(v: unknown): v is CompositionFamily {
   return typeof v === "string" && FAMILY_SET.has(v);

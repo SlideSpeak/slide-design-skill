@@ -1,6 +1,7 @@
 import type { Skill, SlideTreeNode } from "./types.ts";
 import { normalizeDensity } from "./density.ts";
 import { lintSlideTree } from "./quality-lint.ts";
+import { BOXED_FAMILIES, UNBOXED_FAMILIES } from "./composition-families.ts";
 
 export interface ValidationResult {
   ok: boolean;
@@ -147,6 +148,28 @@ function checkCompositionVariety(
     emit(
       `Composition monotony: only ${usedDistinct} distinct families across ${seq.length} slides (expected ≥ ${floor}).`,
     );
+  }
+
+  // Texture: boxed families (cards, tables, frameworks) all read as the same
+  // surface no matter how diversely they are named; unboxed typographic slides
+  // are what break the texture. Only enforced when the grammar actually offers
+  // an unboxed register, so legacy text-only grammars are not punished.
+  const BOXED = new Set<string>(BOXED_FAMILIES);
+  const UNBOXED = new Set<string>(UNBOXED_FAMILIES);
+  const grammarOffersUnboxed = [...distinctFamilies].some((f) => UNBOXED.has(f));
+  const content = seq.filter((f) => !EXEMPT.has(f));
+  if (grammarOffersUnboxed && content.length >= 5) {
+    const boxedCount = content.filter((f) => BOXED.has(f)).length;
+    if (boxedCount > Math.ceil(content.length / 2)) {
+      emit(
+        `Texture monotony: ${boxedCount}/${content.length} content slides are boxed compositions (cards-grid/table/matrix; cap ~half). Swap some for unboxed typographic or visual compositions.`,
+      );
+    }
+    if (!content.some((f) => UNBOXED.has(f))) {
+      emit(
+        `Texture monotony: no unboxed typographic slide (statement, metric-hero, quote) across ${content.length} content slides. At least one per ~5 slides breaks the boxed texture.`,
+      );
+    }
   }
 
   return { errors, warnings };

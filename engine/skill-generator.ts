@@ -178,6 +178,10 @@ The monotony failure we are fixing: a deck whose every slide is a headline + N l
 - Your slide types MUST span a REPERTOIRE of at least 6 distinct families across the grammar.
 - NO single family may be worn by more than ~35% of your slide types. \`${DEFAULT_TRAP_FAMILY}\` is the default trap — reach for it LAST, not first. Most enumerations are better as a \`flow-diagram\`, \`comparison\`, \`timeline\`, \`metric-hero\`, or \`statement\`.
 - Pick the family from what the CONTENT actually is: a process is a \`flow-diagram\` (not three cards), two options are a \`comparison\` (not a 2-col grid of bullets), one key figure is a \`metric-hero\` (not a card), a sequence of dates is a \`timeline\`.
+- TEXTURE registers, beyond family names. The eye reads three registers: BOXED surfaces (cards-grid, table, matrix — they all read as one texture regardless of name), UNBOXED typography (statement, metric-hero, quote — type set directly on the page, no card around it), and VISUAL (image-spread, split-visual). The boxed families together may cover at most HALF of your slide types; include at least 2 unboxed types. A deck with no unboxed slide reads as a wall of boxes.
+- INTEGRATED imagery, not only bleeds. Unless the brief is strictly data/text, include at least one \`split-visual\` type where a photograph shares the slide with structured content: a photo column beside the argument (grid with one image cell, \`object-fit: cover\`, optionally text on the image under a {{@scrim}}), a figure inset in the layout, or a hero stat set over an image region. Decks that only alternate full-bleed photo ↔ text grid read as two slides repeated — split-visual is the middle register that breaks that rhythm.
+
+Charts can carry their own takeaway: \`{{@chart type=bar data=... note=<slot>}}\` renders the slot top-right on the chart in the accent colour — use it so a data slide states its so-what ON the exhibit.
 
 Derive the slide types from the BRIEF and the deck-kind it implies — do NOT reach for a fixed skeleton. A pitch, a research report, a workshop, a product launch and an investor update each need a different set of slide types, in a different order, with different anchors. Invent the set the brief actually calls for (minimum 5). The cover is the only always-required slide. Use directives where they fit: {{@chart}} for trends/comparisons, {{@list}} for enumerations (items separated by |), {{@table}} for matrices, {{@gradient-bg}} for bleed backgrounds.
 
@@ -194,7 +198,7 @@ Derive the slide types from the BRIEF and the deck-kind it implies — do NOT re
 - If a point genuinely has little to say, make it an editorial-density slide (one line, deliberate space), never a half-filled grid.
 - These utilities carry NO look (no color, border, gap, padding) — you still set those in chrome.css. They only do the flex/grid height mechanics.
 - FAILURES: a headline with a short \`{{@list}}\` under it and no growable stage (floats); a full-height grid of thin cells (underfills); \`flow-fill\` + \`flow-between\` on a card that holds only a number, a title and one line (the line drops to the bottom and the card's middle is a void — this is the single most common underfill, do NOT do it). Wrap and size deliberately.
-- MANDATORY occupancy gate: prose alone does not guarantee a filled deck. After you render, you MUST run \`npx tsx scripts/measure-occupancy.mts <rendered-deck.html>\` and FIX every slide it reports as UNDERFILL (re-template or re-author that slide, then re-measure) until every slide passes. A deck with any UNDERFILL slide is not finished.
+- MANDATORY occupancy gate: prose alone does not guarantee a filled deck. After you render, you MUST run \`npx tsx scripts/measure-occupancy.mts <rendered-deck.html>\` and FIX every slide it reports as UNDERFILL or CELL-UNDERFILL (re-template or re-author that slide, then re-measure) until every slide passes. The gate also measures INSIDE each card: a cell whose own content leaves a big interior void, or a large card carrying only a word, fails even when the page-level scan passes. A deck with any flagged slide is not finished.
 
 Available CSS variables: \`--color-page\`, \`--color-card\`, \`--color-ink\`, \`--color-signal\`, \`--color-subtle\`, \`--color-muted\`, \`--color-rule\`, \`--font-header\`, \`--font-body\`, \`--font-data\`, \`--elevation-card\`. Bleed templates use \`<section class="slide slide-NAME slide-bleed">\` with an inline gradient background OR \`{{@gradient-bg bgSlot=bg-image}}\` for FAL-rendered backgrounds; content templates use \`<section class="slide slide-NAME"><div class="slide-flow">...</div></section>\`.
 
@@ -247,6 +251,7 @@ VALIDATOR CONSTRAINTS (your output must pass)
 - tokens.page must be exactly 1920×1080.
 - ≥ 5 slide types, ≥ 3 composition rules.
 - Every slide type declares a known \`family\` (one of: ${COMPOSITION_FAMILIES.join(", ")}); the grammar spans ≥ 6 distinct families and no family exceeds ~35% of types.
+- Boxed families (cards-grid, table, matrix) together cover at most half the types; at least 2 types are unboxed (statement, metric-hero, quote).
 - Non-bleed content templates use the bounded-island utilities (a \`flow-stage\` or \`flow-grid-fill\`) so content fills the slide.
 - Every grammar slide-type must have a matching \`<template id="slide-NAME">\`.
 - Every required slot must appear as \`{{slot}}\` (or be consumed by a \`{{@directive arg=slot ...}}\`) inside its template.

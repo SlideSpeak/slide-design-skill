@@ -164,17 +164,36 @@ function article(word: string): string {
 }
 
 const REGISTER_GUIDANCE: Record<CopyRegister, string> = {
-  formal: "measured, precise, evidence-first; no hype words.",
-  punchy: "short, confident lines; one idea per slide; verbs over adjectives.",
-  technical: "exact terms, defined acronyms, no marketing gloss.",
-  warm: "human, narrative, concrete detail over abstraction.",
-  plain: "clear and direct; plain words, no filler.",
+  formal:
+    "measured, precise, evidence-first. Lead bullets with the number, date or fact; ban intensifiers (very, significant, strong, robust); say 'drops 18%' never 'improves substantially'.",
+  punchy:
+    "short, confident lines, 12 words or fewer; one idea per slide; verbs over adjectives; cut every qualifier (really, quite, key, comprehensive).",
+  technical:
+    "exact terms, acronyms defined at first use, numbers carry units; no marketing adjectives, the spec is the persuasion.",
+  warm:
+    "human and concrete: people do things (no passive voice), sensory specifics over abstraction, short sentences that sound spoken.",
+  plain: "clear and direct; plain words, no filler, no jargon; say the thing.",
+};
+
+// The slide-sequence shape per presentation type. Injected so the deck has a
+// PLOT, not just varied layouts: without it a deck can be four problem slides
+// then four solution slides and still pass every structural gate.
+const ARC_GUIDANCE: Record<PresentationType, string> = {
+  pitch: "problem → why now → solution → proof it works → business/economics → the ask",
+  report: "answer first (the conclusion up front) → evidence → implications → recommended next steps",
+  teaching: "why this matters → core concept → worked example → practice/application → recap",
+  editorial: "hook → tension → development → the turn → resolution",
+  keynote: "status quo → the shift underway → vision → what we built → proof → call to action",
+  general: "opening claim → why it matters now → the core idea → support → action",
 };
 
 const APPETITE_GUIDANCE: Record<AssetAppetite, string> = {
-  "image-led": "lean on full-bleed imagery and type-on-image; let pictures carry slides.",
-  "data-led": "lean on charts, tables and structured exhibits; minimize decorative imagery.",
-  "balanced": "mix supporting imagery with structured layouts as the content dictates.",
+  "image-led":
+    "let pictures carry slides — full-bleed spreads AND integrated visuals. At least a third of content slides should carry imagery, and not only as bleeds: put a photo column beside an argument, inset a figure into a structured layout, set a stat over an image. Bleed ↔ text-grid alternation alone reads as two slides repeated.",
+  "data-led":
+    "lean on real charts, tables and structured exhibits; every key claim that has data behind it gets a chart or table, not a bullet list. Minimize decorative imagery.",
+  "balanced":
+    "mix supporting imagery with structured layouts as the content dictates; include at least one slide where a visual shares the layout with structured content.",
 };
 
 export function deckPlanPromptBlock(plan: DeckPlan): string {
@@ -185,6 +204,7 @@ export function deckPlanPromptBlock(plan: DeckPlan): string {
   return `
 DECK PLAN (derived from this brief — author to it)
 This is not a generic deck. It is ${article(read.presentationType)} ${read.presentationType} for ${article(read.audience)} ${read.audience} audience.
+- Narrative arc: ${ARC_GUIDANCE[read.presentationType]}. The deck progresses through this shape; it never circles one beat for half the slides.
 - Copy register: ${read.register} — ${REGISTER_GUIDANCE[read.register]}
 - Asset appetite: ${read.assetAppetite} — ${APPETITE_GUIDANCE[read.assetAppetite]}
 - Density rhythm (suggested per-slide density, in order): ${rhythm}

@@ -63,6 +63,30 @@ const PLACEHOLDER_NAMES = [
 
 const STEP_LABEL_RE = /^\s*(stage|phase|step)\s*\d+\b/i;
 
+// Headline-carrying slots — where the assertion-not-label rule applies.
+const HEADLINE_SLOTS = new Set(["headline", "action-title", "statement"]);
+
+// Blatant topic-label headlines (deck-template residue, not an argument).
+const TOPIC_LABEL_RE =
+  /^\s*(agenda|overview|introduction|background|summary|about us|our (team|mission|vision|values|story)|the (team|problem|solution|market|opportunity)|key (takeaways?|benefits?|features?|findings?)|next steps?|thank you|appendix|q\s?&\s?a)\s*$/i;
+
+// Words that signal a clause is being asserted, not just named.
+const VERB_SIGNALS = new Set([
+  "is", "are", "was", "were", "be", "been", "has", "have", "had", "do", "does",
+  "will", "would", "can", "cannot", "could", "should", "must", "need", "needs",
+  "make", "makes", "made", "decide", "decides", "drive", "drives", "create",
+  "creates", "become", "becomes", "require", "requires", "mean", "means",
+  "win", "wins", "fail", "fails", "grow", "grows", "cost", "costs", "feel",
+  "feels", "start", "starts", "begin", "begins", "deliver", "delivers",
+  "deserve", "deserves", "belong", "belongs", "matter", "matters", "depend",
+  "depends", "change", "changes", "build", "builds", "buy", "buys", "choose",
+  "chooses", "keep", "keeps", "stay", "stays", "turn", "turns", "let", "lets",
+]);
+
+// Generic closing lines — a close with no concrete ask.
+const GENERIC_CLOSING_RE =
+  /^\s*(thank you!?|thanks!?|let'?s talk!?|get in touch!?|contact us!?|questions\??|any questions\??|reach out!?)\s*$/i;
+
 // Precise-looking metric numbers: percentages, multipliers, currency,
 // k/M/B-suffixed, and grouped thousands. Bare integers (years, counts) are
 // intentionally NOT matched — they are rarely the "fake spec aesthetic" tell.
@@ -148,6 +172,24 @@ export function lintSlideTree(
         });
       }
 
+      // Topic-label headlines: a title that names a topic instead of asserting
+      // a claim. Blatant labels always flag; short verb-less noun phrases flag
+      // conservatively (4 words or fewer, no verb signal, no sentence period).
+      if (HEADLINE_SLOTS.has(slot)) {
+        const words = value.trim().toLowerCase().replace(/[^a-z0-9\s'-]/g, "").split(/\s+/).filter(Boolean);
+        const hasVerb = words.some((w) => VERB_SIGNALS.has(w));
+        const blatant = TOPIC_LABEL_RE.test(value);
+        if (blatant || (words.length > 0 && words.length <= 4 && !hasVerb && !/[.!?]\s*$/.test(value.trim()))) {
+          findings.push({
+            rule: "topic-label-headline",
+            severity: "warn",
+            slideIndex,
+            slot,
+            message: `Topic label in "${slot}": "${value.trim()}". Titles are claims that carry the argument ("X decides Y"), never labels.`,
+          });
+        }
+      }
+
       // Fake-precise numbers.
       if (!opts.illustrative) {
         const flagged = collectFakeNumbers(value, userPrompt);
@@ -162,7 +204,81 @@ export function lintSlideTree(
         }
       }
     }
+
+    // Uniform bullets: 3+ parallel items in one slot family opening with the
+    // same word reads as a checkbox list, not arguments.
+    const families = new Map<string, string[]>();
+    for (const [slot, value] of visibleSlots(slide)) {
+      if (!/\d/.test(slot)) continue;
+      const stem = slot.replace(/\d+/g, "#");
+      const list = families.get(stem) ?? [];
+      list.push(value);
+      families.set(stem, list);
+    }
+    for (const [stem, values] of families) {
+      if (values.length < 3) continue;
+      const counts = new Map<string, number>();
+      for (const v of values) {
+        const first = v.trim().toLowerCase().match(/^[a-z0-9'-]+/i)?.[0];
+        if (first) counts.set(first, (counts.get(first) ?? 0) + 1);
+      }
+      const worst = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+      if (worst && worst[1] >= 3) {
+        findings.push({
+          rule: "uniform-bullets",
+          severity: "warn",
+          slideIndex,
+          slot: stem,
+          message: `${worst[1]} parallel "${stem}" items all open with "${worst[0]}". Vary the grammatical structure; each item carries a different kind of point.`,
+        });
+      }
+    }
+
+    // Body restating the title in synonyms adds nothing.
+    const slots = slide.slots ?? {};
+    const head = [...HEADLINE_SLOTS]
+      .map((k) => slots[k])
+      .find((v): v is string => typeof v === "string" && v.length > 0);
+    if (head) {
+      const headWords = contentWords(head);
+      if (headWords.size >= 3) {
+        for (const bk of ["body", "intro", "lead", "sub", "subtitle"]) {
+          const bv = slots[bk];
+          if (typeof bv !== "string" || bv.length === 0) continue;
+          const bodyWords = contentWords(bv);
+          let overlap = 0;
+          for (const w of headWords) if (bodyWords.has(w)) overlap++;
+          if (overlap / headWords.size >= 0.6) {
+            findings.push({
+              rule: "body-restates-title",
+              severity: "warn",
+              slideIndex,
+              slot: bk,
+              message: `"${bk}" largely restates the headline. Body copy must ADD something: the mechanism, the evidence, or the consequence.`,
+            });
+            break;
+          }
+        }
+      }
+    }
   });
+
+  // Deck-level: generic closing with no concrete ask.
+  if (slides.length > 1) {
+    const last = slides[slides.length - 1];
+    for (const [slot, value] of visibleSlots(last)) {
+      if (GENERIC_CLOSING_RE.test(value)) {
+        findings.push({
+          rule: "generic-closing",
+          severity: "warn",
+          slideIndex: slides.length - 1,
+          slot,
+          message: `Generic closing "${value.trim()}". Close with a concrete next action (verb + object + when), not a pleasantry.`,
+        });
+        break;
+      }
+    }
+  }
 
   // Deck-level: eyebrow overuse.
   const n = slides.length;
@@ -197,6 +313,22 @@ export function lintSlideTree(
   }
 
   return { findings };
+}
+
+const STOP_WORDS = new Set([
+  "the", "and", "with", "that", "this", "from", "your", "their", "they",
+  "have", "has", "are", "is", "was", "were", "for", "not", "but", "you",
+  "our", "its", "into", "than", "then", "them", "what", "when", "how",
+  "every", "each", "all", "more", "most", "very", "will", "would", "can",
+]);
+
+/** Lowercased content words (>3 chars, minus stopwords) for overlap checks. */
+function contentWords(s: string): Set<string> {
+  const out = new Set<string>();
+  for (const w of s.toLowerCase().replace(/[^a-z0-9\s'-]/g, " ").split(/\s+/)) {
+    if (w.length > 3 && !STOP_WORDS.has(w)) out.add(w);
+  }
+  return out;
 }
 
 /** Return the precise-number tokens in `value` that do NOT appear in `userPrompt`. */

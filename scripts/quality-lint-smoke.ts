@@ -183,5 +183,60 @@ function rulesOn(findings: LintFinding[], slideIndex: number): string[] {
   check("validate stays ok in non-strict", result.ok === true);
 }
 
+// 20. topic-label headline flagged; assertion headline passes
+{
+  const { findings } = lintSlideTree([
+    slide("a", { headline: "Key benefits" }),
+    slide("b", { "action-title": "Our team" }),
+    slide("c", { headline: "The first two weeks decide the brand relationship." }),
+    slide("d", { headline: "Returns drop when sizing is guesswork" }),
+  ]);
+  const flagged = findings.filter((f) => f.rule === "topic-label-headline");
+  check("topic labels flagged", flagged.length === 2, JSON.stringify(flagged));
+  check("assertion headlines pass", !flagged.some((f) => f.slideIndex >= 2), JSON.stringify(flagged));
+}
+
+// 21. uniform bullets: 3+ items opening with the same word
+{
+  const { findings } = lintSlideTree([
+    slide("plan", {
+      "item-1": "Improve visibility across plants",
+      "item-2": "Improve supplier response times",
+      "item-3": "Improve reporting cadence",
+    }),
+    slide("varied", {
+      "item-1": "Returns drop 18% in the pilot",
+      "item-2": "One shared catalogue replaces eleven",
+      "item-3": "Plant managers see the same numbers",
+    }),
+  ]);
+  const flagged = findings.filter((f) => f.rule === "uniform-bullets");
+  check("uniform bullets flagged", flagged.length === 1 && flagged[0].slideIndex === 0, JSON.stringify(flagged));
+}
+
+// 22. body restating the title flagged; additive body passes
+{
+  const { findings } = lintSlideTree([
+    slide("a", {
+      headline: "Quiet cabins are composed for genuine rest",
+      body: "The cabins are quiet and composed so guests genuinely rest.",
+    }),
+    slide("b", {
+      headline: "Quiet cabins are composed for genuine rest",
+      body: "Triple-glazed windows and decoupled bogies cut interior noise to 24 dB at speed.",
+    }),
+  ]);
+  const flagged = findings.filter((f) => f.rule === "body-restates-title");
+  check("restating body flagged", flagged.length === 1 && flagged[0].slideIndex === 0, JSON.stringify(flagged));
+}
+
+// 23. generic closing flagged; concrete ask passes
+{
+  const generic = lintSlideTree([slide("cover", { headline: "x is y" }), slide("closing", { "call-to-action": "Thank you" })]);
+  const concrete = lintSlideTree([slide("cover", { headline: "x is y" }), slide("closing", { "call-to-action": "Approve the pilot for Q3" })]);
+  check("generic closing flagged", has(generic.findings, "generic-closing"));
+  check("concrete ask passes", !has(concrete.findings, "generic-closing"));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

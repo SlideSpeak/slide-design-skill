@@ -99,26 +99,26 @@
 .ox-o .tx .t { font-family: var(--font-header); font-weight: 600; font-size: 17px; line-height: 1.2; }
 .ox-o .tx .d { font-size: 13.5px; line-height: 1.4; color: var(--color-muted); }
 
-/* ── scope: 5 connected workstream pillars ── */
-.ox-scope { grid-template-columns: repeat(5, 1fr); gap: 0; }
-.ox-scope .ws { padding: 0 22px; border-right: 1px solid var(--color-rule); position: relative; display: flex; flex-direction: column; }
-.ox-scope .ws:first-child { padding-left: 0; }
-.ox-scope .ws:last-child { border-right: none; padding-right: 0; }
-.ox-scope .ws .node { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; }
+/* ── scope: 5 workstreams as a full-height ledger (equal rows, centred) ── */
+.ox-scope { display: grid; grid-auto-rows: 1fr; gap: 0; }
+.ox-scope .rail { display: none; }
+.ox-scope .ws { display: grid; grid-template-columns: 180px 460px 1fr; column-gap: 40px; align-items: center; border-top: 1px solid var(--color-rule); position: static; padding: 0; }
+.ox-scope .ws:first-child { border-top: none; }
+.ox-scope .ws .node { display: flex; align-items: center; gap: 11px; }
 .ox-scope .ws .dot { width: 13px; height: 13px; background: var(--color-signal); flex: 0 0 auto; }
 .ox-scope .ws .wn { font-family: var(--font-data); font-weight: 600; font-size: 12.5px; color: var(--color-muted); letter-spacing: 0.03em; }
-.ox-scope .ws h4 { font-family: var(--font-header); font-weight: 600; font-size: 21px; line-height: 1.12; margin-bottom: 12px; }
-.ox-scope .ws p { font-size: 14.5px; line-height: 1.45; color: var(--color-muted); margin: 0; }
-.ox-scope .rail { position: absolute; top: 6px; left: 0; right: 0; height: 1px; background: var(--color-rule); z-index: 0; }
+.ox-scope .ws h4 { font-family: var(--font-header); font-weight: 600; font-size: 23px; line-height: 1.12; margin: 0; }
+.ox-scope .ws p { font-size: 16.5px; line-height: 1.45; color: var(--color-muted); margin: 0; max-width: 720px; }
 
 /* ── workstream / performance: split layout ── */
 .ox-split { display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 44px; align-items: stretch; }
 .ox-split.flip { grid-template-columns: 0.98fr 1.02fr; }
-.ox-acts { display: flex; flex-direction: column; justify-content: center; }
-.ox-acts .dir-list { display: flex; flex-direction: column; gap: 0; }
-.ox-acts .dir-list > div { font-size: 17px; line-height: 1.35; color: var(--color-ink); padding: 14px 0 14px 26px; position: relative; border-top: 1px solid var(--color-rule); }
+.ox-acts { display: flex; flex-direction: column; }
+/* rows are equal-height tracks filling the column; content centres per track */
+.ox-acts .dir-list { display: grid; grid-auto-rows: 1fr; gap: 0; flex: 1; }
+.ox-acts .dir-list > div { font-size: 17px; line-height: 1.35; color: var(--color-ink); padding: 14px 0 14px 26px; position: relative; border-top: 1px solid var(--color-rule); display: flex; align-items: center; }
 .ox-acts .dir-list > div:first-child { border-top: none; }
-.ox-acts .dir-list > div::before { content: ""; position: absolute; left: 0; top: 21px; width: 11px; height: 2px; background: var(--color-signal); }
+.ox-acts .dir-list > div::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 11px; height: 2px; background: var(--color-signal); }
 .ox-media { display: flex; flex-direction: column; }
 .ox-media .ph { flex: 1; min-height: 0; }
 
@@ -142,8 +142,8 @@
 .ox-cmp .col .ch .tag { font-family: var(--font-data); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; padding: 3px 8px; }
 .ox-cmp .col.bad .ch .tag { color: var(--sev-high); border: 1px solid var(--sev-high); }
 .ox-cmp .col.good .ch .tag { color: var(--color-ink); background: var(--color-subtle); }
-.ox-cmp .col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; flex: 1; }
-.ox-cmp .col li { font-size: 16px; line-height: 1.32; padding: 12px 0; display: flex; gap: 12px; align-items: flex-start; }
+.ox-cmp .col ul { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-rows: 1fr; gap: 0; flex: 1; }
+.ox-cmp .col li { font-size: 16px; line-height: 1.32; padding: 12px 0; display: flex; gap: 12px; align-items: center; }
 .ox-cmp .col.bad li { border-top: 1px solid var(--color-rule); color: var(--color-muted); }
 .ox-cmp .col.good li { border-top: 1px solid rgba(255,255,255,0.16); }
 .ox-cmp .col li:first-child { border-top: none; }
@@ -176,8 +176,9 @@
 .ox-tier { display: grid; grid-template-columns: 196px 1fr; gap: 18px; align-items: stretch; }
 .ox-tier .tl { align-self: center; font-family: var(--font-header); font-weight: 600; font-size: 17px; line-height: 1.18; color: var(--color-ink); }
 .ox-tier .tl small { display: block; font-family: var(--font-data); font-weight: 500; font-size: 12px; color: var(--color-muted); margin-top: 3px; }
-.ox-tier .boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.ox-tier .bx { background: var(--color-card); border: 1px solid var(--color-rule); border-top: 3px solid var(--color-subtle); padding: 13px 16px; font-size: 14.5px; font-weight: 500; line-height: 1.25; display: flex; align-items: center; min-height: 70px; }
+/* boxes centre as a compact band in their tier; a one-line box stays box-sized */
+.ox-tier .boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-self: center; }
+.ox-tier .bx { background: var(--color-card); border: 1px solid var(--color-rule); border-top: 3px solid var(--color-subtle); padding: 18px 18px; font-size: 16px; font-weight: 500; line-height: 1.3; display: flex; align-items: center; min-height: 70px; }
 .ox-arch-note { flex: 0 0 auto; font-size: 14.5px; color: var(--color-muted); border-top: 1px solid var(--color-rule); padding-top: 14px; }
 
 /* ── governance: hierarchy + cadence ── */
@@ -230,9 +231,9 @@
 .ox-bcol .ch { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-rule); }
 .ox-bcol .ch .nn { font-family: var(--font-data); font-weight: 600; font-size: 13px; color: #fff; background: var(--color-signal); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .ox-bcol .ch h4 { font-family: var(--font-header); font-weight: 600; font-size: 21px; }
-.ox-bcol .dir-list { display: flex; flex-direction: column; gap: 0; }
-.ox-bcol .dir-list > div { font-size: 15.5px; line-height: 1.38; color: var(--color-ink); padding: 12px 0 12px 18px; position: relative; }
-.ox-bcol .dir-list > div::before { content: ""; position: absolute; left: 0; top: 10px; width: 8px; height: 8px; background: var(--color-subtle); }
+.ox-bcol .dir-list { display: grid; grid-auto-rows: 1fr; gap: 0; flex: 1; }
+.ox-bcol .dir-list > div { font-size: 15.5px; line-height: 1.38; color: var(--color-ink); padding: 12px 0 12px 18px; position: relative; display: flex; align-items: center; }
+.ox-bcol .dir-list > div::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; background: var(--color-subtle); }
 
 /* ── decisions: 2-col checklist + deadline band ── */
 .ox-dec { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 0 56px; }

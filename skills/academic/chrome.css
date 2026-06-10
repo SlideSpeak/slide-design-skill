@@ -1,61 +1,74 @@
-/* Chrome (look) for this skill. Emitted after the neutral baseSlideCss.
-   Forked from the legacy shared default — edit freely; it only affects this skill. */
-.slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.01em; }
-.slide h1 { line-height: 1.05; }
-.slide h2 { line-height: 1.1; }
-.slide h3 { line-height: 1.15; }
-.slide h4 { line-height: 1.2; }
+/* academic — bespoke chrome. Tufte-leaning scholarly apparatus: warm parchment
+   ground, serif headings at ease, footnote-grade citations, booktabs tables.
+   The look is the restraint; nothing shouts. */
+
+.slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.005em; }
+.slide h1 { line-height: 1.12; }
+.slide h2 { line-height: 1.16; }
+.slide h3 { line-height: 1.2; }
+.slide h4 { line-height: 1.24; }
+
+/* kicker as a scholarly running head: italic serif, not a tech label */
 .slide .eyebrow {
-  font-family: var(--font-data);
-  font-weight: var(--font-weight-data);
-  font-size: var(--size-body-4);
-  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--size-body-3);
+  color: var(--color-signal);
 }
+
+/* citations read as footnotes: mono, small, hairline rule above */
 .slide .source {
   position: absolute;
-  bottom: 32px;
+  bottom: 30px;
   left: var(--page-safe);
   right: var(--page-safe);
-  font-size: var(--size-body-4);
+  font-family: var(--font-data);
+  font-size: 13px;
   color: var(--color-muted);
   border-top: 1px solid var(--color-rule);
-  padding-top: 8px;
+  padding-top: 10px;
 }
+
 .slide .signal-bar {
-  height: 3px;
+  height: 2px;
   background: var(--color-signal);
 }
+
 .slide-flow {
-  gap: 32px;
-  padding-bottom: 72px;
+  gap: 36px;
+  padding-bottom: 76px;
 }
+
+/* booktabs ruling: strong head rule, light interior, no vertical lines */
 .dir-table {
-  font-size: 20px;
+  font-size: 19px;
 }
 .dir-table thead th {
-  font-family: var(--font-data);
-  font-weight: var(--font-weight-data);
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: var(--size-body-4);
-  color: var(--color-muted);
+  color: var(--color-ink);
   text-align: left;
-  padding: 14px 20px 14px 0;
-  border-bottom: 2px solid var(--color-ink);
+  padding: 12px 22px 12px 0;
+  border-top: 2px solid var(--color-ink);
+  border-bottom: 1px solid var(--color-ink);
 }
 .dir-table tbody th {
   font-family: var(--font-body);
-  font-weight: 600;
+  font-style: italic;
+  font-weight: 400;
   text-align: left;
-  padding: 18px 20px 18px 0;
+  padding: 16px 22px 16px 0;
   border-bottom: 1px solid var(--color-rule);
   vertical-align: top;
-  width: 36%;
+  width: 32%;
 }
 .dir-table tbody td {
-  padding: 18px 20px 18px 0;
+  padding: 16px 22px 16px 0;
   border-bottom: 1px solid var(--color-rule);
   vertical-align: top;
   font-variant-numeric: tabular-nums;
 }
 .dir-table tbody tr:last-child th,
-.dir-table tbody tr:last-child td { border-bottom: none; }
-
+.dir-table tbody tr:last-child td { border-bottom: 2px solid var(--color-ink); }

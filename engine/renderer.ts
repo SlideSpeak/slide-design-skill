@@ -499,16 +499,33 @@ function renderBarChart(
     const y = v >= 0 ? zeroY - barH : zeroY;
     const fill = i === highlight ? accent : base;
     bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${fill}"/>`;
-    bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 12).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="22" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(v, unit, false, dec))}</text>`;
+    bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 12).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(v, unit, false, dec))}</text>`;
     if (labels[i]) {
       bars += renderWrappedLabel(labels[i], x + barW / 2, padT + chartH + 28, barW + gap * 0.85, muted, 17);
     }
   });
 
-  // baseline
-  const axis = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${muted}" stroke-width="1"/>`;
+  // zero baseline carries the chart — strong, not a hairline
+  const axis = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${ink}" stroke-width="2"/>`;
+  const note = renderChartNote(args, slots, w - padR, 24, accent);
 
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${axis}${bars}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${axis}${bars}${note}</svg>`;
+}
+
+/**
+ * Optional takeaway callout on a chart: `note=<slot>` renders the slot's text
+ * top-right in the accent colour — the chart's "so what", on the chart itself.
+ */
+function renderChartNote(
+  args: Record<string, string>,
+  slots: Record<string, string>,
+  x: number,
+  y: number,
+  color: string,
+): string {
+  const note = args.note ? (slots[args.note] ?? "") : "";
+  if (!note) return "";
+  return `<text x="${x}" y="${y}" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="${color}" font-weight="600">${escapeHtml(note)}</text>`;
 }
 
 function renderHBarChart(
@@ -537,10 +554,10 @@ function renderHBarChart(
     const barW = (v / max) * chartW;
     const fill = i === highlight ? accent : base;
     if (labels[i]) {
-      rows += `<text x="${padL - 18}" y="${(y + rowH / 2 + 6).toFixed(1)}" font-family="'Inter Tight', Inter, system-ui, sans-serif" font-size="18" fill="${ink}" text-anchor="end">${escapeHtml(labels[i])}</text>`;
+      rows += `<text x="${padL - 18}" y="${(y + rowH / 2 + 6).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="${ink}" text-anchor="end">${escapeHtml(labels[i])}</text>`;
     }
     rows += `<rect x="${padL}" y="${(y + 10).toFixed(1)}" width="${barW.toFixed(1)}" height="${(rowH - 20).toFixed(1)}" fill="${fill}"/>`;
-    rows += `<text x="${(padL + barW + 10).toFixed(1)}" y="${(y + rowH / 2 + 6).toFixed(1)}" font-family="ui-monospace, monospace" font-size="17" fill="${ink}" font-weight="600">${escapeHtml(formatNum(v, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+    rows += `<text x="${(padL + barW + 10).toFixed(1)}" y="${(y + rowH / 2 + 6).toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="${ink}" font-weight="600">${escapeHtml(formatNum(v, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
   });
 
   return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${rows}</svg>`;
@@ -602,15 +619,15 @@ function renderWaterfallChart(
     // Delta value INSIDE the bar (centered), small + bold + white on color
     if (!s.isTotal && barH > 22) {
       const deltaText = formatNum(s.to - s.from, unit, true, dec);
-      bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y + barH / 2 + 6).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="18" fill="#FFFFFF" text-anchor="middle" font-weight="700">${escapeHtml(deltaText)}</text>`;
+      bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y + barH / 2 + 6).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#FFFFFF" text-anchor="middle" font-weight="700">${escapeHtml(deltaText)}</text>`;
     } else if (!s.isTotal) {
       const deltaText = formatNum(s.to - s.from, unit, true, dec);
-      bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 8).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="17" fill="${neg}" text-anchor="middle" font-weight="600">${escapeHtml(deltaText)}</text>`;
+      bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 8).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="${neg}" text-anchor="middle" font-weight="600">${escapeHtml(deltaText)}</text>`;
     }
     // Running-total value ABOVE the bar — large, ink, this is the "what does it sum to" anchor
     if (s.isTotal) {
       const totalText = formatNum(s.to, unit, false, dec);
-      bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 14).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="26" fill="${ink}" text-anchor="middle" font-weight="700" letter-spacing="-0.01em">${escapeHtml(totalText)}</text>`;
+      bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 14).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="26" fill="${ink}" text-anchor="middle" font-weight="700" letter-spacing="-0.01em">${escapeHtml(totalText)}</text>`;
     }
     if (labels[i]) {
       bars += renderWrappedLabel(labels[i], x + barW / 2, padT + chartH + 24, barW + gap * 0.85, muted, 17);
@@ -623,8 +640,9 @@ function renderWaterfallChart(
     }
   });
 
-  const baseline = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${muted}" stroke-width="1"/>`;
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${baseline}${bars}</svg>`;
+  const baseline = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${ink}" stroke-width="2" stroke-opacity="0.85"/>`;
+  const note = renderChartNote(args, slots, w - padR, 24, accent);
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${baseline}${bars}${note}</svg>`;
 }
 
 // Wrap a label onto up to 2 lines within maxWidth. Uses approximate em-width
@@ -657,7 +675,7 @@ function renderWrappedLabel(
   return safe
     .map(
       (line, idx) =>
-        `<text x="${cx.toFixed(1)}" y="${(topY + idx * (fontSize + 2)).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="${fontSize}" fill="${fill}" text-anchor="middle">${escapeHtml(line)}</text>`,
+        `<text x="${cx.toFixed(1)}" y="${(topY + idx * (fontSize + 2)).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${fontSize}" fill="${fill}" text-anchor="middle">${escapeHtml(line)}</text>`,
     )
     .join("");
 }
@@ -725,7 +743,7 @@ function renderLineChart(
     const primLastY = points[points.length - 1].y;
     const cmpAbove = last.y <= primLastY;
     const cmpLabelY = cmpAbove ? last.y - 13 : last.y + 21;
-    svg += `<text x="${(last.x - 12).toFixed(1)}" y="${cmpLabelY.toFixed(1)}" font-family="ui-monospace, monospace" font-size="14" fill="${muted}" text-anchor="end" font-weight="600">${escapeHtml(formatNum(lastV, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+    svg += `<text x="${(last.x - 12).toFixed(1)}" y="${cmpLabelY.toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="14" fill="${muted}" text-anchor="end" font-weight="600">${escapeHtml(formatNum(lastV, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
   }
   svg += `<path d="${path}" fill="none" stroke="${base}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
   // dots: first, last, peak
@@ -734,10 +752,10 @@ function renderLineChart(
     if (i === 0 || i === points.length - 1 || isPeak) {
       const dotFill = isPeak ? accent : base;
       svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isPeak ? 7 : 5}" fill="${dotFill}"/>`;
-      svg += `<text x="${p.x.toFixed(1)}" y="${(p.y - 14).toFixed(1)}" font-family="ui-monospace, monospace" font-size="16" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(data[i], resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+      svg += `<text x="${p.x.toFixed(1)}" y="${(p.y - 14).toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="16" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(data[i], resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
     }
     if (labels[i]) {
-      svg += `<text x="${p.x.toFixed(1)}" y="${(padT + chartH + 28).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="15" fill="${muted}" text-anchor="middle">${escapeHtml(labels[i])}</text>`;
+      svg += `<text x="${p.x.toFixed(1)}" y="${(padT + chartH + 28).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="${muted}" text-anchor="middle">${escapeHtml(labels[i])}</text>`;
     }
   });
   // legend at top when we have two traces
@@ -745,11 +763,12 @@ function renderLineChart(
     const lx = padL;
     const ly = padT0;
     svg += `<line x1="${lx}" x2="${lx + 24}" y1="${ly}" y2="${ly}" stroke="${base}" stroke-width="3"/>`;
-    svg += `<text x="${lx + 32}" y="${(ly + 5).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="13" fill="${ink}" font-weight="600">${escapeHtml(primaryLabel || "Actual")}</text>`;
+    svg += `<text x="${lx + 32}" y="${(ly + 5).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="13" fill="${ink}" font-weight="600">${escapeHtml(primaryLabel || "Actual")}</text>`;
     const lx2 = lx + 180;
     svg += `<line x1="${lx2}" x2="${lx2 + 24}" y1="${ly}" y2="${ly}" stroke="${muted}" stroke-width="2" stroke-dasharray="6 6"/>`;
-    svg += `<text x="${lx2 + 32}" y="${(ly + 5).toFixed(1)}" font-family="'Inter Tight', system-ui, sans-serif" font-size="13" fill="${muted}" font-weight="500">${escapeHtml(compareLabel || "Benchmark")}</text>`;
+    svg += `<text x="${lx2 + 32}" y="${(ly + 5).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="13" fill="${muted}" font-weight="500">${escapeHtml(compareLabel || "Benchmark")}</text>`;
   }
+  svg += renderChartNote(args, slots, w - padR, padT0 + 5, accent);
   return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${svg}</svg>`;
 }
 
@@ -789,14 +808,14 @@ function renderDots2x2(
   svg += `<line x1="${padL + chartW / 2}" x2="${padL + chartW / 2}" y1="${padT}" y2="${padT + chartH}" stroke="${muted}" stroke-width="1"/>`;
   svg += `<line x1="${padL}" x2="${padL + chartW}" y1="${padT + chartH / 2}" y2="${padT + chartH / 2}" stroke="${muted}" stroke-width="1"/>`;
   // axis labels
-  svg += `<text x="${padL + chartW / 2}" y="${h - 16}" font-family="ui-monospace, monospace" font-size="12" fill="${muted}" text-anchor="middle" letter-spacing="0.04em">${escapeHtml(xLabel)}</text>`;
-  svg += `<text transform="rotate(-90 24 ${padT + chartH / 2})" x="24" y="${padT + chartH / 2}" font-family="ui-monospace, monospace" font-size="12" fill="${muted}" text-anchor="middle" letter-spacing="0.04em">${escapeHtml(yLabel)}</text>`;
+  svg += `<text x="${padL + chartW / 2}" y="${h - 16}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="12" fill="${muted}" text-anchor="middle" letter-spacing="0.04em">${escapeHtml(xLabel)}</text>`;
+  svg += `<text transform="rotate(-90 24 ${padT + chartH / 2})" x="24" y="${padT + chartH / 2}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="12" fill="${muted}" text-anchor="middle" letter-spacing="0.04em">${escapeHtml(yLabel)}</text>`;
   for (const p of points) {
     const cx = padL + (p.x / 100) * chartW;
     const cy = padT + ((100 - p.y) / 100) * chartH;
     const isHi = p.label.toLowerCase() === highlight;
     svg += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${isHi ? 10 : 7}" fill="${isHi ? accent : base}"/>`;
-    svg += `<text x="${(cx + 14).toFixed(1)}" y="${(cy + 4).toFixed(1)}" font-family="Inter, system-ui, sans-serif" font-size="14" fill="${ink}" font-weight="${isHi ? 700 : 500}">${escapeHtml(p.label)}</text>`;
+    svg += `<text x="${(cx + 14).toFixed(1)}" y="${(cy + 4).toFixed(1)}" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="${ink}" font-weight="${isHi ? 700 : 500}">${escapeHtml(p.label)}</text>`;
   }
   return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${svg}</svg>`;
 }

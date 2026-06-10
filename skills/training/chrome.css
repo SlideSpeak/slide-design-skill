@@ -1,61 +1,79 @@
-/* Chrome (look) for this skill. Emitted after the neutral baseSlideCss.
-   Forked from the legacy shared default — edit freely; it only affects this skill. */
-.slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.01em; }
-.slide h1 { line-height: 1.05; }
-.slide h2 { line-height: 1.1; }
-.slide h3 { line-height: 1.15; }
-.slide h4 { line-height: 1.2; }
+/* training — bespoke chrome. Workbook warmth: cream page, teal wayfinding,
+   a left-rule kicker like a margin note, clear lined tables. Built to be
+   followed, not admired. */
+
+.slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.012em; }
+.slide h1 { line-height: 1.1; }
+.slide h2 { line-height: 1.14; }
+.slide h3 { line-height: 1.18; }
+.slide h4 { line-height: 1.22; }
+
+/* margin-note kicker: teal text led by a small teal square marker */
 .slide .eyebrow {
-  font-family: var(--font-data);
-  font-weight: var(--font-weight-data);
-  font-size: var(--size-body-4);
-  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-signal);
 }
+.slide .eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--color-signal);
+  margin-right: 10px;
+}
+
+/* instructional footer: dotted rule, like a worksheet tear-line */
 .slide .source {
   position: absolute;
-  bottom: 32px;
+  bottom: 30px;
   left: var(--page-safe);
   right: var(--page-safe);
-  font-size: var(--size-body-4);
+  font-size: 13px;
   color: var(--color-muted);
-  border-top: 1px solid var(--color-rule);
-  padding-top: 8px;
+  border-top: 1px dotted var(--color-rule);
+  padding-top: 9px;
 }
+
 .slide .signal-bar {
   height: 3px;
   background: var(--color-signal);
+  border-radius: 2px;
 }
+
 .slide-flow {
-  gap: 32px;
-  padding-bottom: 72px;
+  gap: 30px;
+  padding-bottom: 70px;
 }
+
+/* lined workbook table: teal head rule, evenly lined rows */
 .dir-table {
-  font-size: 20px;
+  font-size: 18px;
 }
 .dir-table thead th {
-  font-family: var(--font-data);
-  font-weight: var(--font-weight-data);
-  font-size: var(--size-body-4);
-  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-signal);
   text-align: left;
-  padding: 14px 20px 14px 0;
+  padding: 12px 20px 12px 0;
   border-bottom: 2px solid var(--color-ink);
 }
 .dir-table tbody th {
   font-family: var(--font-body);
   font-weight: 600;
   text-align: left;
-  padding: 18px 20px 18px 0;
+  padding: 15px 20px 15px 0;
   border-bottom: 1px solid var(--color-rule);
   vertical-align: top;
-  width: 36%;
+  width: 30%;
 }
 .dir-table tbody td {
-  padding: 18px 20px 18px 0;
+  padding: 15px 20px 15px 0;
   border-bottom: 1px solid var(--color-rule);
   vertical-align: top;
   font-variant-numeric: tabular-nums;
 }
 .dir-table tbody tr:last-child th,
 .dir-table tbody tr:last-child td { border-bottom: none; }
-

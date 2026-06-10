@@ -238,5 +238,29 @@ function rulesOn(findings: LintFinding[], slideIndex: number): string[] {
   check("concrete ask passes", !has(concrete.findings, "generic-closing"));
 }
 
+// 24. numbered eyebrow flagged; plain eyebrow and non-eyebrow numbers pass
+{
+  const { findings } = lintSlideTree([
+    slide("a", { eyebrow: "06 · How it works" }),
+    slide("b", { eyebrow: "001 / Capabilities" }),
+    slide("c", { eyebrow: "Why this window matters" }),
+    slide("d", { body: "Phase 2 starts in 06/2027 · Berlin" }),
+  ]);
+  const flagged = findings.filter((f) => f.rule === "numbered-eyebrow");
+  check("numbered eyebrows flagged", flagged.length === 2, JSON.stringify(flagged));
+  check("plain eyebrow + body numbers pass", !flagged.some((f) => f.slideIndex >= 2), JSON.stringify(flagged));
+}
+
+// 25. poetic labels flagged; plain labels pass
+{
+  const { findings } = lintSlideTree([
+    slide("a", { label: "Field notes" }),
+    slide("b", { eyebrow: "Quietly in use at" }),
+    slide("c", { label: "Testimonials" }),
+  ]);
+  const flagged = findings.filter((f) => f.rule === "poetic-label");
+  check("poetic labels flagged", flagged.length === 2 && !flagged.some((f) => f.slideIndex === 2), JSON.stringify(flagged));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

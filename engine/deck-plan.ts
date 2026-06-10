@@ -27,11 +27,20 @@ export type CopyRegister = "formal" | "punchy" | "warm" | "technical" | "plain";
 
 export type AssetAppetite = "image-led" | "balanced" | "data-led";
 
+/**
+ * How much layout experimentation the deck may take. The taste-skill lesson:
+ * an explicit variance dial set from the brief beats one implicit default.
+ * Conservative briefs get disciplined symmetry; expressive briefs EARN
+ * asymmetry, overlap and scale jumps instead of defaulting to safe grids.
+ */
+export type DesignVariance = "conservative" | "confident" | "experimental";
+
 export interface DesignRead {
   presentationType: PresentationType;
   audience: Audience;
   register: CopyRegister;
   assetAppetite: AssetAppetite;
+  variance: DesignVariance;
 }
 
 export interface DeckPlan {
@@ -106,6 +115,21 @@ function deriveRegister(type: PresentationType, audience: Audience): CopyRegiste
   return "plain";
 }
 
+// Words in the brief that explicitly push the dial in either direction.
+const EXPERIMENTAL_SIGNALS = ["bold", "experimental", "playful", "edgy", "daring", "unconventional", "wild", "expressive", "avant"];
+const CONSERVATIVE_SIGNALS = ["corporate", "formal", "conservative", "traditional", "regulatory", "compliance", "board-ready", "sober"];
+
+function deriveVariance(text: string, type: PresentationType, audience: Audience): DesignVariance {
+  if (hits(text, EXPERIMENTAL_SIGNALS) > 0) return "experimental";
+  if (hits(text, CONSERVATIVE_SIGNALS) > 0) return "conservative";
+  // The presentation type wins over the audience: a pitch stays confident even
+  // though investors read as an executive audience (same rule as the register).
+  if (type === "editorial" || type === "keynote") return "experimental";
+  if (type === "pitch") return "confident";
+  if (type === "report" || audience === "executive" || audience === "academic") return "conservative";
+  return "confident";
+}
+
 function deriveAppetite(type: PresentationType, skill: Skill): AssetAppetite {
   if (type === "editorial" || type === "keynote") return "image-led";
   if (type === "report") return "data-led";
@@ -149,12 +173,13 @@ export function planDeck(args: {
   const audience = inferAudience(text);
   const register = deriveRegister(presentationType, audience);
   const assetAppetite = deriveAppetite(presentationType, skill);
+  const variance = deriveVariance(text, presentationType, audience);
   const densityRhythm = buildDensityRhythm(slideCount, assetAppetite);
 
-  const read: DesignRead = { presentationType, audience, register, assetAppetite };
+  const read: DesignRead = { presentationType, audience, register, assetAppetite, variance };
   const rationale =
     `Read as a ${presentationType} for a ${audience} audience; ` +
-    `${register} copy register, ${assetAppetite} asset appetite.`;
+    `${register} copy register, ${assetAppetite} asset appetite, ${variance} design variance.`;
 
   return { read, densityRhythm, rationale };
 }
@@ -187,6 +212,15 @@ const ARC_GUIDANCE: Record<PresentationType, string> = {
   general: "opening claim → why it matters now → the core idea → support → action",
 };
 
+const VARIANCE_GUIDANCE: Record<DesignVariance, string> = {
+  conservative:
+    "disciplined symmetry. Aligned grids, predictable spacing, restraint as the craft signal. No overlap, no rotation, no scale stunts; the polish lives in rhythm and table/chart precision.",
+  confident:
+    "controlled asymmetry. Left-anchored headlines, off-center exhibits, one deliberate scale jump per few slides, mixed column widths beyond 50/50. Earn each move; never three safe symmetric slides in a row.",
+  experimental:
+    "expressive layouts. Asymmetric compositions, elements sharing planes with imagery, dramatic scale contrast, generous deliberate negative space. Still bounded by the occupancy gate; expressive is not empty.",
+};
+
 const APPETITE_GUIDANCE: Record<AssetAppetite, string> = {
   "image-led":
     "let pictures carry slides — full-bleed spreads AND integrated visuals. At least a third of content slides should carry imagery, and not only as bleeds: put a photo column beside an argument, inset a figure into a structured layout, set a stat over an image. Bleed ↔ text-grid alternation alone reads as two slides repeated.",
@@ -207,6 +241,7 @@ This is not a generic deck. It is ${article(read.presentationType)} ${read.prese
 - Narrative arc: ${ARC_GUIDANCE[read.presentationType]}. The deck progresses through this shape; it never circles one beat for half the slides.
 - Copy register: ${read.register} — ${REGISTER_GUIDANCE[read.register]}
 - Asset appetite: ${read.assetAppetite} — ${APPETITE_GUIDANCE[read.assetAppetite]}
+- Design variance: ${read.variance} — ${VARIANCE_GUIDANCE[read.variance]}
 - Density rhythm (suggested per-slide density, in order): ${rhythm}
   Follow this rhythm unless the content of a slide clearly calls for another tier. The point is variation: do NOT make every slide the same density.
 `;

@@ -200,5 +200,17 @@ const skill = skillStub();
   check("DECK PLAN precedes SLIDE TYPES", planIdx >= 0 && typesIdx >= 0 && planIdx < typesIdx);
 }
 
+// variance dial: explicit signals win, then type beats audience, report defaults conservative
+{
+  const exp = planDeck({ userPrompt: "A bold, playful launch keynote", slideCount: 10, skill });
+  check("explicit/keynote variance experimental", exp.read.variance === "experimental", exp.read.variance);
+  const cons = planDeck({ userPrompt: "Quarterly results analysis for the board", slideCount: 10, skill });
+  check("report variance conservative", cons.read.variance === "conservative", cons.read.variance);
+  const pitch = planDeck({ userPrompt: "Investor pitch to raise a seed round", slideCount: 10, skill });
+  check("pitch variance confident (type beats executive audience)", pitch.read.variance === "confident", pitch.read.variance);
+  const block = deckPlanPromptBlock(pitch);
+  check("block names variance", /design variance/i.test(block) && /confident/i.test(block));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

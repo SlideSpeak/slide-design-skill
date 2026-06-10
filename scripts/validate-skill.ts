@@ -181,6 +181,25 @@ async function main() {
         failures.push(`em-dash (—) in ${emFiles.join(", ")} — use commas/periods, not em-dashes`);
       }
 
+      // Cliché-font check — a few faces became the signature of AI design
+      // because every model defaults to them (taste-skill v2 lesson). Warn when
+      // the skill's IDENTITY hangs on one of them. Non-fatal: legacy seeds and
+      // deliberate briefs may still choose them knowingly.
+      const headerFam = (skill.tokens.type?.header?.family ?? "").toLowerCase();
+      const bodyFam = (skill.tokens.type?.body?.family ?? "").toLowerCase();
+      const primary = headerFam.split(",")[0].replace(/['"]/g, "").trim();
+      const CLICHE_DISPLAY = ["fraunces", "instrument serif", "playfair display", "dm serif display", "dm serif text", "space grotesk"];
+      if (CLICHE_DISPLAY.some((f) => primary === f)) {
+        warnings.push(
+          `cliché display font: "${primary}" is an AI-design tell as a header face — pick a less-default typeface for this style's identity`,
+        );
+      }
+      if (primary.startsWith("inter") && bodyFam.split(",")[0].includes("inter")) {
+        warnings.push(
+          "Inter as header AND body: the all-Inter identity is the AI default — give the header a distinctive face",
+        );
+      }
+
       // Chrome distinctiveness — a skill whose chrome.css is the stock default
       // look has no visual identity of its own; that shared look was the root
       // of "all decks look the same". Non-fatal, but loud.

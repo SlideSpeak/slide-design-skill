@@ -87,6 +87,13 @@ const VERB_SIGNALS = new Set([
 const GENERIC_CLOSING_RE =
   /^\s*(thank you!?|thanks!?|let'?s talk!?|get in touch!?|contact us!?|questions\??|any questions\??|reach out!?)\s*$/i;
 
+// Agency-portfolio decoration tells (taste-skill v2 adoption).
+// A section counter dressed as a label: "06 · how it works", "001 / index".
+const NUMBERED_EYEBROW_RE = /^\s*0?\d{1,3}\s*[·./|-]\s*\S/;
+// Poetic section labels that replace plain language.
+const POETIC_LABEL_RE =
+  /^\s*(field notes?|quietly in use( at)?|on our desks?|selected works?|scroll to explore|notes from the (field|studio))\s*$/i;
+
 // Precise-looking metric numbers: percentages, multipliers, currency,
 // k/M/B-suffixed, and grouped thousands. Bare integers (years, counts) are
 // intentionally NOT matched — they are rarely the "fake spec aesthetic" tell.
@@ -169,6 +176,29 @@ export function lintSlideTree(
           slideIndex,
           slot,
           message: `Generic step label in "${slot}": let the step content be the label.`,
+        });
+      }
+
+      // Numbered eyebrows: "06 · how it works" dressed as a label. Real page
+      // numbers live in footer chrome, not in eyebrow slots.
+      if (EYEBROW_SLOTS.has(slot) && NUMBERED_EYEBROW_RE.test(value)) {
+        findings.push({
+          rule: "numbered-eyebrow",
+          severity: "warn",
+          slideIndex,
+          slot,
+          message: `Numbered eyebrow in "${slot}": "${value.trim()}". A section counter dressed as a label is an agency-portfolio tell; use plain language or drop it.`,
+        });
+      }
+
+      // Poetic section labels.
+      if (POETIC_LABEL_RE.test(value)) {
+        findings.push({
+          rule: "poetic-label",
+          severity: "warn",
+          slideIndex,
+          slot,
+          message: `Poetic label in "${slot}": "${value.trim()}". Say it plainly (Testimonials, Latest work) or drop the label.`,
         });
       }
 

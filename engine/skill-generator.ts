@@ -141,7 +141,7 @@ ${refsBlock}
 
 THE 6 FILES YOU MUST PRODUCE
 
-1. SKILL.md — frontmatter (YAML) + authoring guide (markdown body). Frontmatter requires fields: \`name\` (= "${slug}"), \`version\` ("0.1.0"), \`description\` (one paragraph naming when to use this skill, what it looks like, what it is NOT), \`inspiration\` (concrete refs), \`typography_kit\` (specific fonts + weights + tracking), \`color_kit\` (specific hex values + role), \`image_style\` (gradient direction + mockup style), \`forbidden\` (concrete anti-clichés this skill rejects — at least 5 items). Body is 6–10 short sections: hero stance, type rules, color rules, anti-cliché list, voice rules, slide hierarchy, density rule.
+1. SKILL.md — frontmatter (YAML) + authoring guide (markdown body). Frontmatter requires fields: \`name\` (= "${slug}"), \`version\` ("0.1.0"), \`description\` (one paragraph naming when to use this skill, what it looks like, what it is NOT), \`inspiration\` (concrete refs), \`typography_kit\` (specific fonts + weights + tracking), \`color_kit\` (specific hex values + role), \`image_style\` (gradient direction + mockup style), \`forbidden\` (concrete anti-clichés this skill rejects — at least 5 items). Body is 6–10 short sections: hero stance, type rules, color rules, anti-cliché list, voice rules, slide hierarchy, density rule, and a layout-variance posture (conservative / confident / experimental, derived from the brief) that states how much asymmetry and scale contrast this style permits.
 
 2. tokens.json — strict shape:
 {
@@ -162,6 +162,12 @@ THE 6 FILES YOU MUST PRODUCE
   "icon": { "kit": "lucide" },
   "webFonts": ["Family:wght@...", ...]
 }
+
+**CRITICAL — font choices are tells now.** A handful of typefaces have become the signature of AI-generated design because every model reaches for them. These are BANNED as the skill's identity:
+- Inter (or Inter Tight) as the HEADER family, or Inter for header AND body. Inter as a body/data workhorse next to a distinctive header face is acceptable.
+- Fraunces and Instrument Serif as display serifs. They scream "AI made this" in 2026.
+- Playfair Display, DM Serif, Space Grotesk as the lazy "make it designy" reach.
+Instead pick from a wider pool and MATCH IT TO THE BRIEF, e.g. sans: Geist, Satoshi, Cabinet Grotesk, Outfit, General Sans, Manrope, Bricolage Grotesque, Schibsted Grotesk, Hanken Grotesk, Figtree; serif: Source Serif 4, Newsreader, Lora, Spectral, Libre Caslon, STIX Two Text, Crimson Pro; mono/data: JetBrains Mono, IBM Plex Mono, Geist Mono, Spline Sans Mono. Two different briefs must not land on the same pairing; the typeface is half the style's identity.
 
 Pick \`icon.kit\` to match the vibe — it changes how every {{@icon}} looks:
 - "lucide" — clean thin stroke, neutral/modern (default safe choice)
@@ -222,6 +228,8 @@ NEVER default to "product-name top-left + positioning-line below + mono eyebrows
 
 Equally, do NOT retreat into near-monochrome or all-dark out of caution. If the brief or its reference points to a bright, optimistic or colour-forward world, commit to it — match the reference's real brightness and saturation rather than defaulting to safe grey-on-dark. Under-using colour is as much a brand failure as scattering it. Decide the deck's overall key (light / dark / colour-forward) from the brief, not from a default.
 
+**CRITICAL — genre-default palettes are tells.** Every AI reaches for the same palette per brief genre, which makes unrelated decks look like siblings. BANNED as the automatic choice: premium/artisan → warm beige + brass + oxblood + espresso; tech/AI → purple-blue glow on dark; fintech → navy + teal; wellness → sage + cream; luxury travel → navy + gold. If the brief itself names colours, follow the brief. Otherwise deliberately rotate to a less-expected axis that still fits the world (cold luxury silver/chrome/smoke, deep forest + bone + amber, true black-and-tan, cobalt + cream, oxide red + plaster, ink + citron). Two skills generated from similar briefs must not share a palette.
+
 5. image-style.md — must contain (literal lines, backticks included as shown):
 - A line of the form: Prompt template: \`<one-line prompt fragment containing {subject}>\`
 - A line of the form: Negative prompt: <comma-separated list>
@@ -245,6 +253,7 @@ HARD RULES — these read as machine-made; they are non-negotiable across ALL fi
 - NO accent line / colored bar / colored border pinned to a card EDGE (no \`border-top: 3px solid <accent>\` on a card, no left-edge accent stripe). A colored rule on the lip of a card is the loudest AI tell there is. Carry accent through a number, an icon, a filled chip, or a single tinted surface instead — never the card's edge.
 - NO em-dashes (—) anywhere in copy, SKILL.md prose, or example text. Use a comma, a period, or "to" for ranges. Hyphens in compound words are fine.
 - NO fake product UI, no invented logos, no real brand names (use {{@placeholder}}, see above).
+- NO agency-portfolio decoration tells: no numbered eyebrows ("06 · how it works", "001 / Capabilities" — a real page number in the footer chrome is fine, a section counter dressed as a label is not), no poetic section labels ("Field notes", "Quietly in use at", "On our desks" — say "Testimonials", "Latest work", or drop the label), no decorative status dots on labels or list rows, no photo-credit-style captions as decoration ("Field study no. 12 · A. Costa").
 
 VALIDATOR CONSTRAINTS (your output must pass)
 - frontmatter \`name\` must equal "${slug}" exactly.

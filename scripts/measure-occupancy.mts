@@ -11,7 +11,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { scoreOccupancy } from "../engine/occupancy.ts";
+import { scoreOccupancy, scoreCellOccupancy } from "../engine/occupancy.ts";
 
 const execFileP = promisify(execFile);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -62,6 +62,82 @@ window.addEventListener('load', function () {
         if (r.height > 4 && r.width > 4) rects.push([Math.round(r.top - stop), Math.round(r.bottom - stop)]);
       }
     });
+    // Card-like cells: bordered (2+ sides) or contrast-tinted boxes holding
+    // text, measured by their OWN content so edge-pinned voids and one-word
+    // cards inside cards are visible (the page scan reads the cell surface as
+    // filled). Leaf cells only; near-slide-sized frames are the page's job.
+    var slideArea = sr.width * sr.height;
+    var candidates = [];
+    slide.querySelectorAll('*').forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.height < 160 || r.width < 160) return;
+      if (r.width * r.height > 0.55 * slideArea) return;
+      if (!el.textContent.trim()) return;
+      var ecs = getComputedStyle(el);
+      var sides = 0;
+      ['Top', 'Right', 'Bottom', 'Left'].forEach(function (s) {
+        if (parseFloat(ecs['border' + s + 'Width']) > 0 && ecs['border' + s + 'Style'] !== 'none') sides++;
+      });
+      var c = rgb(ecs.backgroundColor);
+      var contrast = c ? Math.abs(c.r - page.r) + Math.abs(c.g - page.g) + Math.abs(c.b - page.b) : 0;
+      var tinted = (ecs.backgroundImage && ecs.backgroundImage !== 'none') || (c && c.a > 0.5 && contrast > 60);
+      if (sides >= 2 || tinted) candidates.push(el);
+    });
+    var cells = [];
+    candidates.forEach(function (el) {
+      var isLeaf = true;
+      for (var k = 0; k < candidates.length; k++) {
+        if (candidates[k] !== el && el.contains(candidates[k])) { isLeaf = false; break; }
+      }
+      if (!isLeaf) return;
+      var r = el.getBoundingClientRect();
+      var ecs = getComputedStyle(el);
+      var pad = ((parseFloat(ecs.paddingTop) || 0) + (parseFloat(ecs.paddingBottom) || 0)) / 2;
+      var cellRects = [];
+      var textArea = 0;
+      var cw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      var cr = document.createRange(), cn;
+      while ((cn = cw.nextNode())) {
+        if (!cn.textContent.trim()) continue;
+        cr.selectNodeContents(cn);
+        var crl = cr.getClientRects();
+        for (var j = 0; j < crl.length; j++) {
+          if (crl[j].height <= 0.5) continue;
+          cellRects.push([Math.round(crl[j].top - r.top), Math.round(crl[j].bottom - r.top)]);
+          textArea += crl[j].width * crl[j].height;
+        }
+      }
+      var hasVisual = !!el.querySelector('img,svg,canvas,video') ||
+        (ecs.backgroundImage && ecs.backgroundImage !== 'none');
+      el.querySelectorAll('img,svg,hr').forEach(function (v) {
+        var vr = v.getBoundingClientRect();
+        if (vr.height > 0.5) cellRects.push([Math.round(vr.top - r.top), Math.round(vr.bottom - r.top)]);
+      });
+      if (!hasVisual) {
+        var cellBg = rgb(ecs.backgroundColor);
+        var base = (cellBg && cellBg.a > 0.5) ? cellBg : page;
+        var descs = el.querySelectorAll('*');
+        for (var d = 0; d < descs.length; d++) {
+          var dcs = getComputedStyle(descs[d]);
+          if (dcs.backgroundImage && dcs.backgroundImage !== 'none') { hasVisual = true; break; }
+          var dc = rgb(dcs.backgroundColor);
+          if (dc && dc.a > 0.5 && (Math.abs(dc.r - base.r) + Math.abs(dc.g - base.g) + Math.abs(dc.b - base.b)) > 60) {
+            var dr = descs[d].getBoundingClientRect();
+            if (dr.height > 4 && dr.width > 4) cellRects.push([Math.round(dr.top - r.top), Math.round(dr.bottom - r.top)]);
+          }
+        }
+      }
+      var ownBg = rgb(ecs.backgroundColor);
+      cells.push({
+        height: Math.round(r.height),
+        area: Math.round(r.width * r.height),
+        pad: Math.round(pad),
+        rects: cellRects,
+        textArea: Math.round(textArea),
+        hasVisual: hasVisual,
+        bg: (ownBg && ownBg.a > 0.5) ? (ownBg.r + ',' + ownBg.g + ',' + ownBg.b) : null,
+      });
+    });
     out.push({
       i: i,
       type: slide.getAttribute('data-slide-type') || slide.className.replace('slide ', '').split(' ')[0] || '',
@@ -69,6 +145,7 @@ window.addEventListener('load', function () {
       slideHeight: Math.round(sr.height),
       safe: Math.round(safe),
       rects: rects,
+      cells: cells,
     });
   });
   var pre = document.createElement('pre');
@@ -98,11 +175,16 @@ let failures = 0;
 console.log("slide                         density      maxGap  at       verdict");
 for (const s of slides) {
   const res = scoreOccupancy({ rects: s.rects, slideHeight: s.slideHeight, safe: s.safe, density: s.density });
-  if (!res.filled) failures++;
+  const cellRes = scoreCellOccupancy({ cells: s.cells ?? [], density: s.density });
+  if (!res.filled || !cellRes.filled) failures++;
+  const verdict = !res.filled ? "UNDERFILL" : !cellRes.filled ? "CELL-UNDERFILL" : "ok";
   console.log(
     `${(s.type + " #" + s.i).padEnd(28)} ${(s.density || "-").padEnd(11)} ` +
-    `${String(res.maxGapPx).padStart(6)}  ${(res.gapAt || "-").padEnd(7)} ${res.filled ? "ok" : "UNDERFILL"}`,
+    `${String(res.maxGapPx).padStart(6)}  ${(res.gapAt || "-").padEnd(7)} ${verdict}`,
   );
+  for (const f of cellRes.failures) {
+    console.log(`  └ cell ${f.index}: ${f.kind} — ${f.detail}`);
+  }
 }
 console.log(`\n${slides.length - failures}/${slides.length} slides fill the frame.`);
 process.exit(failures ? 1 : 0);

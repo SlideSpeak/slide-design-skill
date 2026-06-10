@@ -33,6 +33,21 @@ Minimal narration. No menus. No meta-talk. If the brief carries zero signal abou
 the look, ask ONE short question about the desired look — otherwise never ask, just
 build.
 
+### Moodboard step (image-first style anchor, optional but preferred)
+
+When the look is open (inspiration-style briefs, weak signal) and `FAL_KEY` is
+available: generate 2 moodboards via `composeMoodboardPrompts(subject)`
+(engine/moodboard.ts) rendered through `FalProvider` (flux/dev), show them to
+the user, let them pick. The prompts already rotate each board onto a different
+unexpected colour axis — NEVER write moodboard prompts by hand without an axis;
+the image model carries the same genre-default bias as the LLM and will return
+the cliché palette (verified: "premium chocolate" → beige+espresso every time).
+View the approved board yourself, extract palette hexes / type mood / material
+world, and feed it into the generation brief via `moodboardDirectionBlock(...)`.
+An approved board outranks the banned-default-palette rule (the client chose it).
+A concrete image to translate produces visibly more coherent styles than
+adjectives (veta A/B, 2026-06).
+
 ## Engine notes (internal only — never recited to the user)
 
 - Style intake: `resolveStyleInput` (engine/style-intake.ts) → StyleBrief. Default

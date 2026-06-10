@@ -48,6 +48,12 @@ export type {
   StyleIntakeDeps,
 } from "./style-intake.ts";
 export {
+  composeMoodboardPrompts,
+  moodboardDirectionBlock,
+  ROTATION_AXES,
+} from "./moodboard.ts";
+export type { MoodboardPrompt, MoodboardDirection } from "./moodboard.ts";
+export {
   FalProvider,
   FalBackgroundProvider,
   UnsplashProvider,

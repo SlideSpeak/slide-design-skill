@@ -13,7 +13,7 @@ An engine that turns a brief (topic plus a look described in any form) into bran
 - **Image subsystem** (`engine/image-providers.ts`, `engine/image-treatments.ts`): FAL for AI imagery, Unsplash and Pexels federated for stock, per-category decision rules, 10 deliberate image treatments, model-aware inference steps, and an engine-level brand guard that skills cannot bypass.
 - **Moodboard intake** (`engine/moodboard.ts`): optional image-first style anchoring; two boards on rotated palette axes, the approved board feeds the generation brief.
 - **Quality gates**: skill validation, slide-tree validation, content lint, occupancy measurement, security smoke. See the gate table in `README.md`; the design rules they enforce are in `docs/SKILL-FORMAT.md`.
-- **7 reference packages** (`skills/`): academic, consulting, neue-klasse, opex, pitch, product-marketing, training. Curated seeds and few-shot material for the generator, also useful as direct styles when a brief names them literally. Not a user-facing menu.
+- **8 reference packages** (`skills/`): academic, consulting, kanagi, neue-klasse, opex, pitch, product-marketing, training. kanagi is the worked example of the full bespoke path: moodboard-anchored, generated per brief, then curated. Curated seeds and few-shot material for the generator, also useful as direct styles when a brief names them literally. Not a user-facing menu.
 - **Meta-generator** (`meta-generator/`): a guided path for the team to author packages by hand.
 
 ## Repository layout
@@ -41,7 +41,7 @@ engine/
   fidelity-data.ts       city gazetteer + vetted icon subset (baked)
   dotmap-data.ts         land-mask grid for dot maps (baked)
   moodboard.ts           rotated moodboard prompts + direction block
-skills/                  7 reference packages
+skills/                  8 reference packages
 meta-generator/          GENERATOR.md + templates
 scripts/                 render-fixture, validate-skill, measure-occupancy, smoke tests,
                          bake scripts, shoot-review (screenshots)
@@ -56,7 +56,7 @@ npm install
 npm test
 ```
 
-`npm test` runs skill validation (7/7 packages) plus smoke suites for images, security (25 checks), content lint, deck planning, occupancy, moodboards and the logo wall. All green on handover.
+`npm test` runs skill validation (8/8 packages) plus smoke suites for images, security (25 checks), content lint, deck planning, occupancy, moodboards and the logo wall. All green on handover.
 
 Render and inspect a deck without any API keys:
 

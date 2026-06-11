@@ -1,0 +1,226 @@
+<!-- Kanagi components. Interior slides share the masthead (seal + wordmark) and
+     a foot rule; bleeds carry the photo, a scrim and plaster type. -->
+
+<template id="slide-cover">
+<section class="slide slide-bleed" style="background:#1C1B19;">
+  {{@gradient-bg bgSlot=bg-image}}
+  {{@scrim variant=bottom color=#16140F from=0.92 mid=0.38 to=0}}
+  {{@scrim variant=top color=#16140F from=0.45 to=0 z=1}}
+  <svg style="position:absolute; right:-160px; bottom:120px; width:980px; height:auto; z-index:1; opacity:0.3;" viewBox="0 0 980 230" fill="none" aria-hidden="true"><path d="M0 36 H660 C800 36 900 88 980 196 L975 230 C880 140 790 96 660 96 H0 Z" stroke="#F8F5EE" stroke-width="1.5"/></svg>
+  <div class="bleed-content" style="display:flex; flex-direction:column; justify-content:space-between; position:relative; z-index:2;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="kn-bleed-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="#B5402A" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="#B5402A" stroke-width="3.5"/></svg>
+        <span>{{eyebrow}}</span>
+      </div>
+      <div class="kn-bleed-foot">{{date}}</div>
+    </div>
+    <div>
+      <h1 class="kn-cover-title">{{title}}</h1>
+      <p class="kn-cover-sub">{{sub}}</p>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="slide-heritage">
+<section class="slide" data-density="editorial">
+  <div class="kn slide-flow kn-grain">
+    <div class="kn-head flow-head" style="position:relative; z-index:1;">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-her-stage flow-grow">
+      <svg class="kn-profile" viewBox="0 0 980 230" fill="#26272B" fill-opacity="0.06" aria-hidden="true"><path d="M0 36 H660 C800 36 900 88 980 196 L975 230 C880 140 790 96 660 96 H0 Z"/></svg>
+      <h2>{{statement}}</h2>
+      <p class="support">{{support}}</p>
+    </div>
+    <hr class="kn-rule" style="position:relative; z-index:1;">
+    <div class="kn-years">
+      <div class="y"><span class="yr kn-mono">{{y1}}</span><span class="note">{{y1-note}}</span></div>
+      <div class="y"><span class="yr kn-mono">{{y2}}</span><span class="note">{{y2-note}}</span></div>
+      <div class="y"><span class="yr kn-mono">{{y3}}</span><span class="note">{{y3-note}}</span></div>
+    </div>
+    <div class="kn-foot flow-foot" style="position:relative; z-index:1;"><span class="src">{{source}}</span><span>Heritage</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-craft">
+<section class="slide">
+  <div class="kn slide-flow">
+    <div class="kn-head flow-head">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-title-block"><h2 class="kn-title">{{action-title}}</h2><hr class="kn-rule"></div>
+    <div class="kn-craft flow-grow">
+      <div class="step"><span class="no">01</span><h4>{{s1-name}}</h4><p>{{s1-desc}}</p></div>
+      <div class="step"><span class="no">02</span><h4>{{s2-name}}</h4><p>{{s2-desc}}</p></div>
+      <div class="step"><span class="no">03</span><h4>{{s3-name}}</h4><p>{{s3-desc}}</p></div>
+      <div class="step"><span class="no">04</span><h4>{{s4-name}}</h4><p>{{s4-desc}}</p></div>
+    </div>
+    <div class="kn-foot flow-foot"><span class="src">{{source}}</span><span>Craft</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-range">
+<section class="slide">
+  <div class="kn slide-flow">
+    <div class="kn-head flow-head">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-title-block"><h2 class="kn-title">{{action-title}}</h2><hr class="kn-rule"></div>
+    <div class="kn-range flow-grow">
+      <div class="specs">
+        <p class="intro">{{intro}}</p>
+        <div class="r"><h4>{{r1-name}}</h4><span class="spec">{{r1-spec}}</span></div>
+        <div class="r"><h4>{{r2-name}}</h4><span class="spec">{{r2-spec}}</span></div>
+        <div class="r"><h4>{{r3-name}}</h4><span class="spec">{{r3-spec}}</span></div>
+      </div>
+      <div>{{@placeholder ratio=4:3 slot=photo-caption}}</div>
+    </div>
+    <div class="kn-foot flow-foot"><span class="src">{{source}}</span><span>Range</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-steel">
+<section class="slide" data-density="editorial">
+  <div class="kn slide-flow">
+    <div class="kn-head flow-head">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-title-block"><h2 class="kn-title">{{action-title}}</h2><hr class="kn-rule"></div>
+    <div class="kn-steel flow-grow">
+      <div class="hero"><span class="v">{{hero-value}}</span><span class="l">{{hero-label}}</span></div>
+      <div class="side">
+        <p>{{body}}</p>
+        <div class="ms">
+          <div class="m"><div class="v kn-mono">{{m1-value}}</div><div class="l">{{m1-label}}</div></div>
+          <div class="m"><div class="v kn-mono">{{m2-value}}</div><div class="l">{{m2-label}}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="kn-foot flow-foot"><span class="src">{{source}}</span><span>Steel</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-market">
+<section class="slide" data-density="data-dense">
+  <div class="kn slide-flow">
+    <div class="kn-head flow-head">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-title-block"><h2 class="kn-title">{{action-title}}</h2><hr class="kn-rule"></div>
+    <div class="kn-market flow-grow">
+      <div class="exhibit">{{@chart type=line data=chart-data labels=chart-labels note=chart-note}}</div>
+      <div class="reading"><p>{{body}}</p></div>
+    </div>
+    <div class="kn-foot flow-foot"><span class="src">{{source}}</span><span>Market</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-voice">
+<section class="slide slide-bleed" style="background:#1C1B19;">
+  {{@gradient-bg bgSlot=bg-image}}
+  {{@scrim variant=full color=#16140F from=0.55}}
+  {{@scrim variant=bottom color=#16140F from=0.55 to=0 z=1}}
+  <div class="bleed-content" style="display:flex; flex-direction:column; justify-content:center; position:relative; z-index:2;">
+    <p class="kn-quote">"{{quote}}"</p>
+    <div class="kn-attr"><span class="who">{{attribution}}</span><span class="role">{{role}}</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-partnership">
+<section class="slide">
+  <div class="kn slide-flow">
+    <div class="kn-head flow-head">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-part flow-grow">
+      <div class="lede">
+        <h2>{{action-title}}</h2>
+        <hr class="kn-rule">
+      </div>
+      <div class="offers">
+        <div class="p"><span class="ix kn-mono">01</span><div><h4>{{p1-name}}</h4><p>{{p1-body}}</p></div></div>
+        <div class="p"><span class="ix kn-mono">02</span><div><h4>{{p2-name}}</h4><p>{{p2-body}}</p></div></div>
+        <div class="p"><span class="ix kn-mono">03</span><div><h4>{{p3-name}}</h4><p>{{p3-body}}</p></div></div>
+      </div>
+    </div>
+    <div class="kn-foot flow-foot"><span class="src">{{source}}</span><span>Partnership</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-roadmap">
+<section class="slide">
+  <div class="kn slide-flow">
+    <div class="kn-head flow-head">
+      <div class="kn-mast">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="var(--color-signal)" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="var(--color-signal)" stroke-width="3.5"/></svg>
+        <span class="wordmark">Kanagi</span><span class="muted">Sakai, Osaka</span>
+      </div>
+      <div class="kn-page">{{page-no}} / {{page-total}}</div>
+    </div>
+    <div class="kn-title-block"><h2 class="kn-title">{{action-title}}</h2><hr class="kn-rule"></div>
+    <div class="kn-road flow-grow">
+      <div class="ph"><span class="no">{{ph1-name}}</span><h4>{{ph1-title}}</h4><p>{{ph1-body}}</p></div>
+      <div class="ph"><span class="no">{{ph2-name}}</span><h4>{{ph2-title}}</h4><p>{{ph2-body}}</p></div>
+      <div class="ph"><span class="no">{{ph3-name}}</span><h4>{{ph3-title}}</h4><p>{{ph3-body}}</p></div>
+    </div>
+    <div class="kn-foot flow-foot"><span class="src">{{source}}</span><span>Roadmap</span></div>
+  </div>
+</section>
+</template>
+
+<template id="slide-closing">
+<section class="slide slide-bleed" style="background:#1C1B19;">
+  {{@gradient-bg bgSlot=bg-image}}
+  {{@scrim variant=full color=#16140F from=0.6}}
+  {{@scrim variant=bottom color=#16140F from=0.6 to=0 z=1}}
+  <div class="bleed-content" style="display:flex; flex-direction:column; justify-content:space-between; position:relative; z-index:2;">
+    <div class="kn-bleed-mast">
+      <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="#B5402A" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="#B5402A" stroke-width="3.5"/></svg>
+      <span>Kanagi, Sakai</span>
+    </div>
+    <div>
+      <h2 class="kn-close-stmt">{{statement}}</h2>
+      <p class="kn-close-ask">{{ask}}</p>
+    </div>
+    <div class="kn-contact">
+      <div class="card">
+        <svg class="kn-seal" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="2" width="24" height="24" stroke="#B5402A" stroke-width="3.5"/><path d="M26 18.5 L18.5 26" stroke="#B5402A" stroke-width="3.5"/></svg>
+        <div><div class="nm">{{contact-name}}</div><div class="dt">{{contact-detail}}</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>

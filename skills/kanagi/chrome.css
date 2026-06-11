@@ -1,0 +1,131 @@
+/* Kanagi chrome: workshop specimen sheet. Plaster ground, graphite ink,
+   one oxide-red seal. Emitted after the neutral base. */
+
+.slide { -webkit-font-smoothing: antialiased; }
+.slide h1, .slide h2, .slide h3 { letter-spacing: -0.012em; }
+
+/* ── shell: masthead / stage / foot ───────────────────────────────────── */
+.kn { display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+.kn-head {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 18px;
+}
+.kn-mast { display: flex; align-items: center; gap: 14px; font-family: var(--font-data); font-size: 14.5px; color: var(--color-ink); }
+.kn-mast .wordmark { font-weight: 500; }
+.kn-mast .muted { color: var(--color-muted); }
+.kn-page { font-family: var(--font-data); font-size: 14.5px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.kn-seal { width: 22px; height: 22px; flex: 0 0 auto; }
+.kn-foot {
+  flex: 0 0 auto; display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  padding-top: 16px; margin-top: 24px; border-top: 1px solid var(--color-rule);
+  font-family: var(--font-data); font-size: 14px; color: var(--color-muted);
+}
+.kn-foot .src { max-width: 70%; }
+
+/* the edge rule: a hairline that ends in the blade tip */
+.kn-rule { position: relative; height: 1px; background: var(--color-ink); border: none; margin: 0; }
+.kn-rule::after {
+  content: ""; position: absolute; right: -2px; bottom: 0; width: 20px; height: 1.5px;
+  background: var(--color-ink); transform-origin: right bottom; transform: rotate(-24deg);
+}
+.kn-rule.red { background: var(--color-signal); }
+.kn-rule.red::after { background: var(--color-signal); }
+
+/* paper grain for flat editorial grounds */
+.kn-grain { position: relative; }
+.kn-grain::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── shared type ──────────────────────────────────────────────────────── */
+.kn-title { font-family: var(--font-header); font-weight: 500; font-size: 40px; line-height: 1.12; max-width: 1480px; margin: 0 0 8px; }
+.kn-title-block { flex: 0 0 auto; display: flex; flex-direction: column; gap: 22px; padding-top: 26px; }
+.kn-body { font-family: var(--font-body); font-size: 17.5px; line-height: 1.55; color: var(--color-ink); }
+.kn-muted { color: var(--color-muted); }
+.kn-mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+/* ── heritage: one claim, three dated notes ───────────────────────────── */
+.kn-her-stage { display: flex; flex-direction: column; justify-content: center; gap: 36px; position: relative; z-index: 1; }
+.kn-her-stage h2 { font-family: var(--font-header); font-weight: 500; font-size: 54px; line-height: 1.16; max-width: 1380px; margin: 0; }
+.kn-her-stage .support { font-size: 19px; line-height: 1.6; color: var(--color-muted); max-width: 1040px; }
+.kn-years { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; padding-top: 28px; position: relative; z-index: 1; }
+.kn-years .y { display: flex; flex-direction: column; gap: 8px; }
+.kn-years .y .yr { font-family: var(--font-data); font-weight: 500; font-size: 22px; }
+.kn-years .y .note { font-size: 16.5px; line-height: 1.45; color: var(--color-muted); }
+.kn-profile { position: absolute; right: -180px; top: 50%; transform: translateY(-50%); width: 1100px; height: auto; z-index: 0; pointer-events: none; }
+
+/* ── craft: four forging steps as a full-width ledger ─────────────────── */
+.slide-flow .kn-craft { display: flex; flex-direction: column; justify-content: center; }
+.kn-craft .step {
+  display: grid; grid-template-columns: 130px 420px 1fr; gap: 48px; align-items: center;
+  padding: 38px 0; border-top: 1px solid var(--color-rule);
+}
+.kn-craft .step:last-child { border-bottom: 1px solid var(--color-rule); }
+.kn-craft .step .no { font-family: var(--font-data); font-weight: 500; font-size: 56px; line-height: 0.9; color: var(--color-signal); font-variant-numeric: tabular-nums; }
+.kn-craft .step h4 { font-family: var(--font-header); font-weight: 500; font-size: 29px; line-height: 1.1; margin: 0; }
+.kn-craft .step p { font-size: 17.5px; line-height: 1.5; color: var(--color-muted); margin: 0; max-width: 980px; }
+
+/* ── range: specs left, artifact right ────────────────────────────────── */
+.slide-flow .kn-range { display: grid; grid-template-columns: 1fr 1.05fr; gap: 72px; align-items: center; }
+.kn-range .specs { display: flex; flex-direction: column; }
+.kn-range .intro { font-size: 18px; line-height: 1.55; color: var(--color-muted); margin: 0 0 30px; }
+.kn-range .r { padding: 26px 0; border-top: 1px solid var(--color-rule); display: flex; flex-direction: column; gap: 8px; }
+.kn-range .r:last-child { border-bottom: 1px solid var(--color-rule); }
+.kn-range .r h4 { font-family: var(--font-header); font-weight: 500; font-size: 26px; margin: 0; }
+.kn-range .r .spec { font-family: var(--font-data); font-size: 14.5px; color: var(--color-muted); }
+
+/* ── steel: the hardness number is the argument ───────────────────────── */
+.slide-flow .kn-steel { display: flex; align-items: center; justify-content: center; gap: 84px; }
+.kn-steel .hero { display: flex; flex-direction: column; gap: 14px; }
+.kn-steel .hero .v { font-family: var(--font-header); font-weight: 600; font-size: 236px; line-height: 0.9; letter-spacing: -0.03em; color: var(--color-signal); font-variant-numeric: tabular-nums; }
+.kn-steel .hero .l { font-family: var(--font-data); font-size: 15px; color: var(--color-muted); }
+.kn-steel .side { border-left: 1px solid var(--color-rule); padding-left: 64px; display: flex; flex-direction: column; gap: 38px; max-width: 720px; }
+.kn-steel .side p { font-size: 19px; line-height: 1.65; color: var(--color-ink); margin: 0; }
+.kn-steel .ms { display: flex; gap: 56px; }
+.kn-steel .m .v { font-family: var(--font-header); font-weight: 500; font-size: 54px; line-height: 1; font-variant-numeric: tabular-nums; }
+.kn-steel .m .l { font-family: var(--font-data); font-size: 14.5px; color: var(--color-muted); margin-top: 8px; }
+
+/* ── market: chart card + reading ─────────────────────────────────────── */
+.slide-flow .kn-market { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 56px; align-items: center; }
+.kn-market .exhibit { background: var(--color-card); border: 1px solid var(--color-rule); padding: 40px 44px; }
+.kn-market .reading { display: flex; flex-direction: column; gap: 22px; }
+.kn-market .reading p { font-size: 17.5px; line-height: 1.6; color: var(--color-ink); margin: 0; }
+
+/* ── partnership: lede left, stacked offer cards right ────────────────── */
+.slide-flow .kn-part { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 88px; align-items: center; padding-top: 34px; }
+.kn-part .lede { display: flex; flex-direction: column; gap: 30px; }
+.kn-part .lede h2 { font-family: var(--font-header); font-weight: 500; font-size: 52px; line-height: 1.14; margin: 0; }
+.kn-part .offers { display: flex; flex-direction: column; gap: 24px; justify-content: center; }
+.kn-part .p { background: var(--color-card); border: 1px solid var(--color-rule); padding: 34px 38px; display: flex; gap: 28px; align-items: baseline; }
+.kn-part .p .ix { font-size: 17px; color: var(--color-signal); flex: 0 0 44px; }
+.kn-part .p h4 { font-family: var(--font-header); font-weight: 500; font-size: 28px; margin: 0 0 10px; }
+.kn-part .p p { font-size: 18px; line-height: 1.55; color: var(--color-muted); margin: 0; }
+
+/* ── roadmap: three phases, ledger rows ───────────────────────────────── */
+.slide-flow .kn-road { display: flex; flex-direction: column; justify-content: center; }
+.kn-road .ph {
+  display: grid; grid-template-columns: 150px 420px 1fr; gap: 48px; align-items: center;
+  padding: 54px 0; border-top: 1px solid var(--color-rule);
+}
+.kn-road .ph:last-child { border-bottom: 1px solid var(--color-rule); }
+.kn-road .ph .no { font-family: var(--font-data); font-weight: 500; font-size: 24px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.kn-road .ph h4 { font-family: var(--font-header); font-weight: 500; font-size: 31px; line-height: 1.12; margin: 0; }
+.kn-road .ph p { font-size: 18.5px; line-height: 1.6; color: var(--color-muted); margin: 0; max-width: 980px; }
+
+/* ── bleeds: cover / voice / closing ──────────────────────────────────── */
+.kn-bleed-mast { display: flex; align-items: center; gap: 14px; font-family: var(--font-data); font-size: 14.5px; color: rgba(248,245,238,0.85); }
+.kn-bleed-foot { font-family: var(--font-data); font-size: 14.5px; color: rgba(248,245,238,0.7); }
+.kn-cover-title { font-family: var(--font-header); font-weight: 500; font-size: 92px; line-height: 1.02; letter-spacing: -0.02em; color: #F8F5EE; margin: 0; max-width: 1500px; }
+.kn-cover-sub { font-size: 21px; line-height: 1.5; color: rgba(248,245,238,0.85); max-width: 1100px; margin: 26px 0 0; }
+.kn-quote { font-family: var(--font-header); font-weight: 500; font-style: italic; font-size: 56px; line-height: 1.22; color: #F8F5EE; margin: 0; max-width: 1480px; }
+.kn-attr { display: flex; flex-direction: column; gap: 6px; margin-top: 40px; }
+.kn-attr .who { font-family: var(--font-data); font-size: 15px; color: #F8F5EE; }
+.kn-attr .role { font-family: var(--font-data); font-size: 14.5px; color: rgba(248,245,238,0.7); }
+.kn-close-stmt { font-family: var(--font-header); font-weight: 500; font-size: 64px; line-height: 1.08; color: #F8F5EE; margin: 0; max-width: 1380px; }
+.kn-close-ask { font-size: 20px; line-height: 1.55; color: rgba(248,245,238,0.88); max-width: 1080px; margin: 30px 0 0; }
+.kn-contact { display: flex; align-items: center; gap: 18px; }
+.kn-contact .card { background: var(--color-card); padding: 18px 22px; display: flex; align-items: center; gap: 16px; }
+.kn-contact .card .kn-seal { width: 34px; height: 34px; }
+.kn-contact .card .nm { font-family: var(--font-data); font-size: 15px; color: var(--color-ink); }
+.kn-contact .card .dt { font-family: var(--font-data); font-size: 14.5px; color: var(--color-muted); }

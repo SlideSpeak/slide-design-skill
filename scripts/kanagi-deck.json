@@ -1,0 +1,141 @@
+{
+  "slides": [
+    {
+      "type": "cover",
+      "density": "editorial",
+      "bgPrompt": "freshly forged kitchen blade resting on dark slate, hammer-textured steel surface, faint forge ember glow at the edge of frame, deep shadow",
+      "slots": {
+        "eyebrow": "Export dossier · EU distribution",
+        "title": "Ninety years of one edge.",
+        "sub": "Kanagi forges kitchen blades in Sakai. From 2026 we sell directly to European professional kitchens, one importer per market.",
+        "date": "2026"
+      }
+    },
+    {
+      "type": "heritage",
+      "density": "editorial",
+      "slots": {
+        "statement": "Three generations sharpened one craft, not a product line.",
+        "support": "The workshop has made kitchen blades since 1936. No diversification, no licensing, no factory line. The same families of buyers reorder for decades, which is the only marketing the forge has ever run.",
+        "y1": "1936",
+        "y1-note": "Founded as a single-forge workshop in Sakai",
+        "y2": "1968",
+        "y2-note": "Second generation introduces stainless cladding",
+        "y3": "2024",
+        "y3-note": "Third generation takes over the forge",
+        "source": "Family record, Sakai workshop registry. Illustrative."
+      }
+    },
+    {
+      "type": "craft",
+      "density": "balanced",
+      "slots": {
+        "action-title": "Four hands give the blade its character.",
+        "s1-name": "Forging",
+        "s1-desc": "San-mai lamination: a hard core steel sits between softer cladding layers, fired and hammered to shape on the open forge.",
+        "s2-name": "Grinding",
+        "s2-desc": "The bevel is ground on water-cooled stones. Geometry, not sharpening, decides how a blade moves through food.",
+        "s3-name": "Sharpening",
+        "s3-desc": "Final edge on Japanese water stones, checked by hand against paper and tomato skin before it leaves the bench.",
+        "s4-name": "Handling",
+        "s4-desc": "Octagonal walnut handles are fitted and oiled in-house, each balanced to its own blade.",
+        "source": "Workshop process, Sakai. Illustrative."
+      }
+    },
+    {
+      "type": "range",
+      "density": "balanced",
+      "slots": {
+        "action-title": "Three blades cover the professional station.",
+        "intro": "The line is deliberately narrow. One blade per job, no variants, no seasonal editions.",
+        "r1-name": "Gyuto 210",
+        "r1-spec": "all-purpose chef's blade · 210 mm · 165 g",
+        "r2-name": "Santoku 180",
+        "r2-spec": "vegetable-forward prep · 180 mm · 150 g",
+        "r3-name": "Petty 135",
+        "r3-spec": "paring and detail work · 135 mm · 95 g",
+        "photo-caption": "Blade lineup photography",
+        "source": "Product specification sheet. Illustrative."
+      }
+    },
+    {
+      "type": "steel",
+      "density": "editorial",
+      "slots": {
+        "action-title": "The steel argument is a number, not an adjective.",
+        "hero-value": "61",
+        "hero-label": "Rockwell hardness, core steel (HRC)",
+        "body": "Shirogami #2 core holds an edge measurably longer than European stainless at 56 to 58 HRC. The trade is care: carbon steel asks to be wiped dry after service. Professional kitchens make that trade for sharpness.",
+        "m1-value": "3x",
+        "m1-label": "edge retention vs 56 HRC stainless, in-house cut tests",
+        "m2-value": "8°",
+        "m2-label": "per-side edge angle as delivered",
+        "source": "In-house material tests, 2025. Illustrative."
+      }
+    },
+    {
+      "type": "market",
+      "density": "data-dense",
+      "slots": {
+        "action-title": "European kitchens already buy Japanese. They lack direct supply.",
+        "chart-data": "12 14 17 21 26 31",
+        "chart-labels": "2020|2021|2022|2023|2024|2025",
+        "chart-note": "Imports more than doubled in five years",
+        "body": "Japanese kitchen blades reach Europe today through layers of trading houses and resellers. Each layer adds margin and removes service. A workshop selling direct keeps list prices stable and owns sharpening, repair and replacement, which is where professional loyalty is won.",
+        "source": "EU import value of Japanese kitchen cutlery, indexed 2020 = 12. Illustrative."
+      }
+    },
+    {
+      "type": "voice",
+      "density": "editorial",
+      "bgPrompt": "professional kitchen pass under service light, stainless counter, a chef's knife resting on a worn wooden cutting board, steam in the back",
+      "slots": {
+        "quote": "The gyuto holds its edge through a full service. I stopped re-steeling mid-shift.",
+        "attribution": "Test kitchen, Copenhagen",
+        "role": "Eight-week field trial, 2025. Illustrative."
+      }
+    },
+    {
+      "type": "partnership",
+      "density": "balanced",
+      "slots": {
+        "action-title": "One importer per market, three ways to start.",
+        "p1-name": "Stocking partner",
+        "p1-body": "Carry the core line at distributor terms. The workshop supports with specimen sets, sharpening training and replacement stock.",
+        "p2-name": "Chef program",
+        "p2-body": "Seed blades into ten ambassador kitchens per market. Maintenance contracts keep the workshop in the relationship.",
+        "p3-name": "Atelier events",
+        "p3-body": "Co-hosted sharpening ateliers at your showroom, stocked and staffed by the workshop twice a year.",
+        "source": "Commercial terms on request."
+      }
+    },
+    {
+      "type": "roadmap",
+      "density": "balanced",
+      "slots": {
+        "action-title": "Three seasons from pilot to steady trade.",
+        "ph1-name": "2026 H2",
+        "ph1-title": "Pilot markets",
+        "ph1-body": "Copenhagen, Berlin and Amsterdam. One importer each, ambassador kitchens seeded, service loop established.",
+        "ph2-name": "2027",
+        "ph2-title": "Core EU rollout",
+        "ph2-body": "France, Italy and Spain join on the proven terms. A European sharpening hub opens in Rotterdam.",
+        "ph3-name": "2028",
+        "ph3-title": "Steady trade",
+        "ph3-body": "Reorder-driven business at workshop capacity. List price discipline, no discount channel, waiting list accepted.",
+        "source": "Distribution plan, subject to importer agreements. Illustrative."
+      }
+    },
+    {
+      "type": "closing",
+      "density": "editorial",
+      "bgPrompt": "japanese workshop bench at dusk, a row of oiled walnut knife handles, plaster wall, last warm daylight from one window",
+      "slots": {
+        "statement": "Ninety years sharp. Now within reach.",
+        "ask": "We are selecting one importer per market for the 2026 pilots. If you run premium culinary distribution in Copenhagen, Berlin or Amsterdam, ask for the specimen set.",
+        "contact-name": "Kanagi export office",
+        "contact-detail": "export@kanagi.example · Sakai, Osaka"
+      }
+    }
+  ]
+}

@@ -29,8 +29,8 @@ Consistency comes from the split: the skill (templates, tokens, chrome) is gener
 engine/           loader, token compiler, renderer, prompt composer, deck planner,
                   style intake, skill generator, moodboard intake, image subsystem,
                   brand guard, validators (slide tree, quality lint, occupancy)
-skills/           7 reference packages: academic, consulting, neue-klasse, opex,
-                  pitch, product-marketing, training
+skills/           8 reference packages: academic, consulting, kanagi, neue-klasse,
+                  opex, pitch, product-marketing, training
 meta-generator/   guided checklist + templates for authoring a package by hand
 scripts/          render, validate, measure, smoke tests, bake scripts
 docs/             SKILL-FORMAT.md, INTEGRATION.md, HANDOVER.md, specs/, plans/
@@ -55,7 +55,7 @@ Design rules here are enforced by code, not by prompt wording alone. Prompts car
 ```bash
 npm install
 
-# all gates: skill validation + 7 smoke suites
+# all gates: skill validation + 8 smoke suites
 npm test
 
 # render a deck deterministically (no LLM, no image APIs)

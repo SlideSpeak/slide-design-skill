@@ -1,0 +1,94 @@
+{
+  "slides": [
+    {
+      "type": "cover",
+      "slots": {
+        "client-name": "Meridianbank",
+        "date": "June 2026",
+        "title": "Deposit flight is a pricing problem, not a loyalty problem",
+        "subtitle": "Findings and recommendation from the eight-week deposit strategy review"
+      }
+    },
+    {
+      "type": "executive-summary",
+      "slots": {
+        "headline": "Repricing the top decile of balances retains EUR 3.1B at a quarter of the blanket-rate cost.",
+        "bullet-1": "Meridianbank lost EUR 4.2B in deposits over 12 months; 78% of the outflow came from 6% of accounts.",
+        "bullet-2": "Exit interviews show rate, not service, drove 9 of 10 large withdrawals; median gap to the winning offer was 85bps.",
+        "bullet-3": "A blanket rate match would cost EUR 96M per year; a targeted top-decile reprice costs EUR 24M for 74% of the retention effect.",
+        "bullet-4": "The branch network flags at-risk balances 6 weeks late; the data to flag them at week zero already exists in core banking.",
+        "bullet-5": "We recommend a two-tier reprice plus an early-warning trigger, piloted in the Northeast region in Q3.",
+        "source": "Meridianbank core banking extract, Jan 2025 to Apr 2026; 214 exit interviews"
+      }
+    },
+    {
+      "type": "section-divider",
+      "slots": {
+        "section-number": "2",
+        "section-title": "Where the deposits went",
+        "section-blurb": "Outflow concentrated in three competitor money-market offers, all launched within the same five-month window."
+      }
+    },
+    {
+      "type": "data-callout",
+      "slots": {
+        "headline": "The outflow is concentrated, which makes it addressable",
+        "big-number": "78%",
+        "number-label": "of outflow came from 6% of accounts",
+        "context-1": "2,140 accounts above EUR 250K drove EUR 3.3B of the EUR 4.2B total outflow.",
+        "context-2": "These accounts hold an average of 2.7 products; they are profitable beyond the deposit relationship.",
+        "context-3": "Their rate sensitivity is binary: balances move in full, not in increments, once a threshold gap opens.",
+        "source": "Core banking extract; account-level flows Jan 2025 to Apr 2026"
+      }
+    },
+    {
+      "type": "content-3col",
+      "slots": {
+        "headline": "Three forces explain the timing of the outflow",
+        "col-title-1": "Rate gap opened",
+        "col-body-1": "Three competitor money-market products launched between May and September 2025, each paying 85 to 120bps above our flagship savings rate.",
+        "col-title-2": "Switching friction fell",
+        "col-body-2": "Instant account portability went live in April 2025; median switch time for affluent clients fell from 9 days to 40 minutes.",
+        "col-title-3": "Maturity wall hit",
+        "col-body-3": "EUR 1.9B of promotional term deposits matured in Q3 2025 with no successor offer in market, releasing balances at the worst moment.",
+        "source": "Competitor rate sheets; ECB instant-payments adoption data; internal maturity ladder"
+      }
+    },
+    {
+      "type": "process-flow",
+      "slots": {
+        "headline": "The retention play runs in five moves over one quarter",
+        "step-title-1": "Flag",
+        "step-body-1": "Early-warning trigger on balance velocity and rate-shopping signals in core banking. Flags fire the moment a balance moves, not six weeks later in the branch report.",
+        "step-title-2": "Tier",
+        "step-body-2": "Score flagged accounts by relationship profitability, not balance alone. An account with three products and a mortgage is worth a different offer than a rate tourist.",
+        "step-title-3": "Reprice",
+        "step-body-3": "Top decile gets the matched rate; second decile gets the loyalty step-up. Everyone else keeps the book rate, which caps the cost of the program.",
+        "step-title-4": "Contact",
+        "step-body-4": "Relationship managers call within 48 hours of a flag, with the offer pre-approved. No escalation loop; the playbook decides, the RM delivers.",
+        "step-title-5": "Measure",
+        "step-body-5": "Weekly retention cohorts against the locked holdout group. Kill rules are predefined: two consecutive weeks below threshold ends the pilot.",
+        "source": "Pilot design as agreed with Retail Banking ExCo, 28 May 2026"
+      }
+    },
+    {
+      "type": "comparison-table",
+      "slots": {
+        "headline": "Targeted reprice beats both alternatives on cost per euro retained",
+        "row-headers": "Annual cost | Deposits retained | Cost per euro retained | Margin impact | Time to launch",
+        "col-headers": "Do nothing | Blanket rate match | Targeted two-tier reprice",
+        "cells": "EUR 0 / EUR 96M / EUR 24M || EUR 0 / EUR 4.2B / EUR 3.1B || n.a. / 2.3 cents / 0.8 cents || baseline / minus 11bps NIM / minus 3bps NIM || n.a. / 2 weeks / 6 weeks",
+        "source": "Team analysis; retention elasticities from 2024 rate-move natural experiment"
+      }
+    },
+    {
+      "type": "closing",
+      "slots": {
+        "call-to-action": "Approve the Northeast pilot by 15 July to catch the Q3 maturity wall",
+        "next-steps": "Week 1: trigger logic into the core banking sandbox\nWeek 2 to 3: RM playbook and offer approval matrix\nWeek 4: pilot live in 40 branches, holdout group locked\nWeek 13: ExCo decision on national rollout",
+        "contact-name": "Engagement team",
+        "contact-email": "deposits-review@meridianbank.example"
+      }
+    }
+  ]
+}

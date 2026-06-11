@@ -43,6 +43,14 @@ You write decks as if you are the founder pitching to top-tier investors. The re
 - 8-column grid, 32px gutter. Numbers and headlines align to this grid hard.
 - Generous whitespace. A pitch slide that looks full looks amateur.
 
+## Graphic system
+
+- Signature mark: the conviction stroke, a single rising stroke with a square terminal (a chart reduced to its claim), drawn as inline SVG. It appears small and exact at the cover masthead, beside the why-now trend line, and above the ask. Always the same geometry, never redrawn per slide.
+- Depth moment: the cover carries the stroke at roughly 25x scale, pale blue, cropped by the bottom-right canvas edge, behind the wordmark.
+- Surface: cover and ask sit on a faint chart-paper grid (hairlines at 120px). All other slides stay flat off-white.
+- Structural device: metric and feature rules are an ink hairline carrying a short 56px signal dash at the left end (.px-rule), never a full-width colored border.
+- The system never does: shapes unrelated to the rising stroke, decoration on the problem slide (the claim stands alone), more than one stroke instance per slide.
+
 ## Density
 
 - Cover: company name + 1 sentence + date. Nothing else.

@@ -124,6 +124,16 @@ function interpolate(
     },
   );
 
+  // Logo wall: like @placeholder its args are OPTIONAL, so it gets its own
+  // pass (the shared directive regex requires an arg string).
+  out = out.replace(
+    /\{\{\s*@logo-wall(\s+[^{}]*?)?\s*\}\}/g,
+    (_match, argString) => {
+      const args = argString ? parseDirectiveArgs(argString) : {};
+      return renderLogoWallDirective(args, slots);
+    },
+  );
+
   out = out.replace(
     /\{\{\s*@(table|list|chart|gradient-bg|icon|scrim)\s+([^{}]+?)\s*\}\}/g,
     (_match, kind, argString) => {
@@ -205,6 +215,71 @@ function renderPlaceholderDirective(
     `background:var(--color-card);color:var(--color-muted);` +
     `font-family:var(--font-body);font-size:15px;line-height:1.3;text-align:center;padding:24px;">` +
     `${glyph}<span>${escapeHtml(label)}</span></div>`
+  );
+}
+
+// Customer/partner logo wall. Real logos are customer assets we never invent;
+// this renders the two honest variants:
+//   {{@logo-wall names=<slot>}} — the user's OWN customer names (pipe-separated)
+//     set as plain type wordmarks in muted ink, weight/tracking varied so the
+//     row reads as different brands. Grounded: every name comes from the deck
+//     content. No marks — a drawn glyph next to a real company would be a
+//     wrong logo.
+//   {{@logo-wall}} / {{@logo-wall count=5}} — obviously-dummy placeholder
+//     logos: a distinct geometric mark + an Acme-family wordmark per entry.
+//     Deliberately unmistakable as placeholders ("swap me"), never plausible
+//     real companies.
+function renderLogoWallDirective(
+  args: Record<string, string>,
+  slots: Record<string, string>,
+): string {
+  const WEIGHTS = [700, 500, 700, 600, 800, 600, 700, 500];
+  const TRACKING = ["-0.02em", "0.05em", "0", "-0.01em", "0.08em", "0.01em", "-0.02em", "0.03em"];
+  const wordmark = (name: string, i: number, mark: string) =>
+    `<span style="display:inline-flex;align-items:center;gap:14px;white-space:nowrap;">` +
+    mark +
+    `<span style="font-family:var(--font-header);font-size:26px;line-height:1;` +
+    `font-weight:${WEIGHTS[i % WEIGHTS.length]};letter-spacing:${TRACKING[i % TRACKING.length]};">` +
+    `${escapeHtml(name)}</span></span>`;
+
+  const namesRaw = args.names ? slots[args.names] : undefined;
+  const names =
+    typeof namesRaw === "string"
+      ? namesRaw.split("|").map((s) => s.trim()).filter((s) => s.length > 0)
+      : [];
+
+  let items: string[];
+  if (names.length > 0) {
+    items = names.map((n, i) => wordmark(n, i, ""));
+  } else {
+    // Distinct abstract marks, drawn in currentColor (the wall sets muted ink).
+    const MARKS = [
+      `<circle cx="15" cy="15" r="10" fill="none" stroke="currentColor" stroke-width="4"/>`,
+      `<rect x="4" y="14" width="6" height="12" fill="currentColor"/><rect x="12" y="8" width="6" height="18" fill="currentColor"/><rect x="20" y="4" width="6" height="22" fill="currentColor"/>`,
+      `<rect x="15" y="2" width="18" height="18" transform="rotate(45 15 11)" fill="currentColor"/>`,
+      `<path d="M15 4 A11 11 0 0 1 15 26 Z" fill="currentColor"/><path d="M15 4 A11 11 0 0 0 15 26" fill="none" stroke="currentColor" stroke-width="3.5"/>`,
+      `<path d="M15 3 L25 9 L25 21 L15 27 L5 21 L5 9 Z" fill="none" stroke="currentColor" stroke-width="4"/>`,
+      `<circle cx="15" cy="8" r="4.5" fill="currentColor"/><circle cx="8" cy="21" r="4.5" fill="currentColor"/><circle cx="22" cy="21" r="4.5" fill="currentColor"/>`,
+      `<rect x="5" y="5" width="20" height="20" fill="none" stroke="currentColor" stroke-width="4.5"/>`,
+      `<path d="M5 25 A20 20 0 0 1 25 5 L25 25 Z" fill="currentColor"/>`,
+    ];
+    const DUMMIES = ["Acme Corp", "Acme Labs", "Acme Cloud", "Acme Studio", "Acme Group", "Acme Partners", "Acme Systems", "Acme One"];
+    const parsed = parseInt(args.count ?? "", 10);
+    const count = Math.min(8, Math.max(3, Number.isFinite(parsed) ? parsed : 6));
+    items = Array.from({ length: count }, (_, i) =>
+      wordmark(
+        DUMMIES[i % DUMMIES.length],
+        i,
+        `<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true" style="flex:none;">${MARKS[i % MARKS.length]}</svg>`,
+      ),
+    );
+  }
+
+  return (
+    `<div class="dir-logo-wall" style="display:flex;align-items:center;justify-content:space-evenly;` +
+    `flex-wrap:wrap;gap:44px 40px;width:100%;color:var(--color-muted);">` +
+    items.join("") +
+    `</div>`
   );
 }
 

@@ -33,6 +33,44 @@
   background: var(--color-signal);
 }
 
+/* Graphic system: the ledger. A red margin rule down the document moments
+   (cover, dividers, closing), an Oxford double rule under every exhibit
+   headline, faint paper grain on the bookends, a giant cropped serif numeral
+   on dividers. Drawn document apparatus, never decoration. */
+
+/* red margin rule, the ledger-paper artifact */
+.cx-margin::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 56px;
+  width: 2px;
+  background: var(--color-signal);
+}
+
+/* Oxford rule: the thick-thin pair from financial documents, set under
+   exhibit headlines (an element, so templates place it deliberately) */
+.cx-oxford {
+  position: relative;
+  height: 8px;
+  border-top: 3px solid var(--color-ink);
+  flex: none;
+}
+.cx-oxford::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 7px;
+  border-top: 1px solid var(--color-ink);
+}
+
+/* faint paper grain for the bookend slides */
+.cx-paper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
 /* dense working rhythm */
 .slide-flow {
   gap: 24px;
@@ -69,3 +107,34 @@
 }
 .dir-table tbody tr:last-child th,
 .dir-table tbody tr:last-child td { border-bottom: none; }
+
+/* ledger rows: hairline between rows, none after the last */
+.slide-content-3col .cx-ledger-row { border-bottom: 1px solid var(--color-rule); }
+.slide-content-3col .cx-ledger-row:last-child { border-bottom: none; }
+
+/* process rail: one drawn vertical line, a square node per step on it */
+.cx-rail-row { position: relative; }
+.cx-rail-row::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-ink);
+}
+.cx-rail-row:first-child::before { top: 50%; }
+.cx-rail-row:last-child::before { bottom: 50%; }
+.cx-rail-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -5px;
+  width: 11px;
+  height: 11px;
+  background: var(--color-signal);
+}
+
+/* the comparison exhibit fills its stage like a ledger: equal-height rows */
+.slide-comparison-table .dir-table { height: 100%; }

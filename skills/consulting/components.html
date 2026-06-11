@@ -1,8 +1,7 @@
 <!-- Consulting components — slide templates. Engine matches by id="slide-{type}" -->
 
 <template id="slide-cover">
-<section class="slide slide-cover">
-  <div class="signal-bar"></div>
+<section class="slide slide-cover cx-margin cx-paper" data-density="editorial">
   <div class="slide-flow" style="padding-bottom: 0;">
     <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 28px;">
       <div class="eyebrow">{{client-name}} · {{date}}</div>
@@ -22,6 +21,7 @@
   <div class="slide-flow">
     <div class="eyebrow">Executive summary</div>
     <h2 style="max-width: 1550px;">{{headline}}</h2>
+    <div class="cx-oxford"></div>
     <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:space-between; max-width: 1500px; padding: 24px 0;">
       <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">01</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-1}}</div></div>
       <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">02</span><div style="font-size: 24px; line-height: 1.5;">{{bullet-2}}</div></div>
@@ -35,11 +35,10 @@
 </template>
 
 <template id="slide-section-divider">
-<section class="slide slide-section-divider">
-  <div class="signal-bar"></div>
-  <div class="slide-flow" style="padding-bottom: 0;">
+<section class="slide slide-section-divider cx-margin cx-paper" data-density="editorial">
+  <div style="position:absolute; right:-60px; top:-170px; font-family: var(--font-header); font-weight: 600; font-size: 760px; line-height: 1; color: #E9E3DB; letter-spacing: -0.05em; z-index:0;">{{section-number}}</div>
+  <div class="slide-flow" style="padding-bottom: 0; position:relative; z-index:1;">
     <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
-      <div style="font-family: var(--font-data); font-size: 128px; color: var(--color-signal); line-height: 1; font-weight: 500;">{{section-number}}</div>
       <h1>{{section-title}}</h1>
       <div style="font-size: 26px; color: var(--color-muted); max-width: 1200px; line-height: 1.5;">{{section-blurb}}</div>
     </div>
@@ -51,18 +50,25 @@
 <section class="slide slide-content-3col">
   <div class="slide-flow">
     <h2 style="max-width: 1700px;">{{headline}}</h2>
-    <div class="flow-stretch-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 48px;">
-      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
-        <div class="eyebrow" style="color: var(--color-signal);">{{col-title-1}}</div>
-        <div style="font-size: 20px; line-height: 1.5;">{{col-body-1}}</div>
+    <div class="cx-oxford"></div>
+    <div class="flow-rows">
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">{{col-title-1}}</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">{{col-body-1}}</div>
+        </div>
       </div>
-      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
-        <div class="eyebrow" style="color: var(--color-signal);">{{col-title-2}}</div>
-        <div style="font-size: 20px; line-height: 1.5;">{{col-body-2}}</div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">{{col-title-2}}</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">{{col-body-2}}</div>
+        </div>
       </div>
-      <div style="border-top: 1px solid var(--color-rule); padding-top: 24px; display:flex; flex-direction:column; gap:20px;">
-        <div class="eyebrow" style="color: var(--color-signal);">{{col-title-3}}</div>
-        <div style="font-size: 20px; line-height: 1.5;">{{col-body-3}}</div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">{{col-title-3}}</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">{{col-body-3}}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -71,9 +77,10 @@
 </template>
 
 <template id="slide-data-callout">
-<section class="slide slide-data-callout">
+<section class="slide slide-data-callout" data-density="editorial">
   <div class="slide-flow">
     <div class="eyebrow">{{headline}}</div>
+    <div class="cx-oxford"></div>
     <div class="flow-grow" style="display:grid; grid-template-columns: 1fr 1fr; gap:96px; align-items:center;">
       <div>
         <div style="font-family: var(--font-header); font-weight: 600; font-size: 240px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.04em;">{{big-number}}</div>
@@ -94,6 +101,7 @@
 <section class="slide slide-framework">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
+    <div class="cx-oxford"></div>
     <div class="flow-grow" style="display:grid; grid-template-columns: 56px 1fr 1fr; grid-template-rows: 1fr 1fr 48px; gap: 0;">
       <div></div>
       <div style="border-bottom: 1px solid var(--color-rule); border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
@@ -126,12 +134,43 @@
 <section class="slide slide-process-flow">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
-    <div class="flow-stretch-grid" style="grid-template-columns: repeat(5, 1fr); gap: 24px;">
-      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 01</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-1}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-1}}</div></div>
-      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 02</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-2}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-2}}</div></div>
-      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 03</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-3}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-3}}</div></div>
-      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 04</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-4}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-4}}</div></div>
-      <div style="border-top: 3px solid var(--color-signal); padding-top: 20px; display:flex; flex-direction:column; gap:16px;"><span class="eyebrow">Step 05</span><div style="font-weight: 600; font-size: 20px; line-height: 1.3;">{{step-title-5}}</div><div style="font-size: 17px; line-height: 1.5; color: var(--color-muted);">{{step-body-5}}</div></div>
+    <div class="cx-oxford"></div>
+    <div class="flow-rows">
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 01</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">{{step-title-1}}</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">{{step-body-1}}</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 02</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">{{step-title-2}}</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">{{step-body-2}}</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 03</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">{{step-title-3}}</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">{{step-body-3}}</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 04</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">{{step-title-4}}</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">{{step-body-4}}</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 05</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">{{step-title-5}}</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">{{step-body-5}}</div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="source">{{source}}</div>
@@ -160,6 +199,7 @@
 <section class="slide slide-comparison-table">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
+    <div class="cx-oxford"></div>
     <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:center; padding-top: 16px;">
       {{@table rows=row-headers cols=col-headers cells=cells}}
     </div>
@@ -169,7 +209,7 @@
 </template>
 
 <template id="slide-closing">
-<section class="slide slide-closing" style="background: var(--color-card);">
+<section class="slide slide-closing cx-margin cx-paper" data-density="editorial" style="background-color: var(--color-card);">
   <div class="slide-flow" style="padding-bottom: 0;">
     <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
       <div class="eyebrow">Next step</div>

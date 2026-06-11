@@ -1,10 +1,11 @@
 <!-- Training components -->
 
 <template id="slide-cover">
-<section class="slide slide-cover">
+<section class="slide slide-cover tr-dots" data-density="editorial">
   <div style="display:flex; flex-direction:column; justify-content:center; height:100%; gap: 40px; max-width: 1500px;">
     <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">{{audience-level}} · {{duration}}</div>
     <h1 style="line-height: 1.05; letter-spacing: -0.02em;">{{workshop-title}}</h1>
+    <svg width="340" height="18" viewBox="0 0 340 18" fill="none" aria-hidden="true"><path d="M4 12 C 64 6, 150 15, 212 9 S 320 10, 336 6" stroke="#EA580C" stroke-width="9" stroke-linecap="round" opacity="0.85"/></svg>
     <div style="margin-top: 32px; display:flex; flex-direction:column; gap: 8px;">
       <div style="font-size: 24px;">{{instructor-name}}</div>
       <div style="color: var(--color-muted); font-family: var(--font-data); font-size: 16px;">{{date}} · {{location}}</div>
@@ -18,11 +19,11 @@
   <div style="display:flex; flex-direction:column; height: 100%;">
     <h2>{{headline}}</h2>
     <div style="flex:1; min-height:0; display:flex; align-items:center;">
-    <div style="display:flex; flex-direction:column; gap: 16px; max-width: 1400px; width:100%;">
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: 24px 32px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 24px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">01</span>{{module-1-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-1-duration}}</div></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: 24px 32px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 24px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">02</span>{{module-2-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-2-duration}}</div></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: 24px 32px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 24px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">03</span>{{module-3-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-3-duration}}</div></div>
-      <div style="display:flex; justify-content:space-between; align-items:center; padding: 24px 32px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 24px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">04</span>{{module-4-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-4-duration}}</div></div>
+    <div style="display:flex; flex-direction:column; gap: 24px; max-width: 1400px; width:100%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: 36px 40px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 27px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">01</span>{{module-1-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-1-duration}}</div></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: 36px 40px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 27px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">02</span>{{module-2-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-2-duration}}</div></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: 36px 40px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 27px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">03</span>{{module-3-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-3-duration}}</div></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding: 36px 40px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card);"><div style="font-size: 27px; font-weight: 600;"><span style="font-family: var(--font-data); color: var(--color-signal); margin-right: 16px;">04</span>{{module-4-title}}</div><div style="font-family: var(--font-data); color: var(--color-muted);">{{module-4-duration}}</div></div>
     </div>
     </div>
   </div>
@@ -34,22 +35,22 @@
   <div style="display:flex; flex-direction:column; height:100%;">
     <h2>{{headline}}</h2>
     <div style="font-size: 24px; color: var(--color-muted); margin-top: 24px;">By the end you will be able to:</div>
-    <div style="flex:1; min-height:0; display:flex; align-items:center;">
-    <div style="display:flex; flex-direction:column; gap: 32px; max-width: 1400px; width:100%;">
-      <div style="display:flex; gap: 24px; align-items:flex-start;"><div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--color-signal); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-signal); font-weight: 700;">✓</div><div style="font-size: 26px; line-height: 1.4;">{{objective-1}}</div></div>
-      <div style="display:flex; gap: 24px; align-items:flex-start;"><div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--color-signal); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-signal); font-weight: 700;">✓</div><div style="font-size: 26px; line-height: 1.4;">{{objective-2}}</div></div>
-      <div style="display:flex; gap: 24px; align-items:flex-start;"><div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--color-signal); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-signal); font-weight: 700;">✓</div><div style="font-size: 26px; line-height: 1.4;">{{objective-3}}</div></div>
-    </div>
+    <div style="flex:1; min-height:0; display:flex; flex-direction:column; justify-content:space-evenly; max-width: 1400px; width:100%;">
+      <div style="display:flex; gap: 24px; align-items:flex-start;"><div style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--color-signal); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-signal); font-weight: 700; font-size: 22px;">✓</div><div style="font-size: 30px; line-height: 1.45;">{{objective-1}}</div></div>
+      <div style="display:flex; gap: 24px; align-items:flex-start;"><div style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--color-signal); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-signal); font-weight: 700; font-size: 22px;">✓</div><div style="font-size: 30px; line-height: 1.45;">{{objective-2}}</div></div>
+      <div style="display:flex; gap: 24px; align-items:flex-start;"><div style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--color-signal); flex-shrink:0; display:flex; align-items:center; justify-content:center; color: var(--color-signal); font-weight: 700; font-size: 22px;">✓</div><div style="font-size: 30px; line-height: 1.45;">{{objective-3}}</div></div>
     </div>
   </div>
 </section>
 </template>
 
 <template id="slide-module-intro">
-<section class="slide slide-module-intro" style="background: var(--color-signal); color: var(--color-card);">
-  <div style="display:flex; flex-direction:column; justify-content:center; height:100%; gap: 32px; max-width: 1500px; color: var(--color-card);">
+<section class="slide slide-module-intro tr-dots-light" data-density="editorial" style="background-color: var(--color-signal); color: var(--color-card);">
+  <div class="tr-num">{{module-number}}</div>
+  <div style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:center; height:100%; gap: 32px; max-width: 1500px; color: var(--color-card);">
     <div style="font-family: var(--font-data); font-size: var(--size-body-4); opacity: 0.7;">Module {{module-number}}</div>
     <h1 style="line-height: 1.05; letter-spacing: -0.02em; color: var(--color-card);">{{module-title}}</h1>
+    <svg width="340" height="18" viewBox="0 0 340 18" fill="none" aria-hidden="true"><path d="M4 12 C 64 6, 150 15, 212 9 S 320 10, 336 6" stroke="rgba(255,255,255,0.9)" stroke-width="9" stroke-linecap="round" opacity="0.85"/></svg>
     <div style="font-size: 24px; line-height: 1.5; opacity: 0.85; margin-top: 32px;">{{why-this-matters}}</div>
   </div>
 </section>
@@ -59,10 +60,12 @@
 <section class="slide slide-concept">
   <div class="slide-flow">
     <h2 style="max-width: 1700px;">{{headline}}</h2>
-    <div style="font-size: 26px; line-height: 1.6; max-width: 1500px;">{{concept-body}}</div>
-    <div class="flow-grow" style="padding: 48px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card); max-width: 1500px; display:flex; flex-direction:column; gap: 24px; justify-content:center;">
-      <div style="font-family: var(--font-data); font-size: 15px; color: var(--color-signal);">{{example-label}}</div>
-      <div style="font-size: 24px; line-height: 1.6;">{{example-body}}</div>
+    <div class="flow-stage flow-center" style="gap: 48px;">
+      <div style="font-size: 30px; line-height: 1.6; max-width: 1500px;">{{concept-body}}</div>
+      <div style="padding: 64px 72px; background: var(--color-card); border-radius: var(--radius-card); box-shadow: var(--elevation-card); max-width: 1500px; display:flex; flex-direction:column; gap: 24px;">
+        <div style="font-family: var(--font-data); font-size: 16px; color: var(--color-signal);">{{example-label}}</div>
+        <div style="font-size: 30px; line-height: 1.65;">{{example-body}}</div>
+      </div>
     </div>
   </div>
 </section>
@@ -76,10 +79,10 @@
     </div>
     <h2>{{headline}}</h2>
     <div style="flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap: 40px;">
-      <div style="font-size: 26px; line-height: 1.5; max-width: 1500px;">{{task}}</div>
-      <div style="padding: 24px; border-left: 4px solid #EA580C; background: var(--color-card); max-width: 1500px;">
+      <div style="font-size: 31px; line-height: 1.55; max-width: 1500px;">{{task}}</div>
+      <div class="tr-frame tr-frame-orange" style="padding: 44px 52px; max-width: 1500px;">
         <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: #EA580C; margin-bottom: 8px;">Success criteria</div>
-        <div style="font-size: 20px; line-height: 1.4;">{{success-criteria}}</div>
+        <div style="font-size: 24px; line-height: 1.5;">{{success-criteria}}</div>
       </div>
     </div>
   </div>
@@ -111,7 +114,7 @@
     <h2 style="line-height: 1.1;">{{headline}}</h2>
     <div style="flex:1; min-height:0; display:flex; align-items:center;">
     <div style="display:flex; flex-direction:column; gap: 40px; width:100%;">
-    <div style="padding: 32px; background: var(--color-card); border-radius: var(--radius-card); border-left: 4px solid var(--color-signal);">
+    <div class="tr-frame" style="padding: 36px 44px;">
       <div style="font-style: italic; font-size: 26px; line-height: 1.4;">{{reflective-question}}</div>
     </div>
     <div style="display:flex; flex-direction:column; gap: 20px;">
@@ -142,9 +145,10 @@
 </template>
 
 <template id="slide-closing">
-<section class="slide slide-closing">
+<section class="slide slide-closing tr-dots" data-density="editorial">
   <div style="display:flex; flex-direction:column; justify-content:center; height:100%; gap: 32px; max-width: 1500px;">
     <h1 style="line-height: 1.05;">{{headline}}</h1>
+    <svg width="340" height="18" viewBox="0 0 340 18" fill="none" aria-hidden="true"><path d="M4 12 C 64 6, 150 15, 212 9 S 320 10, 336 6" stroke="#EA580C" stroke-width="9" stroke-linecap="round" opacity="0.85"/></svg>
     <div style="margin-top: 32px; display:flex; flex-direction:column; gap: 24px;">
       <div style="display:flex; gap: 24px; align-items:baseline;"><div style="font-family: var(--font-data); color: var(--color-signal); font-weight: 600; font-size: var(--size-body-4); min-width: 180px;">Do next</div><div style="font-size: 22px;">{{next-action}}</div></div>
       <div style="display:flex; gap: 24px; align-items:baseline;"><div style="font-family: var(--font-data); color: var(--color-signal); font-weight: 600; font-size: var(--size-body-4); min-width: 180px;">Support</div><div style="font-size: 22px;">{{support-channel}}</div></div>

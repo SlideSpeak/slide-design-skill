@@ -1,9 +1,16 @@
 <!-- Pitch components -->
 
 <template id="slide-cover">
-<section class="slide slide-cover" style="background: var(--color-page);">
-  <div style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
-    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{date}} · {{round}}</div>
+<section class="slide slide-cover px-grid" style="background-color: var(--color-page);">
+  <svg style="position:absolute; right:-180px; bottom:-160px; width:1400px; height:900px; z-index:0;" viewBox="0 0 560 360" fill="none" aria-hidden="true">
+    <path d="M10 330 L180 224 L300 262 L520 60" stroke="#2563EB" stroke-width="30" opacity="0.09"/>
+    <rect x="497" y="37" width="46" height="46" fill="#2563EB" opacity="0.13"/>
+  </svg>
+  <div style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+    <div style="display:flex; align-items:center; gap: 20px;">
+      <svg width="56" height="32" viewBox="0 0 56 32" fill="none" aria-hidden="true"><path d="M2 29 L18 18.5 L30 22.5 L50 6" stroke="var(--color-signal)" stroke-width="5"/><rect x="45" y="1" width="10" height="10" fill="var(--color-signal)"/></svg>
+      <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{date}} · {{round}}</div>
+    </div>
     <div style="display:flex; flex-direction:column; gap: 24px;">
       <div style="font-family: var(--font-header); font-weight: 700; font-size: 144px; line-height: 0.95; letter-spacing: -0.03em; color: var(--color-signal);">{{company-name}}</div>
       <div style="font-size: 36px; line-height: 1.2; max-width: 1400px; color: var(--color-ink); font-weight: 400;">{{tagline}}</div>
@@ -27,21 +34,21 @@
 <section class="slide slide-market">
   <div style="display:flex; flex-direction:column; gap: 64px; height: 100%;">
     <h2 style="max-width: 1600px;">{{headline}}</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; margin-top: 48px; flex: 1; align-items: center;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; flex: 1; align-items: center;">
       <div style="display:flex; flex-direction:column; gap: 16px;">
         <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">TAM</div>
-        <div style="font-family: var(--font-header); font-weight: 700; font-size: 144px; line-height: 0.9; color: var(--color-ink); letter-spacing: -0.03em;">{{tam-value}}</div>
-        <div style="font-size: 18px; color: var(--color-muted);">{{tam-label}}</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 176px; line-height: 0.9; color: var(--color-ink); letter-spacing: -0.03em;">{{tam-value}}</div>
+        <div style="font-size: 21px; color: var(--color-muted);">{{tam-label}}</div>
       </div>
       <div style="display:flex; flex-direction:column; gap: 16px;">
         <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">SAM</div>
-        <div style="font-family: var(--font-header); font-weight: 700; font-size: 144px; line-height: 0.9; color: var(--color-ink); letter-spacing: -0.03em;">{{sam-value}}</div>
-        <div style="font-size: 18px; color: var(--color-muted);">{{sam-label}}</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 176px; line-height: 0.9; color: var(--color-ink); letter-spacing: -0.03em;">{{sam-value}}</div>
+        <div style="font-size: 21px; color: var(--color-muted);">{{sam-label}}</div>
       </div>
       <div style="display:flex; flex-direction:column; gap: 16px;">
         <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">SOM</div>
-        <div style="font-family: var(--font-header); font-weight: 700; font-size: 144px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.03em;">{{som-value}}</div>
-        <div style="font-size: 18px; color: var(--color-muted);">{{som-label}}</div>
+        <div style="font-family: var(--font-header); font-weight: 700; font-size: 176px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.03em;">{{som-value}}</div>
+        <div style="font-size: 21px; color: var(--color-muted);">{{som-label}}</div>
       </div>
     </div>
     <div style="font-size: var(--size-body-4); color: var(--color-muted);">{{source}}</div>
@@ -57,9 +64,9 @@
     <div style="flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap: 48px;">
       <div style="font-size: 28px; line-height: 1.5; color: var(--color-muted); max-width: 1400px;">{{body}}</div>
       <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 40px;">
-        <div style="border-top: 4px solid var(--color-signal); padding-top: 24px; font-weight: 600; font-size: 23px; line-height: 1.35;">{{feature-1}}</div>
-        <div style="border-top: 4px solid var(--color-signal); padding-top: 24px; font-weight: 600; font-size: 23px; line-height: 1.35;">{{feature-2}}</div>
-        <div style="border-top: 4px solid var(--color-signal); padding-top: 24px; font-weight: 600; font-size: 23px; line-height: 1.35;">{{feature-3}}</div>
+        <div class="px-rule" style="padding-top: 24px; font-weight: 600; font-size: 23px; line-height: 1.35;">{{feature-1}}</div>
+        <div class="px-rule" style="padding-top: 24px; font-weight: 600; font-size: 23px; line-height: 1.35;">{{feature-2}}</div>
+        <div class="px-rule" style="padding-top: 24px; font-weight: 600; font-size: 23px; line-height: 1.35;">{{feature-3}}</div>
       </div>
     </div>
   </div>
@@ -72,16 +79,16 @@
     <h2>{{headline}}</h2>
     <div style="flex:1; min-height:0; display:flex; align-items:center;">
       <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; width:100%;">
-        <div style="border-top: 4px solid var(--color-signal); padding-top: 28px; display:flex; flex-direction:column; gap: 16px;">
-          <div style="font-family: var(--font-header); font-weight: 700; font-size: 124px; line-height: 0.9; letter-spacing: -0.02em; color: var(--color-ink);">{{metric-1-value}}</div>
+        <div class="px-rule" style="padding-top: 28px; display:flex; flex-direction:column; gap: 16px;">
+          <div style="font-family: var(--font-header); font-weight: 700; font-size: 160px; line-height: 0.9; letter-spacing: -0.02em; color: var(--color-ink);">{{metric-1-value}}</div>
           <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{metric-1-label}}</div>
         </div>
-        <div style="border-top: 4px solid var(--color-signal); padding-top: 28px; display:flex; flex-direction:column; gap: 16px;">
-          <div style="font-family: var(--font-header); font-weight: 700; font-size: 124px; line-height: 0.9; letter-spacing: -0.02em; color: var(--color-ink);">{{metric-2-value}}</div>
+        <div class="px-rule" style="padding-top: 28px; display:flex; flex-direction:column; gap: 16px;">
+          <div style="font-family: var(--font-header); font-weight: 700; font-size: 160px; line-height: 0.9; letter-spacing: -0.02em; color: var(--color-ink);">{{metric-2-value}}</div>
           <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{metric-2-label}}</div>
         </div>
-        <div style="border-top: 4px solid var(--color-signal); padding-top: 28px; display:flex; flex-direction:column; gap: 16px;">
-          <div style="font-family: var(--font-header); font-weight: 700; font-size: 124px; line-height: 0.9; letter-spacing: -0.02em; color: var(--color-ink);">{{metric-3-value}}</div>
+        <div class="px-rule" style="padding-top: 28px; display:flex; flex-direction:column; gap: 16px;">
+          <div style="font-family: var(--font-header); font-weight: 700; font-size: 160px; line-height: 0.9; letter-spacing: -0.02em; color: var(--color-ink);">{{metric-3-value}}</div>
           <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{metric-3-label}}</div>
         </div>
       </div>
@@ -118,20 +125,32 @@
 </section>
 </template>
 
+<template id="slide-customers">
+<section class="slide slide-customers" data-density="editorial">
+  <div style="display:flex; flex-direction:column; height:100%;">
+    <h2 style="max-width: 1500px;">{{headline}}</h2>
+    <div style="flex:1; min-height:0; display:flex; align-items:center;">
+      <div style="width:100%; max-width: 1640px;">{{@logo-wall names=customer-names}}</div>
+    </div>
+    <div style="font-size: var(--size-body-4); color: var(--color-muted);">{{caption}}</div>
+  </div>
+</section>
+</template>
+
 <template id="slide-team">
 <section class="slide slide-team">
   <div style="display:flex; flex-direction:column; height: 100%;">
     <h2>{{headline}}</h2>
     <div style="flex:1; min-height:0; display:flex; align-items:center;">
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 80px; width:100%;">
-      <div style="border-top: 4px solid var(--color-signal); padding-top: 28px; display:flex; flex-direction:column; gap: 12px;">
+      <div class="px-rule" style="padding-top: 28px; display:flex; flex-direction:column; gap: 12px;">
         <div style="font-family: var(--font-header); font-weight: 700; font-size: 40px; line-height: 1.05;">{{founder-1-name}}</div>
         <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal); margin-bottom: 12px;">{{founder-1-role}}</div>
         <div style="font-size: 20px; color: var(--color-muted); line-height: 1.4;">{{founder-1-cred-1}}</div>
         <div style="font-size: 20px; color: var(--color-muted); line-height: 1.4;">{{founder-1-cred-2}}</div>
         <div style="font-size: 20px; color: var(--color-muted); line-height: 1.4;">{{founder-1-cred-3}}</div>
       </div>
-      <div style="border-top: 4px solid var(--color-signal); padding-top: 28px; display:flex; flex-direction:column; gap: 12px;">
+      <div class="px-rule" style="padding-top: 28px; display:flex; flex-direction:column; gap: 12px;">
         <div style="font-family: var(--font-header); font-weight: 700; font-size: 40px; line-height: 1.05;">{{founder-2-name}}</div>
         <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal); margin-bottom: 12px;">{{founder-2-role}}</div>
         <div style="font-size: 20px; color: var(--color-muted); line-height: 1.4;">{{founder-2-cred-1}}</div>
@@ -150,7 +169,7 @@
     <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Why now</div>
     <h1 style="line-height: 1.05; letter-spacing: -0.02em;">{{headline}}</h1>
     <div style="font-size: 28px; line-height: 1.5; color: var(--color-muted); max-width: 1300px;">{{body}}</div>
-    <div style="display:flex; gap: 16px; align-items:baseline; padding-top: 24px; border-top: 1px solid var(--color-rule);"><span style="color: var(--color-signal); font-weight: 700; font-family: var(--font-data);">↗</span><div style="font-size: 22px; color: var(--color-ink); font-weight: 600;">{{trend-line}}</div></div>
+    <div style="display:flex; gap: 16px; align-items:baseline; padding-top: 24px; border-top: 1px solid var(--color-rule);"><svg width="42" height="24" viewBox="0 0 56 32" fill="none" aria-hidden="true" style="flex:none;"><path d="M2 29 L18 18.5 L30 22.5 L50 6" stroke="var(--color-signal)" stroke-width="5"/><rect x="45" y="1" width="10" height="10" fill="var(--color-signal)"/></svg><div style="font-size: 22px; color: var(--color-ink); font-weight: 600;">{{trend-line}}</div></div>
     <div style="font-size: var(--size-body-4); color: var(--color-muted);">{{source}}</div>
   </div>
 </section>
@@ -163,17 +182,17 @@
     <div style="flex:1; min-height:0; display:flex; align-items:center;">
     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; width:100%;">
       <div style="background: var(--color-card); border-radius: var(--radius-card); padding: 40px; display:flex; flex-direction:column; gap: 16px;">
-        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Channel 01</div>
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Channel</div>
         <div style="font-family: var(--font-header); font-weight: 700; font-size: 36px; line-height: 1.05;">{{channel-1-name}}</div>
         <div style="font-size: 18px; color: var(--color-muted); line-height: 1.5;">{{channel-1-body}}</div>
       </div>
       <div style="background: var(--color-card); border-radius: var(--radius-card); padding: 40px; display:flex; flex-direction:column; gap: 16px;">
-        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Channel 02</div>
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Channel</div>
         <div style="font-family: var(--font-header); font-weight: 700; font-size: 36px; line-height: 1.05;">{{channel-2-name}}</div>
         <div style="font-size: 18px; color: var(--color-muted); line-height: 1.5;">{{channel-2-body}}</div>
       </div>
       <div style="background: var(--color-card); border-radius: var(--radius-card); padding: 40px; display:flex; flex-direction:column; gap: 16px;">
-        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Channel 03</div>
+        <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">Channel</div>
         <div style="font-family: var(--font-header); font-weight: 700; font-size: 36px; line-height: 1.05;">{{channel-3-name}}</div>
         <div style="font-size: 18px; color: var(--color-muted); line-height: 1.5;">{{channel-3-body}}</div>
       </div>
@@ -204,16 +223,16 @@
 </template>
 
 <template id="slide-ask">
-<section class="slide slide-ask">
+<section class="slide slide-ask px-grid">
   <div style="display:flex; flex-direction:column; justify-content:space-between; height: 100%;">
-    <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">The ask</div>
+    <div style="display:flex; align-items:center; gap: 16px;"><svg width="42" height="24" viewBox="0 0 56 32" fill="none" aria-hidden="true"><path d="M2 29 L18 18.5 L30 22.5 L50 6" stroke="var(--color-signal)" stroke-width="5"/><rect x="45" y="1" width="10" height="10" fill="var(--color-signal)"/></svg><div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-signal);">The ask</div></div>
     <div style="display:flex; flex-direction:column; gap: 48px;">
       <div style="font-family: var(--font-header); font-weight: 700; font-size: 220px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.04em;">{{ask-amount}}</div>
       <h3 style="font-weight: 400; color: var(--color-muted); max-width: 1400px;">{{headline}}</h3>
       <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 1400px; margin-top: 32px;">
-        <div style="border-top: 2px solid var(--color-signal); padding-top: 16px;"><div style="font-weight: 600;">{{use-1}}</div></div>
-        <div style="border-top: 2px solid var(--color-signal); padding-top: 16px;"><div style="font-weight: 600;">{{use-2}}</div></div>
-        <div style="border-top: 2px solid var(--color-signal); padding-top: 16px;"><div style="font-weight: 600;">{{use-3}}</div></div>
+        <div class="px-rule" style="padding-top: 16px;"><div style="font-weight: 600;">{{use-1}}</div></div>
+        <div class="px-rule" style="padding-top: 16px;"><div style="font-weight: 600;">{{use-2}}</div></div>
+        <div class="px-rule" style="padding-top: 16px;"><div style="font-weight: 600;">{{use-3}}</div></div>
       </div>
     </div>
     <div style="display:flex; flex-direction:column; gap: 4px;">

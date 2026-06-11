@@ -1,8 +1,9 @@
 <!-- Academic components -->
 
 <template id="slide-title">
-<section class="slide slide-title">
-  <div class="slide-flow" style="padding-bottom: 0;">
+<section class="slide slide-title ax-paper" data-density="editorial">
+  <div class="ax-bracket">[</div>
+  <div class="slide-flow" style="padding-bottom: 0; position:relative; z-index:1;">
     <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 28px; max-width: 1500px;">
       <div style="font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">{{venue}} · {{date}}</div>
       <h1 style="font-style: italic; line-height: 1.1;">{{paper-title}}</h1>
@@ -21,7 +22,8 @@
 <section class="slide slide-motivation">
   <div class="slide-flow">
     <h2 style="max-width: 1700px;">{{headline}}</h2>
-    <div class="flow-grow" style="font-size: 26px; line-height: 1.6; max-width: 1500px;">{{body}}</div>
+    <div class="ax-rule"></div>
+    <div class="flow-grow" style="display:flex; align-items:center;"><div style="font-size: 34px; line-height: 1.7; max-width: 1300px;">{{body}}</div></div>
     <div style="border-top: 1px solid var(--color-rule); padding-top: 16px; display:flex; flex-direction:column; gap: 8px; font-family: var(--font-data); font-size: 15px; color: var(--color-muted);">
       <div>[1] {{citation-1}}</div>
       <div>[2] {{citation-2}}</div>
@@ -32,7 +34,7 @@
 </template>
 
 <template id="slide-research-question">
-<section class="slide slide-rq">
+<section class="slide slide-rq" data-density="editorial">
   <div class="slide-flow" style="padding-bottom: 0;">
     <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 48px; max-width: 1500px;">
       <h2 style="color: var(--color-signal); font-style: italic;">{{headline}}</h2>
@@ -51,6 +53,7 @@
 <section class="slide slide-method">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
+    <div class="ax-rule"></div>
     <div class="flow-grow" style="display:flex; align-items:center;">
       <div style="display:flex; align-items:stretch; gap: 0; width:100%;">
         <div style="flex:1; border-top: 2px solid var(--color-ink); padding-top: 24px; padding-right: 28px; display:flex; flex-direction:column; gap: 16px;"><div style="font-family: var(--font-data); color: var(--color-signal); font-weight: 600; font-size: 22px;">i.</div><div style="font-size: 22px; line-height: 1.45;">{{step-1}}</div></div>
@@ -70,7 +73,7 @@
   <div class="slide-flow">
     <h3>{{headline}}</h3>
     <div style="font-size: 28px; line-height: 1.4; font-style: italic; color: var(--color-signal); max-width: 1500px;">{{finding}}</div>
-    <div class="flow-grow" style="border: 1px solid var(--color-rule); display:flex; align-items:center; justify-content:center; color: var(--color-muted); font-family: var(--font-data); font-size: 16px;">Figure · {{figure-caption}}</div>
+    <div class="flow-grow ax-plate" style="display:flex; align-items:center; justify-content:center; color: var(--color-muted); font-family: var(--font-data); font-size: 16px;">Figure · {{figure-caption}}</div>
     <div style="font-family: var(--font-data); font-size: 14px; color: var(--color-muted); border-top: 1px solid var(--color-rule); padding-top: 12px;">{{source}} · {{n-note}}</div>
   </div>
 </section>
@@ -80,6 +83,7 @@
 <section class="slide slide-prior-work">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
+    <div class="ax-rule"></div>
     <div class="flow-grow-evenly" style="max-width: 1600px; font-size: 22px; line-height: 1.5;">
       <div style="display:flex; gap: 24px; align-items:baseline;"><span style="font-family: var(--font-data); color: var(--color-signal); min-width: 32px;">[1]</span><div><span style="font-style: italic;">{{entry-1-citation}}</span> · {{entry-1-blurb}}</div></div>
       <div style="display:flex; gap: 24px; align-items:baseline;"><span style="font-family: var(--font-data); color: var(--color-signal); min-width: 32px;">[2]</span><div><span style="font-style: italic;">{{entry-2-citation}}</span> · {{entry-2-blurb}}</div></div>
@@ -94,14 +98,15 @@
 <section class="slide slide-data">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
+    <div class="ax-rule"></div>
     <div class="flow-grow" style="display:grid; grid-template-columns: 1fr 1fr; gap: 96px; align-items:center;">
       <div>
-        <div style="font-family: var(--font-header); font-weight: 600; font-size: 196px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.03em;">{{n-value}}</div>
-        <div style="font-family: var(--font-data); margin-top: 16px; color: var(--color-muted); font-size: 18px;">{{n-label}}</div>
+        <div style="font-family: var(--font-header); font-weight: 600; font-size: 248px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.03em;">{{n-value}}</div>
+        <div style="font-family: var(--font-data); margin-top: 20px; color: var(--color-muted); font-size: 21px;">{{n-label}}</div>
       </div>
       <div style="border-left: 1px solid var(--color-rule); padding-left: 40px; display:flex; flex-direction:column; gap: 20px;">
-        <div style="font-style: italic; font-size: 28px;">{{dataset-name}}</div>
-        <div style="color: var(--color-muted); font-size: 20px;">{{period}}</div>
+        <div style="font-style: italic; font-size: 34px;">{{dataset-name}}</div>
+        <div style="color: var(--color-muted); font-size: 24px;">{{period}}</div>
         <div style="color: var(--color-muted); font-size: 17px; font-family: var(--font-data); margin-top: 12px; line-height: 1.5;">{{source}}</div>
       </div>
     </div>
@@ -114,10 +119,12 @@
 <section class="slide slide-result-table">
   <div class="slide-flow">
     <h3>{{headline}}</h3>
-    <div style="font-size: 26px; line-height: 1.4; font-style: italic; color: var(--color-signal); max-width: 1500px;">{{finding}}</div>
-    <div class="flow-grow" style="border-top: 2px solid var(--color-ink); padding-top: 16px; display:flex; flex-direction:column; gap: 16px;">
-      <div style="font-family: var(--font-data); font-size: 15px; color: var(--color-muted); padding-bottom: 16px; border-bottom: 1px solid var(--color-rule);">{{table-headers}}</div>
-      <div style="font-family: var(--font-data); font-size: 18px; line-height: 1.9; white-space: pre-line;">{{table-rows}}</div>
+    <div style="font-size: 30px; line-height: 1.45; font-style: italic; color: var(--color-signal); max-width: 1500px;">{{finding}}</div>
+    <div class="flow-stage flow-center">
+      <div class="ax-plate" style="padding: 44px 48px; display:flex; flex-direction:column; gap: 20px;">
+        <div style="font-family: var(--font-data); font-size: 16px; color: var(--color-muted); padding-bottom: 16px; border-bottom: 1px solid var(--color-rule);">{{table-headers}}</div>
+        <div style="font-family: var(--font-data); font-size: 23px; line-height: 2.3; white-space: pre-line;">{{table-rows}}</div>
+      </div>
     </div>
     <div style="font-family: var(--font-data); font-size: 14px; color: var(--color-muted); border-top: 1px solid var(--color-rule); padding-top: 12px;">{{source}}</div>
   </div>
@@ -128,19 +135,20 @@
 <section class="slide slide-discussion">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
+    <div class="ax-rule"></div>
     <div class="flow-grow" style="display:grid; grid-template-columns: 1fr 1fr; gap: 80px;">
       <div style="display:flex; flex-direction:column; gap: 16px;">
-        <div style="font-family: var(--font-data); font-size: 15px; color: var(--color-signal);">Implications</div>
-        <div style="display:flex; flex-direction:column; gap: 24px; font-size: 22px; line-height: 1.5;">
-          <div style="border-top: 1px solid var(--color-rule); padding-top: 16px;">{{implication-1}}</div>
-          <div style="border-top: 1px solid var(--color-rule); padding-top: 16px;">{{implication-2}}</div>
+        <div style="font-family: var(--font-data); font-size: 16px; color: var(--color-signal);">Implications</div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:space-evenly; font-size: 25px; line-height: 1.55;">
+          <div style="border-top: 1px solid var(--color-rule); padding-top: 20px;">{{implication-1}}</div>
+          <div style="border-top: 1px solid var(--color-rule); padding-top: 20px;">{{implication-2}}</div>
         </div>
       </div>
       <div style="display:flex; flex-direction:column; gap: 16px;">
-        <div style="font-family: var(--font-data); font-size: 15px; color: var(--color-muted);">Limitations</div>
-        <div style="display:flex; flex-direction:column; gap: 24px; font-size: 22px; line-height: 1.5; font-style: italic; color: var(--color-muted);">
-          <div style="border-top: 1px solid var(--color-rule); padding-top: 16px;">{{limitation-1}}</div>
-          <div style="border-top: 1px solid var(--color-rule); padding-top: 16px;">{{limitation-2}}</div>
+        <div style="font-family: var(--font-data); font-size: 16px; color: var(--color-muted);">Limitations</div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:space-evenly; font-size: 25px; line-height: 1.55; font-style: italic; color: var(--color-muted);">
+          <div style="border-top: 1px solid var(--color-rule); padding-top: 20px;">{{limitation-1}}</div>
+          <div style="border-top: 1px solid var(--color-rule); padding-top: 20px;">{{limitation-2}}</div>
         </div>
       </div>
     </div>
@@ -162,19 +170,24 @@
 <section class="slide slide-conclusion">
   <div class="slide-flow">
     <h2>{{headline}}</h2>
-    <div class="flow-grow" style="display:flex; align-items:center;">
-      <div style="max-width: 1600px; width:100%; display:flex; flex-direction:column; gap: 48px;">
-        <div style="display:flex; gap: 32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 32px;">
+    <div class="ax-rule"></div>
+    <div class="flow-rows" style="max-width: 1600px;">
+      <div class="flow-row" style="border-top: 1px solid var(--color-rule);">
+        <div style="display:flex; gap: 32px; align-items:baseline;">
           <div style="font-family: var(--font-data); color: var(--color-signal); font-weight: 600; font-size: 22px; min-width: 40px;">01</div>
-          <div style="font-size: 34px; line-height: 1.4;">{{takeaway-1}}</div>
+          <div style="font-size: 36px; line-height: 1.4;">{{takeaway-1}}</div>
         </div>
-        <div style="display:flex; gap: 32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 32px;">
+      </div>
+      <div class="flow-row" style="border-top: 1px solid var(--color-rule);">
+        <div style="display:flex; gap: 32px; align-items:baseline;">
           <div style="font-family: var(--font-data); color: var(--color-signal); font-weight: 600; font-size: 22px; min-width: 40px;">02</div>
-          <div style="font-size: 34px; line-height: 1.4;">{{takeaway-2}}</div>
+          <div style="font-size: 36px; line-height: 1.4;">{{takeaway-2}}</div>
         </div>
-        <div style="display:flex; gap: 32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 32px;">
+      </div>
+      <div class="flow-row" style="border-top: 1px solid var(--color-rule);">
+        <div style="display:flex; gap: 32px; align-items:baseline;">
           <div style="font-family: var(--font-data); color: var(--color-signal); font-weight: 600; font-size: 22px; min-width: 40px;">03</div>
-          <div style="font-size: 34px; line-height: 1.4;">{{takeaway-3}}</div>
+          <div style="font-size: 36px; line-height: 1.4;">{{takeaway-3}}</div>
         </div>
       </div>
     </div>
@@ -183,7 +196,7 @@
 </template>
 
 <template id="slide-qa">
-<section class="slide slide-qa">
+<section class="slide slide-qa ax-paper" data-density="editorial">
   <div class="slide-flow" style="padding-bottom: 0;">
     <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
       <h2 style="font-style: italic;">{{headline}}</h2>

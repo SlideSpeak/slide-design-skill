@@ -41,6 +41,14 @@ You write decks as if you are the PMM lead at a respected modern SaaS company la
 - UI mockups have rounded corners (radius 16-24px), gentle shadow, never tilted.
 - No competing accent colors on a single slide.
 
+## Graphic system
+
+- Signature mark: the stage light. Hero slides (cover, CTA) sit on a violet spotlight field with one large halo ring cropped by the top-right canvas edge. The light is the brand gesture; content slides stay on white.
+- Structural device: the chip. Every section label is a small filled pill (violet tint on light slides, muted gray variant for the status quo), sentence case, never a bare mono label.
+- Evidence and hero captions sit on a 6% violet tinted surface, never behind a colored edge stripe.
+- Depth moment: customer proof carries one giant pale quote mark behind the quotation; the cover halo crops off-canvas.
+- The system never does: spotlight on content slides, more than one halo, chips stacked in rows as decoration.
+
 ## Density
 
 - Cover: product name + 1-line positioning. Nothing else.

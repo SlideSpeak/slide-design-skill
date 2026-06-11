@@ -98,6 +98,44 @@ function checkTemplateMorphology(rawComponents: string): string | null {
   return null;
 }
 
+/**
+ * Graphic-layer gate: a skill whose templates and chrome carry no drawn
+ * constructs at all renders as styled text boxes — the "bland" tell. Counts
+ * bespoke graphic constructs statically:
+ *  - inline <svg> in components.html (icons/charts come from engine directives,
+ *    so a raw <svg> in a template is hand-authored ornament)
+ *  - ::before/::after rules in chrome.css that actually paint something
+ *    (background / border / box-shadow / visible content)
+ *  - svg data-URI surfaces (grain, lattice, pattern textures)
+ *  - gradient surfaces (linear/radial/conic/repeating)
+ * Hard gate: ≥ 3 constructs. The generator prompt demands a full signature
+ * graphic system (mark + surface + structural devices + one depth moment);
+ * this is the structural backstop, deliberately blunt.
+ */
+function checkGraphicLayer(rawComponents: string, rawChrome: string): string | null {
+  const components = stripComments(rawComponents);
+  const chrome = stripComments(rawChrome);
+  const svgMarks = (components.match(/<svg[\s>]/gi) ?? []).length;
+  let pseudoDevices = 0;
+  const pseudoRe = /::(?:before|after)[^{}]*\{([^}]*)\}/gi;
+  let m: RegExpExecArray | null;
+  while ((m = pseudoRe.exec(chrome)) !== null) {
+    const body = m[1];
+    const paints =
+      /\b(?:background|border|box-shadow|outline)\b/i.test(body) ||
+      /content\s*:\s*["'][^"']/.test(body);
+    if (paints) pseudoDevices++;
+  }
+  const both = components + chrome;
+  const dataUris = (both.match(/data:image\/svg/gi) ?? []).length;
+  const gradients = (both.match(/(?:linear|radial|conic|repeating-linear|repeating-radial)-gradient\(/gi) ?? []).length;
+  const total = svgMarks + pseudoDevices + dataUris + gradients;
+  if (total < 3) {
+    return `no graphic layer: ${total} graphic construct(s) found (svg=${svgMarks}, pseudo=${pseudoDevices}, texture=${dataUris}, gradient=${gradients}; need ≥ 3) — a skill of styled text boxes reads as bland; author a signature mark, a surface treatment and structural devices`;
+  }
+  return null;
+}
+
 /** Coarse grid signature: collapse a template's column layout to "Nx1fr" / "cols" / "flow". */
 function gridSignature(body: string): string {
   const grids = [...body.matchAll(/grid-template-columns\s*:\s*([^;"']+)/gi)].map((x) =>
@@ -210,6 +248,10 @@ async function main() {
           "chrome.css is byte-equivalent to the stock default look — author a bespoke chrome for this skill",
         );
       }
+
+      // Graphic-layer gate — hard. Styled text boxes alone are the bland tell.
+      const graphicGap = checkGraphicLayer(rawComponents, rawChrome);
+      if (graphicGap) failures.push(graphicGap);
 
       // Composition-family contract (generated skills) — hard gate, opt-in.
       failures.push(...checkFamilyContract(skill));
@@ -328,14 +370,14 @@ function stripComments(src: string): string {
 
 function collectDirectiveSlots(tmpl: string): Set<string> {
   const slots = new Set<string>();
-  const re = /\{\{\s*@(?:table|list|chart|gradient-bg|scrim|placeholder)\s+([^{}]+?)\s*\}\}/g;
+  const re = /\{\{\s*@(?:table|list|chart|gradient-bg|scrim|placeholder|logo-wall)\s+([^{}]+?)\s*\}\}/g;
   const argRe = /([a-zA-Z][\w-]*)=([^\s]+)/g;
   // arg names whose value is a slot reference (not a literal).
   const slotRefArgs = new Set([
     "rows", "cols", "cells", "slot", "data", "labels",
     "highlight", "preset", "xLabel", "yLabel",
     "compareData", "compareLabel", "primaryLabel",
-    "title", "unit", "variant", "pins", "name", "note",
+    "title", "unit", "variant", "pins", "name", "note", "names",
   ]);
   let m: RegExpExecArray | null;
   while ((m = re.exec(tmpl)) !== null) {

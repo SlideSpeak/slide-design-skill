@@ -34,6 +34,15 @@ You write decks as if you are a senior consultant at a top-tier strategy firm pr
 - Numbers in data-callouts are 96–128px, serif, weight 600.
 - No icons. If you'd reach for an icon, use a number or a rule instead.
 
+## Graphic system
+
+- Signature mark: the red ledger margin, a 2px vertical signal rule down the left edge of the document moments (cover, section dividers, closing). Content slides never carry it; that contrast is the point.
+- Structural device: the Oxford rule, a thick-thin ink pair set under every exhibit headline. It is the document's handwriting; no other underline exists.
+- Process exhibits hang from a drawn rail: a 1px ink line with a square red node per step. Nodes mark sequence, never status.
+- Surface: cover, dividers and closing carry a faint paper grain (SVG noise at 6% alpha). Working slides stay flat.
+- Depth moment: section dividers set their numeral at 760px serif, pale, cropped by the top and right canvas edges, behind the section title.
+- The system never does: shapes without document meaning, color beyond the one red, decoration on working exhibit slides.
+
 ## Slide Hierarchy
 
 1. **Cover** — title, subtitle, client name, date. Logo region reserved but left blank (brand-asset-constraint).

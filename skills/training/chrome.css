@@ -77,3 +77,39 @@
 }
 .dir-table tbody tr:last-child th,
 .dir-table tbody tr:last-child td { border-bottom: none; }
+
+/* Graphic system: the workshop wall. A pegboard dot lattice on the bookends,
+   a hand-pulled orange marker swipe under the big titles, dashed worksheet
+   frames around anything participants act on. Tools of the room, drawn. */
+
+.tr-dots {
+  background-image: radial-gradient(circle, rgba(31, 41, 55, 0.10) 1.6px, transparent 1.6px);
+  background-size: 52px 52px;
+}
+.tr-dots-light {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.16) 1.6px, transparent 1.6px);
+  background-size: 52px 52px;
+}
+
+/* worksheet frame: the handout, dashed and rounded; orange variant for
+   exercise material, teal for reflection */
+.tr-frame {
+  border: 2px dashed var(--color-signal);
+  border-radius: 18px;
+  background: var(--color-card);
+}
+.tr-frame-orange { border-color: #EA580C; }
+
+/* giant module numeral, cropped by the canvas on module intros */
+.tr-num {
+  position: absolute;
+  right: -50px;
+  bottom: -210px;
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 760px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.10);
+  z-index: 0;
+  pointer-events: none;
+}

@@ -72,3 +72,56 @@
 .dir-table tbody tr:first-child td:last-child { border-top-right-radius: 12px; }
 .dir-table tbody tr:last-child th:first-child { border-bottom-left-radius: 12px; }
 .dir-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
+
+/* Graphic system: the stage. Hero slides are lit like a keynote: a soft
+   spotlight field plus one cropped halo ring. Light slides carry chip
+   labels and one giant pale quote mark on customer proof. The light is
+   the brand; nothing else decorates. */
+
+.pm-stage {
+  background-color: var(--color-signal);
+  background-image:
+    radial-gradient(1600px 900px at 24% 8%, rgba(255, 255, 255, 0.16), transparent 60%),
+    radial-gradient(1200px 800px at 88% 110%, rgba(0, 0, 0, 0.28), transparent 65%);
+}
+.pm-stage::after {
+  content: "";
+  position: absolute;
+  right: -320px;
+  top: -380px;
+  width: 1100px;
+  height: 1100px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+}
+
+/* chip labels: the launch-post badge, sentence case, never uppercase */
+.pm-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  font-family: var(--font-data);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-signal);
+  background: rgba(91, 33, 182, 0.08);
+  padding: 8px 18px;
+  border-radius: 999px;
+}
+.pm-chip-muted {
+  color: var(--color-muted);
+  background: rgba(107, 114, 128, 0.10);
+}
+
+/* one giant pale quote mark behind customer proof */
+.pm-quote-mark {
+  position: absolute;
+  left: 48px;
+  top: -56px;
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 560px;
+  line-height: 1;
+  color: rgba(91, 33, 182, 0.07);
+  pointer-events: none;
+}

@@ -72,3 +72,58 @@
 }
 .dir-table tbody tr:last-child th,
 .dir-table tbody tr:last-child td { border-bottom: 2px solid var(--color-ink); }
+
+/* Graphic system: the citation bracket. The [n] apparatus that runs through
+   the deck becomes the signature: a giant pale serif bracket on the title,
+   a double hairline as the section rule, evidence plates with a teal tab.
+   Parchment grain on the bookends. Apparatus, never ornament. */
+
+/* double hairline: the scholarly section rule (Tufte separator, not Oxford) */
+.ax-rule {
+  position: relative;
+  height: 7px;
+  border-top: 1px solid var(--color-ink);
+  flex: none;
+}
+.ax-rule::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  border-top: 1px solid var(--color-ink);
+}
+
+/* evidence plate: a ruled frame with a small teal tab on its top edge,
+   marks anything evidentiary (figures, tables, the dataset) */
+.ax-plate {
+  position: relative;
+  border: 1px solid var(--color-ink);
+}
+.ax-plate::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 32px;
+  width: 40px;
+  height: 5px;
+  background: var(--color-signal);
+}
+
+/* parchment grain for title and closing */
+.ax-paper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+
+/* the giant title bracket: pale serif, cropped by the canvas edge */
+.ax-bracket {
+  position: absolute;
+  left: -40px;
+  top: -210px;
+  font-family: var(--font-header);
+  font-size: 1380px;
+  line-height: 1;
+  color: rgba(15, 76, 92, 0.07);
+  z-index: 0;
+  pointer-events: none;
+}

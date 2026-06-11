@@ -42,6 +42,14 @@ You write decks as if you are a workshop facilitator with a live room of learner
 - Cards have radius (12px), gentle shadows OK (vs consulting's sharp edges).
 - Generous whitespace: this is for learning, not for showing off density.
 
+## Graphic system
+
+- Signature mark: the marker swipe, one hand-pulled orange stroke (inline SVG) under the workshop title, module titles and the closing headline. Always one stroke, always under the title, never mid-text.
+- Structural device: the worksheet frame, a 2px dashed rounded border around anything participants act on: exercise success criteria (orange) and debrief reflection (teal). Never a colored edge stripe on a card.
+- Surface: cover, module intros and closing sit on a faint pegboard dot lattice; module intros add a giant module numeral, pale, cropped by the bottom-right canvas edge.
+- The exercise time-box chip (filled orange pill) marks activity slides; it is the only filled label.
+- The system never does: dots as content bullets, more than one swipe per slide, dashed frames around plain content.
+
 ## Density
 
 - Body copy 22-26px. Headlines 48-72px. No exceptions.

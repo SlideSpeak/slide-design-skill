@@ -44,6 +44,14 @@ You write decks as if you are a researcher presenting to peers at a top conferen
 - Equations centered with extra vertical space. Use proper math typography.
 - Footnote-style citations in muted gray at the bottom margin.
 
+## Graphic system
+
+- Signature mark: the citation bracket. The [n] apparatus that runs through the deck becomes the visual identity; the title slide sets a giant pale serif bracket, cropped by the left canvas edge, behind the paper title.
+- Structural device: the double hairline (.ax-rule), two 1px ink rules set under every section headline. Tufte separator, never a thick bar.
+- Evidence plate (.ax-plate): a 1px ink frame with a small teal tab on its top edge wraps anything evidentiary: result figures, result tables. The tab marks "exhibit", never status.
+- Surface: title and Q&A carry a faint parchment grain. Working slides stay flat.
+- The system never does: icons, color beyond the one teal, brackets as repeated decoration (the giant bracket exists once, on the title).
+
 ## Density
 
 - Lecture mode: 1 idea per slide, large text (28-32px body).

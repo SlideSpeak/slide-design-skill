@@ -2,6 +2,34 @@
    airy rhythm, one blue moment per slide, citations almost invisible. The
    slide is the claim; the chrome stays out of the way. */
 
+/* Graphic system: the conviction stroke. One drawn device, a rising stroke
+   with a square terminal (the chart reduced to its claim). Giant and cropped
+   on the cover, small and exact on why-now and the ask. Metric rules carry
+   its dash; nothing else is decorated. */
+
+/* designed metric rule: a short signal dash sitting on an ink hairline
+   (replaces the generic full-width accent border) */
+.px-rule {
+  position: relative;
+  border-top: 1px solid rgba(10, 10, 10, 0.55);
+}
+.px-rule::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 56px;
+  height: 6px;
+  background: var(--color-signal);
+}
+
+/* faint chart-paper field, only on the cover and the ask */
+.px-grid {
+  background-image:
+    repeating-linear-gradient(to right, rgba(10, 10, 10, 0.05) 0 1px, transparent 1px 120px),
+    repeating-linear-gradient(to bottom, rgba(10, 10, 10, 0.05) 0 1px, transparent 1px 120px);
+}
+
 .slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.03em; }
 .slide h1 { line-height: 0.98; }
 .slide h2 { line-height: 1.02; }

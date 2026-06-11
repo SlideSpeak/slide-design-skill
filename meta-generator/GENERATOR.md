@@ -1,180 +1,125 @@
-# SlideSpeak Skill Generator
+# Authoring a skill package by hand
 
-Use this guide to build a new slide-skill. Anyone on the SlideSpeak team (engineer, designer, or a coding assistant) can follow these steps.
+Use this guide to build a skill package manually. Anyone on the team (engineer, designer, or a coding assistant) can follow it. The format contract lives in `docs/SKILL-FORMAT.md`; this is the step-by-step path.
 
-A skill is a deterministic style+layout specification that converts user prompts into branded slides. Two generations from the same skill on the same prompt must produce visually indistinguishable output.
+Context: the product's default path generates a bespoke package per brief (`engine/skill-generator.ts`). Hand-authoring is for curated reference packages: quality anchors, few-shot material for the generator, house styles you want under version control.
 
-## When You Need a New Skill
+A skill is a deterministic style and layout specification. Two generations from the same skill on the same prompt must produce visually indistinguishable output.
 
-Build a new skill when:
-- A customer segment has a recognizable visual identity not covered by `consulting | pitch | academic | training | product-marketing` (e.g. `editorial | data-journalism | sales-enablement | enterprise-rfp`)
-- A vertical has unique slide-types that don't fit existing grammars (e.g. legal briefs, scientific posters, real-estate tear-sheets)
-- A brand wants a fully-bespoke skill for their own decks (white-label)
+## Input you need
 
-Do NOT build a new skill when:
-- An existing skill just needs token tweaks → fork tokens.json, change values, keep the same skill
-- The user wants different content → that's a prompt-engineering job, not a new skill
+Gather one of these before starting:
 
-## Input You Need
+- **Brand reference**: 2 or 3 decks or sites you want to emulate
+- **Brand identity**: a guidelines doc (PDF or Figma)
+- **Description**: a written brief ("conference talks for biotech researchers, formal but warm")
+- **Existing package to fork**: name plus the three changes you want
 
-Before you start, gather one of these:
-- **Brand reference**: 2-3 URLs of decks you want to emulate (PDFs, image galleries, public reports)
-- **Brand identity**: a brand guidelines doc (PDF or Figma)
-- **Description**: written brief ("conference talks for biotech researchers, formal but warm")
-- **Existing skill to fork**: name of skill to start from + the 3 changes you want
-
-## The Six Files Every Skill Needs
+## The six files
 
 ```
-skills/{your-skill-name}/
-  SKILL.md              # frontmatter + authoring guide
-  tokens.json           # color / type / spacing / radius / page
-  layout-grammar.md     # slide-types table + composition rules
-  image-style.md        # AI prompt template + stock query template + decision rules
-  components.html       # one <template id="slide-{type}"> per slide-type
-  examples/             # 2-3 rendered example slides as reference
+skills/<name>/
+  SKILL.md            frontmatter + authoring guide + "## Graphic system" section
+  tokens.json         color / type / spacing / radius / page
+  chrome.css          the look: labels, footer, tables, rhythm, graphic devices
+  layout-grammar.md   slide-types table + composition rules
+  image-style.md      AI prompt template + stock query template + decision rules
+  components.html     one <template id="slide-{type}"> per slide type
 ```
 
-## Step 1 — Pick the Skill Name and Run the Bootstrap
+## Step 1: bootstrap
 
 ```bash
-npx tsx scripts/new-skill.ts <skill-name>
-# example: npx tsx scripts/new-skill.ts editorial
+npm run new-skill <name>
 ```
 
-This creates `skills/<skill-name>/` from `meta-generator/templates/`. All files are placeholders — you'll fill them in.
+Creates `skills/<name>/` from `meta-generator/templates/` with placeholder files.
 
-## Step 2 — Write SKILL.md
+## Step 2: SKILL.md
 
-The frontmatter is the most-loaded part of your skill. Be specific.
+Frontmatter must be specific; it is how the engine routes briefs to the package.
 
 ```yaml
 ---
-name: <skill-name>            # MUST match folder name
+name: <name>            # must match the folder
 version: 0.1.0
-description: "1-2 sentences. Include trigger keywords: 'Use when the user asks for X, Y, Z'."
-inspiration: "3-5 specific references (publications, decks, designers, eras)"
-typography_kit: "name the font families. Include 1-2 fallbacks."
-color_kit: "describe the palette in 1 line"
-image_style: "what kind of imagery this skill prefers"
-forbidden: "comma-separated list of visual choices that are wrong"
+description: "1-2 sentences. Include trigger keywords."
+inspiration: "3-5 specific references"
+typography_kit: "font families plus fallbacks"
+color_kit: "the palette in one line"
+image_style: "the imagery this style prefers"
+forbidden: "visual choices that are wrong for this style"
 ---
 ```
 
-The body is the authoring guide. Cover:
-- **Voice** — how copy should sound
-- **Structure** — the canonical slide arc
-- **Visual System** — concrete CSS-level direction (px, hex, font-weight)
-- **Density** — bullets per slide, body copy size, whitespace rules
-- **Style Anchors** — 4-6 named references the LLM can pattern-match
+The body is the authoring guide: voice, canonical slide arc, concrete visual direction (px, hex, weights), density stance, 4 to 6 named style anchors. Add a `## Graphic system` section documenting the signature mark, the surface treatment, the structural devices and the one depth moment (what they are, where they appear, what they never do). Keep the whole file 100 to 200 lines.
 
-Keep it 100-200 lines. More is noise; less is too vague.
+Avoid the cliche identities the validator warns about: Inter as the header face of an all-Inter package, and the worn AI-display serifs (Fraunces, Instrument Serif, Playfair, DM Serif, Space Grotesk).
 
-## Step 3 — Fill tokens.json
+## Step 3: tokens.json
 
-This is the variable-system every component references. Always include these keys:
+Schema and rules in `docs/SKILL-FORMAT.md`. Page is always 1920x1080; safe area typically 80 to 128px; `icon.kit` picks one of `lucide | tabler | phosphor | heroicons`. Signal-primary is the one color that defines the feel; deploy it like the brand would, not as a timid sprinkle.
 
-```json
-{
-  "color": {
-    "ground": { "page": "#...", "card": "#...", "ink": "#..." },
-    "signal": { "primary": "#...", "subtle": "#..." },
-    "support": { "muted": "#...", "rule": "#..." }
-  },
-  "type": {
-    "header": { "family": "...", "weight": 600, "scale": [64, 44, 32, 24] },
-    "body":   { "family": "...", "weight": 400, "scale": [22, 18, 16, 14] },
-    "data":   { "family": "...", "weight": 500 }
-  },
-  "spacing": { "unit": 4, "scale": [4, 8, 12, 16, 24, 32, 48, 64, 96] },
-  "radius": { "card": 2, "button": 2, "input": 2 },
-  "elevation": { "card": "0 1px 0 rgba(0,0,0,0.06)" },
-  "page": { "ratio": "16:9", "width": 1920, "height": 1080, "safe": 96 }
-}
-```
+## Step 4: chrome.css
 
-Rules:
-- Page is always 1920×1080 (16:9). PowerPoint and Keynote both export this natively.
-- Safe-area is the inner margin where content lives. Typical: 96px (dense) to 128px (spacious).
-- Scales are typically 4 values for headers, 4 for body. Don't add more without reason.
-- Signal-primary is the one color that defines the skill's "feel". Pick deliberately.
+The look layer, emitted after the neutral base. Define at least:
 
-## Step 4 — Write layout-grammar.md
+- `.slide .eyebrow`: how labels read in this brand. Sentence case, normal tracking.
+- `.slide .source`: the footer treatment (or none, if the brand would not use one).
+- `.dir-table ...`: the full table look, if any slide type uses `{{@table}}`.
+- `.slide-flow { gap; padding-bottom; }`: the vertical rhythm.
+- The graphic devices: painting `::before`/`::after` rules, texture data-URIs, surfaces.
 
-The grammar is what the LLM uses to compose a deck. Two parts:
+A warm consumer brand, a brutalist editorial brand and a dense data brand must produce visibly different chrome. If your chrome is interchangeable with another package's, it is not done.
 
-**Slide types table** — markdown table with columns `slide-type | when | required slots | optional slots`. At least 5 slide-types; rarely more than 12. Each slide-type maps to one `<template>` in `components.html`.
+## Step 5: layout-grammar.md
 
-**Composition rules** — `## Composition Rules` heading followed by bullet rules. Each rule is a hard constraint the deck-generator must obey. Examples:
-- "First slide is always `cover`. Last is always `closing`."
-- "Decks > 12 slides must contain at least one structural slide."
-- "ONE accent color per deck."
+A slide-types table (`slide-type | when | required slots | optional slots`, first column in backticks; the parser is markdown-driven) plus a `## Composition rules` section of hard constraints. At least 5 slide types, rarely more than 12. Annotate each type with its composition family; the validator caps single-family share and requires unboxed typographic types next to boxed grids.
 
-The grammar parser is markdown-driven — keep the table format exact (first column is the slide-type name in backticks).
+## Step 6: image-style.md
 
-## Step 5 — Write image-style.md
+`Prompt template:` and `Search-query template:` lines with `{subject}`, decision-rule bullets (`category -> AI default | stock | ask`), optionally one `Treatment:` line when a deliberate stylistic abstraction genuinely fits the brand. See `docs/SKILL-FORMAT.md` for the treatment list.
 
-Two image streams every skill must define:
+## Step 7: components.html
 
-**AI-generated** — for backgrounds, gradients, abstract visuals.
-- `Prompt template:` one-line template with `{subject}` placeholder.
-- `Negative prompt:` comma-separated list of what to avoid.
+One `<template id="slide-{type}">` per slide type, inline-styled, consuming token variables. Content arrives through `{{slot}}` placeholders and directives (`{{@chart}}`, `{{@table}}`, `{{@list}}`, `{{@icon}}`, `{{@scrim}}`, `{{@placeholder}}`, `{{@logo-wall}}`, `{{@gradient-bg}}`).
 
-**Stock photography** — for real-world subjects.
-- `Search-query template:` one-line template with `{subject}` placeholder.
+Structural rules that keep slides filling the frame:
 
-**Decision rules** — list lines like:
-```
-- `gradient | background | abstract` → AI default
-- `person | product | location` → ask user
-- `microscopy | specimen` → stock
-```
+- Page skeleton is `slide-flow` with `flow-head` / `flow-stage` / `flow-foot`.
+- Exhibits that should fill use the island utilities (`flow-grid-fill`, `flow-fill`, `flow-rows` + `flow-row`).
+- Never stretch thin content to fill. Size it to content, set type large enough to carry the slide (17 to 21px), center the band. Lists that should span a full card become equal-height tracks with centered rows, not `space-between`.
+- `{{@list}}` renders bare item divs inside a `display:contents` wrapper. Style items as `.your-scope .dir-list > div`; a `ul`/`li` selector matches nothing.
+- Sparse slides may declare `data-density="editorial"` on the slide root.
 
-The parser recognizes `category | category` → verdict. Verdicts: `AI default`, `stock`, `ask`.
+Hard rules (validation fails): no uppercase labels, no font-size below 14px, no accent border on a card edge, no em-dashes, no invented logos or fake product UI, at least three drawn graphic constructs across the package.
 
-## Step 6 — Write components.html
-
-For every slide-type in your grammar, write a `<template id="slide-{type}">` block. Use `{{slot-name}}` placeholders for content. Use `var(--color-signal)`, `var(--font-header)`, etc. for tokens.
-
-Keep components inline-styled when in doubt. CSS-classes are allowed but the renderer doesn't load external stylesheets — tokens-CSS is injected by the engine.
-
-The renderer matches `<template id="slide-{type}">` exactly. If your grammar has slide-type `data-callout`, the template id is `slide-data-callout`.
-
-## Step 7 — Validate and Render
+## Step 8: validate, render, measure
 
 ```bash
-npx tsx scripts/validate-skill.ts
+npm run validate
 ```
 
-Validation checks: frontmatter required fields, tokens schema, at least 5 slide-types and 3 composition rules, image-style decision rules present, and that every slide-type has a matching component.
+Checks format, grammar/template parity, slot usage, the typography and graphic-layer gates, and composition-family limits.
 
-Then run the end-to-end spike with your skill:
+Then render a fixture deck and measure it:
 
 ```bash
-SKILL=<skill-name> npx tsx scripts/spike.ts
+npx tsx scripts/render-fixture.mts <name> <your-deck.json> /tmp/<name>.html
+npm run measure:occupancy /tmp/<name>.html
 ```
 
-This renders a hand-crafted slide tree to `examples/<skill-name>-spike.html`. Open in a browser and review.
+Fix every flagged slide (re-template or re-author, never stretch thin content) and re-measure until all pass. Then look at every slide with your eyes; the gates catch geometry, not taste.
 
-## Step 8 — Build 2-3 Example Decks
+## Common pitfalls
 
-Put fully-rendered example HTML files in `skills/<skill-name>/examples/`. Each example demonstrates the skill at its best. These get loaded into the system-prompt as reference.
+- **Generic frontmatter**: the engine cannot tell when to use the package. Be specific in `description` and `forbidden`.
+- **Token drift**: components hard-coding values that tokens define. Use `var(--*)` everywhere.
+- **Slide type without template**: the renderer falls back to a generic layout that ignores your style.
+- **Default chrome**: a chrome.css that matches the stock look has no identity; the validator warns.
+- **Paint-swap templates**: same composition, different colors, across slide types. Each type needs its own compositional primitive.
+- **Brand names in image prompts**: the engine rejects them. Use abstract subjects.
 
-## Common Pitfalls
+## Engine constants (never per skill)
 
-- **Generic frontmatter** → LLM can't tell when to use your skill. Be specific in `description` and `forbidden`.
-- **Token drift** → if `tokens.json` defines colors that components don't reference, components will drift. Use `var(--*)` for everything.
-- **Slide-type without component** → renderer falls back to a generic layout that ignores your style. Every slide-type in the grammar MUST have a matching `<template>`.
-- **Brand-name in image prompts** → engine rejects. Use abstract subjects.
-- **Mixing slide-type vocabulary** across skills (`hero` in one, `cover` in another) → grammar parser handles it, but the LLM gets confused. Stick to consistent names within a skill.
-
-## Engine Constants (Don't Touch From a Skill)
-
-The following are engine-level, never per-skill:
-- Page dimensions (1920×1080)
-- Brand-asset blocklist (logo, trademark, named-brand list)
-- Image budget enforcement
-- PPTX export pipeline (when added)
-- LLM prompt composition
-
-If you need to change one of these, file an issue against the engine, not your skill.
+Page dimensions, the brand-asset blocklist, image-budget enforcement, prompt composition and all validation gates are engine-level. If one of these needs to change, file an issue against the engine, not your package.

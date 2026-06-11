@@ -1,124 +1,94 @@
-# Handover — slide-design-skill v0.1
+# Handover
+
+What is in this repository, how to verify it works, and what is deliberately not built yet.
 
 ## What you got
 
-A drop-in skill engine for SlideSpeak's HTML slide generation. Seven reference skill packages + a skill generator (derives a bespoke skill from a free-form brief) + a meta-generator for your team to build more. The shipped packages are reference seeds, not a fixed menu users pick from.
+An engine that turns a brief (topic plus a look described in any form) into branded, deterministic HTML slide decks:
 
-## Repo Layout
+- **Style intake** (`engine/style-intake.ts`): routes free text, "like X" references, mixes and brand URLs to a style brief; asks short clarifying questions only when the brief carries zero style signal.
+- **Skill generator** (`engine/skill-generator.ts`): derives a complete bespoke skill package (tokens, templates, chrome, grammar, image direction) from a style brief. This is the default product path; styles are generated per brief, not picked from a list.
+- **Deck planner** (`engine/deck-plan.ts`): reads the brief into presentation type, audience, register, a per-slide density rhythm and a variance posture, so two decks differ in their marching orders, not just their colors.
+- **Renderer + directives** (`engine/renderer.ts`): fills the skill's templates; draws charts (10 types), icons (4 baked kits), tables, lists, scrims, image placeholders and logo walls deterministically. The model never authors SVG or coordinates; geographic and icon data are baked from real sources (`engine/fidelity-data.ts`, `engine/dotmap-data.ts`).
+- **Image subsystem** (`engine/image-providers.ts`, `engine/image-treatments.ts`): FAL for AI imagery, Unsplash and Pexels federated for stock, per-category decision rules, 10 deliberate image treatments, model-aware inference steps, and an engine-level brand guard that skills cannot bypass.
+- **Moodboard intake** (`engine/moodboard.ts`): optional image-first style anchoring; two boards on rotated palette axes, the approved board feeds the generation brief.
+- **Quality gates**: skill validation, slide-tree validation, content lint, occupancy measurement, security smoke. See the gate table in `README.md`; the design rules they enforce are in `docs/SKILL-FORMAT.md`.
+- **7 reference packages** (`skills/`): academic, consulting, neue-klasse, opex, pitch, product-marketing, training. Curated seeds and few-shot material for the generator, also useful as direct styles when a brief names them literally. Not a user-facing menu.
+- **Meta-generator** (`meta-generator/`): a guided path for the team to author packages by hand.
+
+## Repository layout
 
 ```
-slide-design-skill/
-├── engine/                       # Core: skill loader, prompt composer, renderer, image subsystem
-│   ├── index.ts                  # generateDeck() entry point
-│   ├── types.ts                  # All public types
-│   ├── skill-loader.ts           # Reads skill folders, parses frontmatter + grammar
-│   ├── token-compiler.ts         # tokens.json → CSS variables
-│   ├── prompt-composer.ts        # Builds the LLM system prompt
-│   ├── brand-guard.ts            # Validates image prompts + slot content against blocklist
-│   ├── renderer.ts               # slide-tree → HTML via components.html
-│   └── image-providers.ts        # FAL.ai + Unsplash + Pexels + FederatedImageResolver
-├── skills/                       # Reference skill packages (worked examples, not a fixed menu)
-│   ├── consulting/               # strategy decks
-│   ├── pitch/                    # investor decks
-│   ├── academic/                 # university/conference decks
-│   ├── training/                 # workshop/onboarding decks
-│   ├── product-marketing/        # launch/marketing decks
-│   ├── neue-klasse/              # data/diagram-led product narrative
-│   └── opex/                     # operational-excellence steering deck
-├── meta-generator/
-│   ├── GENERATOR.md              # Step-by-step guide for building new skills
-│   └── templates/                # Skeleton files for new-skill bootstrap
-├── scripts/
-│   ├── render-fixture.mts        # Deterministic render of a deck (no image API)
-│   ├── validate-skill.ts         # Validates all skills parse + meet spec
-│   ├── new-skill.ts              # Bootstraps a new skill folder
-│   ├── image-smoke.ts            # Tests image subsystem + brand guard
-│   └── security-smoke.ts         # Output-escaping + path-containment checks
-├── docs/
-│   ├── SKILL-FORMAT.md           # Authoritative format spec
-│   ├── INTEGRATION.md            # How to wire into SlideSpeak's pipeline
-│   └── HANDOVER.md               # This file
-├── examples/                     # End-to-end rendered decks
-└── README.md
+engine/
+  index.ts               generateDeck() entry point, exports
+  types.ts               public types
+  skill-loader.ts        reads a skill folder, strips uppercase typography defensively
+  token-compiler.ts      tokens.json -> CSS variables + neutral base CSS + layout utilities
+  style-intake.ts        brief -> StyleBrief routing
+  skill-generator.ts     StyleBrief -> bespoke 6-file skill package
+  deck-plan.ts           brief -> design read + density rhythm
+  prompt-composer.ts     skill + plan -> system prompt (density, fill-frame, content contract)
+  validate.ts            slide-tree validation + composition variety
+  quality-lint.ts        content lint rules
+  occupancy.ts           underfill scoring (page voids + hollow cells)
+  renderer.ts            slide tree -> HTML, all directives
+  composition-families.ts taxonomy used by the variety gates
+  brand-guard.ts         image-prompt + slot guarding, fidelity flags
+  image-providers.ts     FAL / Unsplash / Pexels + federated resolver
+  image-treatments.ts    10 treatments (prompt-led and post-process)
+  image-postprocess.ts   deterministic PIL filters for digital-graphic treatments
+  icon-kits.ts           4 icon kits baked from real packages
+  fidelity-data.ts       city gazetteer + vetted icon subset (baked)
+  dotmap-data.ts         land-mask grid for dot maps (baked)
+  moodboard.ts           rotated moodboard prompts + direction block
+skills/                  7 reference packages
+meta-generator/          GENERATOR.md + templates
+scripts/                 render-fixture, validate-skill, measure-occupancy, smoke tests,
+                         bake scripts, shoot-review (screenshots)
+docs/                    SKILL-FORMAT.md, INTEGRATION.md, this file, specs/, plans/
+examples/                rendered end-to-end decks
 ```
 
-## What Works
-
-- ✅ Skill loader parses SKILL.md frontmatter + tokens.json + grammar table + image-style decision rules + components.html
-- ✅ Token compiler emits CSS variables consumed by every component
-- ✅ Prompt composer builds a self-contained system prompt with slide-types, slot schema, and composition rules
-- ✅ Brand-asset guard rejects image prompts with blocked brands/keywords; warns on slot content with brand names (doesn't drop, since sources/citations are valid)
-- ✅ Image subsystem: FAL.ai for AI generation, Unsplash + Pexels federated for stock, decision-logic per category, engine-level brand-asset validation
-- ✅ Renderer matches slide-types to `<template id="slide-X">` in components.html, interpolates slot values, falls back to a generic layout if a slide-type has no template
-- ✅ All shipped reference skills parse and validate (run `npx tsx scripts/validate-skill.ts`)
-- ✅ Meta-generator bootstrap creates a working skill skeleton from templates
-- ✅ End-to-end spike: hand-crafted 8-slide consulting deck renders to standalone HTML
-
-## What Doesn't Work Yet
-
-- ❌ PPTX export — Phase 1 is HTML-only. SlideSpeak's existing pipeline handles HTML→PPTX downstream.
-- ❌ Live LLM call in spike script — uses a mock. Wire your OpenAI/Anthropic/Gemini client per `docs/INTEGRATION.md`.
-- ❌ Live image generation — `image-smoke.ts` uses mocks; provide real API keys to test against FAL/Unsplash/Pexels.
-- ❌ Interactive `decide` callback for image-resolver — currently defaults to "stock" for ask-the-user cases in non-interactive runs.
-- ❌ Skill versioning / migration tooling — each skill has its own version, no engine-wide compatibility matrix yet.
-- ❌ Per-call brand-blocklist extension — currently hard-coded in `engine/brand-guard.ts`. Acceptable for v0.1; would be one parameter on `generateDeck` deps.
-- ❌ Vision-API logo detection on stock results — only alt-text filtering today. Plug in a moderation provider before serving public images.
-- ❌ Per-skill CSS-class allowlist for tokens — token values are emitted into a CSS block; a future hostile skill author could inject URL/keyword payloads. Acceptable while skill source is trusted internal authoring.
-- ❌ Post-LLM composition-rule enforcement — the prompt asks the LLM to follow rules ("first slide must be cover") but we don't re-verify after generation. v0.2.
-
-## Security Posture (v0.1)
-
-- HTML output is escaped: slot values, slide types, and image URLs all flow through `escapeHtml` / `escapeHtmlAttr` / `safeImageUrl`.
-- Image URLs are restricted to `https:` and `data:image/*`. `javascript:`, `http:`, and control-character URLs are rejected.
-- `skillName` is validated with a strict slug regex AND containment-checked against the resolved `skillsRoot` — no path traversal.
-- LLM output is runtime-validated: malformed slides/slots/images are dropped with warnings rather than crashing the renderer.
-- Brand-asset guard runs twice: once on the raw subject (caller-supplied), once on the final assembled AI prompt / stock query (template-applied). Negative-prompt phrasing in templates is stripped before checking.
-- Smoke-tested via `scripts/security-smoke.ts` (25 checks).
-
-## Smoke Tests
+## How to verify
 
 ```bash
-# Validate all skills parse and meet spec
-npx tsx scripts/validate-skill.ts
-
-# Deterministically render a deck from a fixture (no LLM, no images)
-npx tsx scripts/render-fixture.mts opex scripts/opex-deck.json /tmp/opex.html
-
-# Test image-resolver routing + brand-guard (mock providers)
-npx tsx scripts/image-smoke.ts
-
-# Bootstrap a new skill
-npx tsx scripts/new-skill.ts my-new-skill
+npm install
+npm test
 ```
 
-## Wiring Into SlideSpeak — Concrete Next Steps
+`npm test` runs skill validation (7/7 packages) plus smoke suites for images, security (25 checks), content lint, deck planning, occupancy, moodboards and the logo wall. All green on handover.
 
-1. **Vendor or publish the package** — drop `slide-design-skill/` into your monorepo or publish as `slide-design-skill` to a private registry.
-2. **Implement your `LLMClient`** wrapping your LLM provider (template in `docs/INTEGRATION.md`).
-3. **Set up env vars**: `FAL_API_KEY`, `UNSPLASH_ACCESS_KEY`, `PEXELS_API_KEY`.
-4. **Wire `generateDeck` into your HTML pipeline** at the point where user-prompt becomes slide-tree.
-5. **Test with real LLM** — start with `skillName: "consulting"`, `slideCount: 8`. Compare output to `examples/consulting-northwind.html` for quality.
-6. **PPTX validation** — run a generated HTML deck through your existing HTML→PPTX converter, check layout fidelity, fonts, image embedding. If issues, log specifics in a new `docs/PPTX-NOTES.md` and we'll adjust component templates.
-7. **Brand-blocklist extension** — review `engine/brand-guard.ts BRAND_BLOCKLIST`. Add any company-specific terms.
+Render and inspect a deck without any API keys:
 
-## Iteration Cadence (Suggested)
+```bash
+npx tsx scripts/render-fixture.mts opex scripts/opex-deck.json /tmp/opex.html
+npm run measure:occupancy /tmp/opex.html     # expect: 18/18 slides fill the frame
+```
 
-- **Week 1 post-handover**: SlideSpeak wires the package, ships first `consulting` decks behind a flag. Logs PPTX issues.
-- **Week 2**: Round 1 of skill polish — Dominik fixes any visual gaps observed in real PPTX exports, tunes prompts based on LLM output quality.
-- **Week 3**: SlideSpeak's design team uses `meta-generator/GENERATOR.md` to draft a 6th skill (suggest: `editorial` or `sales-enablement`). Dominik reviews the draft.
-- **Week 4**: Skill versioning + per-call blocklist extension shipped.
+With a FAL key, the same fixture path renders real backgrounds via `scripts/render-fal-runtime.mts`.
 
-## Open Questions for SlideSpeak
+## Deliberately not built (with reasoning)
 
-1. **HTML→PPTX pipeline specifics** — what's the converter? Are there font/layout quirks we should know about so components render reliably in .pptx?
-2. **Image budget defaults** — what's the per-deck token-cost ceiling you want enforced as default?
-3. **Style intake UX** — the intended model is bespoke-per-brief: the user describes the look in free text (or a brand URL / reference) and the engine derives a skill, rather than picking from a fixed list. The shipped packages are reference seeds. Confirm this matches how you want intake to feel in-product.
-4. **Customer-deck branding** — do customers want to inject their own brand tokens (color, font) over a skill's defaults? If yes, we add a `brandOverrides` argument to `generateDeck` next.
+- **PPTX export.** This package stops at HTML by design; SlideSpeak's pipeline owns HTML to PPTX. Pending answers to the open question below, component conventions can be tuned to the converter.
+- **A live LLM binding.** The engine is provider-agnostic; you wire your model once via `LLMClient` (`docs/INTEGRATION.md`).
+- **Vision-based logo detection on stock results.** Alt-text filtering only. Add a moderation provider if stock images are served publicly.
+- **Per-call brand-blocklist extension.** The list lives in `engine/brand-guard.ts`; making it a `generateDeck` parameter is a small known TODO.
+- **Skill versioning tooling.** Each package carries a version; there is no migration tooling until the format actually changes.
+- **Brand-URL scraping.** The `brand-url` intake path expects the host to supply a scraped description (`describeReference` hook); the routing works without it.
+
+## Security posture
+
+- All slot values, slide types and image URLs are escaped; image URLs restricted to `https:` and `data:image/*`.
+- `skillName` is slug-validated and containment-checked against the skills root; no path traversal.
+- LLM output is runtime-validated; malformed slides are dropped with warnings, never rendered raw.
+- The brand guard runs on the raw subject and on the final assembled prompt, so templates cannot inject blocked terms.
+- No keys in the repo; all providers read from env. 25-check security smoke in CI (`npm run test:security`).
+
+## Open questions for SlideSpeak
+
+1. **HTML to PPTX specifics.** Which converter, and what are its font/layout quirks? File findings in `docs/PPTX-NOTES.md` and the component conventions get adjusted to match.
+2. **Image budget default.** What per-deck image cost ceiling should `imageBudget` default to in production?
 
 ## Contact
 
-- Engine bugs / new features: Dominik Martin, dominikmartn@gmail.com
-- Skill design + new skills: same. Pricing per skill TBD (engagement scope).
-- Brand-asset blocklist additions: open a PR against `engine/brand-guard.ts` or DM.
-
-Phase 1 sign-off: when 1 real deck (any skill) goes from prompt → HTML → PPTX → customer-readable end-to-end inside SlideSpeak's product.
+Dominik Martin, dominikmartn@gmail.com. Engine bugs, skill questions, blocklist additions: issue or PR on this repo.

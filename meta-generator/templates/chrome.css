@@ -1,0 +1,46 @@
+/* __SKILL_NAME__ chrome: the LOOK of this skill, emitted after the neutral base CSS.
+   This is where the package earns the right to look unlike the others. Replace
+   every placeholder choice below with decisions derived from the brief; a chrome
+   that matches the stock default look triggers a validator warning.
+
+   Hard rules: sentence case at normal tracking (never text-transform: uppercase),
+   no font-size below 14px, no accent border pinned to a card edge, no em-dashes. */
+
+/* labels / kickers: how this brand sets an eyebrow */
+.slide .eyebrow {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-signal);
+}
+
+/* footer / citation treatment (delete if the brand would not use one) */
+.slide .source {
+  font-family: var(--font-data);
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+/* vertical rhythm: pick a gap that matches the brand's density, not a default */
+.slide-flow { gap: 32px; padding-bottom: 0; }
+
+/* table look, only if a slide type uses {{@table}} */
+.dir-table thead th {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-muted);
+  border-bottom: 2px solid var(--color-ink);
+  padding: 0 18px 10px 0;
+  text-align: left;
+}
+.dir-table tbody td {
+  font-size: 16px;
+  border-bottom: 1px solid var(--color-rule);
+  padding: 12px 18px 12px 0;
+  vertical-align: top;
+}
+
+/* graphic devices: structural ::before/::after rules, texture data-URIs and
+   surfaces belong here. The validator requires at least three drawn constructs
+   across chrome.css + components.html (the graphic-layer gate). */

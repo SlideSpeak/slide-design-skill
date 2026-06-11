@@ -30,9 +30,9 @@ async function main() {
     process.exit(1);
   }
 
-  await mkdir(resolve(targetDir, "examples"), { recursive: true });
+  await mkdir(targetDir, { recursive: true });
 
-  const filesToTemplate = ["SKILL.md", "layout-grammar.md", "image-style.md", "components.html"];
+  const filesToTemplate = ["SKILL.md", "layout-grammar.md", "image-style.md", "components.html", "chrome.css"];
   for (const f of filesToTemplate) {
     const src = await readFile(resolve(templatesDir, f), "utf8");
     const replaced = src.replaceAll("__SKILL_NAME__", name);
@@ -44,12 +44,14 @@ async function main() {
 
   console.log(`\n✓ Created skill "${name}" at ${targetDir}`);
   console.log(`\nNext steps:`);
-  console.log(`  1. Edit SKILL.md frontmatter (description, inspiration, typography_kit, color_kit, image_style, forbidden)`);
-  console.log(`  2. Tune tokens.json (color.signal.primary, type families)`);
-  console.log(`  3. Fill layout-grammar.md (slide-types + composition rules)`);
-  console.log(`  4. Fill image-style.md (AI prompt template + decision rules)`);
-  console.log(`  5. Add <template id="slide-{type}"> per slide-type in components.html`);
-  console.log(`  6. Validate: npx tsx scripts/validate-skill.ts`);
+  console.log(`  1. Edit SKILL.md frontmatter + body, incl. the "## Graphic system" section`);
+  console.log(`  2. Tune tokens.json (color.signal.primary, type families, icon.kit)`);
+  console.log(`  3. Author chrome.css (the look: labels, footer, tables, rhythm, devices)`);
+  console.log(`  4. Fill layout-grammar.md (slide-types + composition rules + families)`);
+  console.log(`  5. Fill image-style.md (AI prompt template + decision rules)`);
+  console.log(`  6. Add <template id="slide-{type}"> per slide-type in components.html`);
+  console.log(`  7. Validate: npm run validate, then render a fixture and run`);
+  console.log(`     npm run measure:occupancy on it (fix every flagged slide)`);
   console.log(`\nSee meta-generator/GENERATOR.md for the full guide.`);
 }
 

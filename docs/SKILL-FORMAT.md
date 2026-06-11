@@ -1,41 +1,41 @@
-# SlideSpeak Skill Format — v0.1
+# Skill package format
 
-A SlideSpeak skill is a deterministic style+layout specification that turns a free-form user prompt ("make me a McKinsey-style strategy deck about X") into branded HTML slides via SlideSpeak's LLM pipeline.
+A skill is a deterministic style and layout specification. The deck LLM fills its templates slot by slot; it never invents layout or CSS. Two generations from the same skill and the same prompt produce visually indistinguishable output.
 
-Two sessions using the same skill on the same prompt must produce visually indistinguishable output.
+Skills are usually produced by the generator (`engine/skill-generator.ts`) from a style brief. They can also be authored by hand; `meta-generator/GENERATOR.md` is the guided path. Either way the format below is the contract, and `npm run validate` enforces it.
 
-## Folder Layout
+## Folder layout
 
 ```
-skills/
-  consulting/
-    SKILL.md              # System-prompt overlay + slide-generation instructions
-    tokens.json           # Color / type / spacing / motion / radius primitives
-    layout-grammar.md     # Which slide types this skill supports + composition rules
-    image-style.md        # AI-image prompts + stock-photo direction
-    components.html       # Reusable HTML/CSS partials (header, callout, table, chart)
-    examples/
-      cover.html
-      content-3col.html
-      data-callout.html
+skills/<name>/
+  SKILL.md            frontmatter metadata + system-prompt overlay
+  tokens.json         color / type / spacing / radius / page primitives
+  chrome.css          the LOOK: eyebrow, footer, tables, rhythm, graphic devices
+  layout-grammar.md   slide types + required/optional slots + composition rules
+  image-style.md      AI prompt template, stock query template, decision rules
+  components.html     one <template id="slide-TYPE"> per slide type
 ```
 
-## SKILL.md Frontmatter
+`chrome.css` is where a skill earns the right to look unlike the others. The shared base CSS (`baseSlideCss` in `engine/token-compiler.ts`) is deliberately neutral: page box, heading sizes, layout mechanics. Everything visible (label treatment, rules, table look, vertical rhythm, surface textures) lives per skill in `chrome.css`, emitted after the base.
+
+## SKILL.md frontmatter
 
 ```yaml
 ---
-name: consulting
+name: <folder-name>            # must match the folder
 version: 0.1.0
-description: "McKinsey/BCG-tier strategy decks. Dense, structured, signal-color callouts on neutral grounds. Use when the user asks for 'strategy', 'consulting', 'case', 'recommendation', 'McKinsey-style', 'BCG-style', 'consulting deck'."
-inspiration: "Strategy consulting (McKinsey, BCG, Bain), 1960s Swiss editorial, Wall Street pitch books"
-typography_kit: "serif headers (Tiempos Headline / Source Serif), grotesque body (Inter / Söhne)"
-color_kit: "neutral ground (warm gray), signal accent (red/blue), zero decoration colors"
-image_style: "muted documentary photography, abstract gradient overlays, NO illustrations"
-forbidden: "rounded corners > 4px, gradient text, emojis as decoration, soft drop shadows, hand-drawn elements"
+description: "What this style is and when it fits."
+inspiration: "..."
+typography_kit: "..."
+color_kit: "..."
+image_style: "..."
+forbidden: "what this style never does"
 ---
 ```
 
-## tokens.json Schema
+The body carries the system-prompt overlay (voice, composition stance, content register) and a `## Graphic system` section documenting the skill's signature mark, surface treatment, structural devices and depth moment.
+
+## tokens.json
 
 ```json
 {
@@ -45,126 +45,88 @@ forbidden: "rounded corners > 4px, gradient text, emojis as decoration, soft dro
     "support": { "muted": "#6B6B6B", "rule": "#D4D0CB" }
   },
   "type": {
-    "header": { "family": "Tiempos Headline, Source Serif Pro, serif", "weight": 600, "scale": [56, 40, 32, 24] },
-    "body":   { "family": "Inter, Söhne, system-ui, sans-serif", "weight": 400, "scale": [18, 16, 14, 12] },
-    "data":   { "family": "Söhne Mono, JetBrains Mono, monospace", "weight": 500 }
+    "header": { "family": "...", "weight": 600, "scale": [56, 40, 32, 24] },
+    "body":   { "family": "...", "weight": 400, "scale": [18, 16, 14, 12] },
+    "data":   { "family": "...", "weight": 500 }
   },
   "spacing": { "unit": 4, "scale": [4, 8, 12, 16, 24, 32, 48, 64, 96] },
   "radius": { "card": 2, "button": 2, "input": 2 },
   "elevation": { "card": "0 1px 0 rgba(0,0,0,0.06)" },
+  "icon": { "kit": "lucide" },
   "page": { "ratio": "16:9", "width": 1920, "height": 1080, "safe": 96 }
 }
 ```
 
+The compiler emits these as CSS variables (`--color-*`, `--font-*`, `--size-h1..4`, `--space-*`, `--page-*`). Pages are always 1920x1080. `icon.kit` selects the icon set for `{{@icon}}`: `lucide`, `tabler`, `phosphor` or `heroicons`.
+
 ## layout-grammar.md
 
-Defines slide-types the skill knows. Each slide-type is a stable HTML scaffold the LLM fills in. Examples for `consulting`:
+A table of slide types plus composition rules. Each slide type maps 1:1 to a `<template id="slide-TYPE">` in components.html; the validator fails on drift in either direction.
 
 | slide-type | when | required slots | optional slots |
 |---|---|---|---|
-| `cover` | first slide | title, subtitle, client-name, date | logo-region (left blank, brand-asset-constraint) |
-| `executive-summary` | second slide | headline, 3-5 bullets | source-line |
-| `content-3col` | most content | column-title × 3, body × 3 | callout-band |
-| `data-callout` | numeric insights | big-number, label, context-bullets × 2-3 | source |
-| `framework-2x2` | strategic frameworks | quadrant-label × 4, quadrant-body × 4 | axis-labels |
-| `process-flow` | step sequences | step-title × 3-7, step-body × 3-7 | arrow-style |
-| `closing` | last slide | call-to-action, contact | next-steps |
+| `cover` | first slide | title, subtitle, date | kicker |
+| ... | | | |
 
-Composition rules:
-- First slide is always `cover`. Last is always `closing`.
-- `data-callout` allowed max 2× consecutive (avoids monotony).
-- `framework-2x2` and `process-flow` count as "structural", at least one per deck > 8 slides.
+Composition rules are prose bullets ("first slide is always cover", "max 2 consecutive data slides"). Each slide type should be annotated with its composition family (statement, metric-hero, cards-grid, table, split-visual, ...). The validator caps how much of a skill may sit in one family and requires unboxed typographic types alongside boxed grids.
+
+## components.html
+
+One `<template id="slide-TYPE">` per slide type, inline-styled, consuming the token variables. Templates declare `{{slot}}` placeholders and directives; the LLM provides slot text only.
+
+Structural conventions (enforced by the occupancy gate, see `CLAUDE.md`):
+
+- The page skeleton is `slide-flow`: a header (`flow-head`), a stage (`flow-stage`), a footer (`flow-foot`).
+- Exhibits that should fill the stage use the island utilities (`flow-grid-fill`, `flow-fill`, `flow-fill-body`, `flow-rows`/`flow-row`).
+- Thin content is never stretched to fill. Size it to content, set the type large enough to carry the slide (17 to 21px), and center the band. Stretching a one-line card to 600px is the underfill tell the gate flags.
+- A slide can set `data-density="editorial|balanced|data-dense"` on its root; editorial slides may breathe, the others must fill the frame.
+
+### Directives
+
+Deterministic primitives the renderer draws; the model never authors SVG.
+
+| Directive | Renders |
+|---|---|
+| `{{@chart type=bar\|hbar\|waterfall\|line\|dots-2x2\|stacked-bar\|radar\|dot-map\|glyph\|heatmap data=<slot> labels=<slot> ...}}` | data viz from slot values; `note=<slot>` puts a so-what annotation on the chart |
+| `{{@table slot=...}}` | a `.dir-table` from pipe/newline-separated slot data |
+| `{{@list slot=...}}` | item `<div>`s inside a `display:contents` wrapper. There is no `ul`/`li`; style items as `.your-scope .dir-list > div` |
+| `{{@icon name=<slot>}}` | an icon from the skill's kit, baked from real icon packages |
+| `{{@gradient-bg}}` | background art: per-slide FAL render, baked cache, or procedural SVG fallback |
+| `{{@scrim variant=bottom\|top\|left\|...}}` | a gradient overlay for text-on-image legibility |
+| `{{@placeholder ratio=... slot=...}}` | a neutral drop zone for product UI / people / mockups; these are never faked as HTML or AI images |
+| `{{@logo-wall}}` / `{{@logo-wall names=<slot>}}` | obviously-replaceable dummy wordmarks, or the user's real customer names as type-only wordmarks |
+
+Directive arguments cannot contain spaces; multi-word values come through a slot reference.
+
+### Hard rules
+
+These render as machine-made and fail validation:
+
+- No `text-transform: uppercase` and no tracked-out caps labels. Sentence case at normal tracking.
+- No CSS font-size below 14px anywhere. Body and description text runs 16 to 21px. If content does not fit, change the layout or split the slide, never the type. (SVG font-size attributes scale with their viewBox and are exempt.)
+- No accent-colored border pinned to a card edge. Accent goes into a number, icon, chip or filled surface.
+- No em-dashes in any rendered copy.
+- No invented logos, no real brand names, no fake product UI (use `{{@placeholder}}`).
+- Every skill needs a graphic system: at least three drawn constructs (inline SVG mark, painting pseudo-elements, texture data-URIs or gradient surfaces) across templates and chrome. Banned as filler: blobs, squiggles, Memphis confetti, corner swooshes, generic network meshes.
 
 ## image-style.md
 
-Per-skill image direction. Two streams:
+Per-skill image direction:
 
-**AI-generated (FAL.ai)** — default for backgrounds, gradients, abstract visuals.
-- Prompt template: `"{subject}, {style-modifier}, {color-direction}, {composition}"`
-- For `consulting`: muted, editorial, slight grain, neutral palette, no people
-- Negative prompt: no logos, no brand-marks, no recognizable products, no text overlays
+- `Prompt template:` a fragment containing `{subject}` for AI generation
+- `Search-query template:` the stock-photo counterpart
+- Decision rules per category: `gradient | product | person | chart | building` mapped to `AI default | stock | ask`
+- Optional `Treatment:` one of `oil-painting, renaissance, watercolor, risograph, line-engraving, cyanotype` (style leads the FLUX prompt) or `pixel-art, halftone, ascii, blueprint` (clean photo plus deterministic post-process). Most skills stay photographic and omit the line.
 
-**Stock photography (Unsplash + Pexels federated)** — for real-world objects, people, places.
-- Search-query template: `"{subject} {style-modifier}"`
-- License filter: only CC0 / Unsplash-license / Pexels-license
-- Reject results with watermarks, identifiable people without releases, recognizable trademarks
+The brand guard sits at engine level on top of all of this: image prompts and stock queries are checked against a logo/trademark regex and a brand-name list, on the raw subject and on the final assembled prompt. Skills cannot bypass it.
 
-Decision rule (engine-level):
-- `gradient | background | abstract | texture` → AI default, no user prompt
-- `person | product | building | location | object` → ask user "AI-generated or stock photo?"
-- Ambiguous (`scene | concept`) → ask user
+## What changes per skill, what stays constant
 
-## Brand-Asset-Constraint (engine-enforced)
-
-The engine validates AI-image prompts and stock-photo queries against a blocklist:
-- Any string matching `(logo|trademark|brand-mark|wordmark|™|®|©)` → reject prompt
-- Any known brand-name from a curated list (McKinsey, BCG, Apple, Tesla, etc.) with word-boundary matching → reject
-- Both the raw subject AND the final assembled prompt (post-template substitution) are checked, so a skill template cannot inject blocked terms around the subject
-- Negative-prompt phrasing ("no logos", "without brand-marks") in skill templates is stripped before checking, so legitimate templates still work
-- Stock results are filtered by alt-text for `logo|wordmark|brand-mark|trademark|signage|storefront`
-
-This sits at engine-level, not in the skill's prompt — skills can't bypass it.
-
-**Known limitation (v0.1):** stock images are NOT post-fetched and analyzed by a Vision API for in-image logos. Alt-text filtering catches obvious cases but is not a substitute for image-content moderation. If your deployment serves these images publicly, plug in a Vision/moderation provider before storage.
-
-## Component Library (components.html)
-
-HTML/CSS partials the LLM can `{{include}}` into slides. Per-skill so each skill controls its component vocabulary. Examples:
-
-```html
-<!-- components.html for consulting -->
-<template id="callout-strip">
-  <div class="callout-strip" style="border-left: 3px solid var(--signal); padding: 12px 24px;">
-    <div class="callout-eyebrow">{{eyebrow}}</div>
-    <div class="callout-body">{{body}}</div>
-  </div>
-</template>
-
-<template id="data-tile">
-  <div class="data-tile">
-    <div class="data-number">{{number}}</div>
-    <div class="data-label">{{label}}</div>
-    <div class="data-context">{{context}}</div>
-  </div>
-</template>
-```
-
-CSS is generated from `tokens.json` at render-time, not hand-written per skill.
-
-## Engine Contract
-
-The engine exposes one function to SlideSpeak's HTML-generation pipeline:
-
-```ts
-generateDeck({
-  skillName: "consulting",
-  userPrompt: "Strategy deck for a CPG company entering DTC",
-  slideCount: 12,
-  imageBudget: 20,  // max FAL.ai calls
-  language: "en"
-}) → Promise<{
-  slides: { type: SlideType, html: string }[],
-  imagesUsed: number,
-  warnings: string[]
-}>
-```
-
-How it works internally:
-1. Load skill folder, parse SKILL.md + tokens.json + grammar
-2. Compose system-prompt: skill's instructions + tokens-as-CSS + grammar-as-schema
-3. Call SlideSpeak's LLM with the system-prompt + user prompt + slide-count
-4. LLM returns slide-tree (JSON: slide-type + slot-values + image-requests)
-5. For each image-request: resolve via Image-Subsystem (FAL or stock)
-6. Render slide-tree → HTML using components.html + tokens-CSS
-
-## What changes per-skill, what stays constant
-
-| Per-skill | Engine-constant |
+| Per skill | Engine constant |
 |---|---|
-| tokens.json values | tokens.json schema |
-| layout-grammar.md slide-types | grammar parser |
-| image-style.md direction | FAL.ai client + Stock APIs |
-| components.html partials | render pipeline |
-| SKILL.md instructions | system-prompt composition |
-| | Brand-asset-constraint validation |
-| | PPTX-export (when added) |
+| tokens.json values | token schema and compiler |
+| chrome.css look | neutral base CSS and layout utilities |
+| slide types and templates | renderer, directive implementations |
+| layout grammar and composition rules | grammar parser, validators |
+| image direction and treatment | image providers, brand guard, fidelity data |
+| SKILL.md voice | prompt composition, deck planner |

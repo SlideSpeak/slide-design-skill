@@ -107,6 +107,60 @@ types) and the navy register; the gaps are furniture (tracker, exhibit bands,
 footnotes, callouts, inline emphasis), not architecture. `consulting` stays a
 distinct lighter style; `opex` stays the steering-deck register.
 
+**Status 2026-06-11: all gaps closed on the mckinsey seed.** Tracker slide
+type (highlight scoped per instance), kicker row + corner context chip on
+every content page, boxed exhibits with wash header band + unit line, boxed
+drivers panel with square bullets (replacing the bare accent rail), annotation
+callouts with leader lines on `chart-line`, numbered footnote zone above the
+SOURCE bar, inline `**emphasis**` (engine-level, post-escape), `ledger` type
+with circled badges + dashed separators, `chart-stacked` with per-segment
+fitted inside values. Fixture: `_dev-skills/_assets/nordwind-deck.json`
+(17 slides, 17/17 occupancy, titles-only storyline reads).
+
+## Counted reference density spec (measured 2026-06-11, pdftotext per page)
+
+The first two density passes failed because progress was measured against our
+own prior output. These numbers are COUNTED from the reference decks and are
+the definition of done — a page is dense when it reaches them, not when it
+beats yesterday. Methodology: `pdftotext -f p -l p`, tokens = words, numerals
+= `[0-9][0-9.,%]*` matches. Apply the SAME extraction to our rendered HTML
+(`scripts/measure-density.mts`).
+
+Per-page text metrics (USPS + Poland engagement decks — the register
+direction 1 targets; UK working sessions run 2x higher and are out of scope):
+
+| metric | median content page | standard exhibit | dense exhibit (1–3 per deck) |
+|---|---|---|---|
+| tokens | ~100 | 80–160 | 150–195 |
+| text lines | ~35 | 30–60 | 60–90 |
+| numerals | ~20 | 15–45 | 70–112 |
+
+Hard floors for our output: data slides ≥ 80 tokens and ≥ 20 numerals
+rendered; deck median across content pages ≥ 90 tokens. Gate thresholds are
+derived from these counts, never from our own output.
+
+Where the reference density structurally comes from (counted on USPS p8/p12/
+p19/p28, Poland p9):
+
+1. **Y-axis tick scale on EVERY chart** — 6 to 18 tick labels per chart
+   (p19 left panel: 17). This alone is the largest single gap vs our output.
+2. **X label on every period** (07–20 = 14 labels; no thinning below ~16).
+3. **Value on every bar** (10–14 per chart).
+4. **Multi-panel pages**: 3 boxed exhibits side by side (p19) or 2 stacked
+   (p8), each with its own wash band + unit line.
+5. **In-chart series labels with CAGR notes** ("Cost +1.5% p.a.¹") instead of
+   a detached legend.
+6. **Dashed reference line with marker value** at the right edge ("◀ 15").
+7. **Actual/Forecast dashed divider** with zone labels at the top.
+8. **Annotation callout boxes with leader lines** (we have these).
+9. **Embedded mini-table beside the chart inside the exhibit** (p12 — the
+   MEDIAN page does this, it is not an outlier device).
+10. **Matrix with a value in every cell + badge summary rows** (Poland p9:
+    49 cells + 14 badges).
+
+Out of scope: the UK MACC curve (p77, ~50 labeled waterfall segments) is a
+working-session artifact, not the engagement register.
+
 ## Canonical test case (fixture)
 
 One honest strategy case, clearly marked illustrative, that forces the full

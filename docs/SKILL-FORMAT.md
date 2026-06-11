@@ -87,16 +87,18 @@ Deterministic primitives the renderer draws; the model never authors SVG.
 
 | Directive | Renders |
 |---|---|
-| `{{@chart type=bar\|hbar\|waterfall\|line\|dots-2x2\|stacked-bar\|radar\|dot-map\|glyph\|heatmap data=<slot> labels=<slot> ...}}` | data viz from slot values; `note=<slot>` puts a so-what annotation on the chart |
+| `{{@chart type=bar\|hbar\|waterfall\|line\|dots-2x2\|stacked-bar\|stacked-cols\|stacked-area\|radar\|dot-map\|glyph\|heatmap data=<slot> labels=<slot> ...}}` | data viz from slot values; `note=<slot>` puts a so-what annotation on the chart; `callouts=<slot>` ("idx:text\|idx:text", line charts) draws white annotation boxes with leader lines pointing at data points; stacked-bar takes `palette=#hex\|#hex\|...` and `valueSize=` (inside values auto-fit per segment). Bar + line also take: `yAxis=1` (full tick scale + gridlines), `refLine=<slot>`/`refLabel=<slot>` (dashed threshold, right-edge marker + value), `divider=<slot>`/`dividerLabels=<slot>` (actual/forecast split at a 0-based index, labels "Actual\|Forecast"), `fontScale=` (0.8–2, scales chart type for multi-up panels), `height=` (360–760 viewBox height). Line only: `primaryNote=<slot>`/`compareNote=<slot>` (growth notes ON the trace; they replace the detached legend), `fill=solid` (saturated area under the trace; forces 0 into the domain). `stacked-area` takes the stacked-cols data format plus yAxis/height/fontScale |
 | `{{@table slot=...}}` | a `.dir-table` from pipe/newline-separated slot data |
-| `{{@list slot=...}}` | item `<div>`s inside a `display:contents` wrapper. There is no `ul`/`li`; style items as `.your-scope .dir-list > div` |
+| `{{@list slot=...}}` | item `<div>`s inside a `display:contents` wrapper. There is no `ul`/`li`; style items as `.your-scope .dir-list > div`. Item text rides in an inner `<span>`, so an item styled `display:grid` keeps one content cell |
 | `{{@icon name=<slot>}}` | an icon from the skill's kit, baked from real icon packages |
 | `{{@gradient-bg}}` | background art: per-slide FAL render, baked cache, or procedural SVG fallback |
 | `{{@scrim variant=bottom\|top\|left\|...}}` | a gradient overlay for text-on-image legibility |
 | `{{@placeholder ratio=... slot=...}}` | a neutral drop zone for product UI / people / mockups; these are never faked as HTML or AI images |
 | `{{@logo-wall}}` / `{{@logo-wall names=<slot>}}` | obviously-replaceable dummy wordmarks, or the user's real customer names as type-only wordmarks |
 
-Directive arguments cannot contain spaces; multi-word values come through a slot reference.
+Directive arguments cannot contain spaces; multi-word values come through a slot reference. An argument that looks like a kebab-case slot name but is not authored in the tree resolves to empty (never leaks the slot name into chart text).
+
+Inline emphasis: `**text**` in any slot value renders as `<strong>` (applied after escaping — slot authors still cannot inject HTML). Skills define what emphasis looks like by styling `.slide strong`; skills that want none simply never prompt for it.
 
 ### Hard rules
 

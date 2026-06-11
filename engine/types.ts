@@ -121,7 +121,7 @@ export interface BackgroundGenerator {
     prompt: string,
     width: number,
     height: number,
-    opts?: { negative?: string },
+    opts?: { negative?: string; referenceImages?: string[] },
   ): Promise<string>;
 }
 

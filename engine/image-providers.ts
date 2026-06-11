@@ -32,9 +32,33 @@ export const GLOBAL_IMAGE_NEGATIVES = [
 ];
 
 export interface ProviderConfig {
-  fal?: { apiKey: string; model?: string; steps?: number };
+  fal?: {
+    apiKey: string;
+    model?: string;
+    steps?: number;
+    // Model used when a generate() call carries referenceImages. Gemini-image
+    // family (nano-banana) natively conditions on input images; FLUX does not.
+    referenceModel?: string;
+  };
   unsplash?: { accessKey: string };
   pexels?: { apiKey: string };
+}
+
+// nano-banana/edit takes an aspect_ratio enum instead of pixel dimensions.
+const FAL_ASPECT_RATIOS: [string, number][] = [
+  ["21:9", 21 / 9], ["16:9", 16 / 9], ["3:2", 3 / 2], ["4:3", 4 / 3],
+  ["5:4", 5 / 4], ["1:1", 1], ["4:5", 4 / 5], ["3:4", 3 / 4],
+  ["2:3", 2 / 3], ["9:16", 9 / 16],
+];
+function aspectRatioFor(width: number, height: number): string {
+  const target = width / height;
+  let best = "auto";
+  let bestDiff = 0.04; // tolerance; otherwise let the model decide
+  for (const [name, ratio] of FAL_ASPECT_RATIOS) {
+    const diff = Math.abs(ratio - target) / target;
+    if (diff < bestDiff) { best = name; bestDiff = diff; }
+  }
+  return best;
 }
 
 export class FalProvider {
@@ -54,22 +78,41 @@ export class FalProvider {
     negative?: string;
     width: number;
     height: number;
+    // Style-anchor images (e.g. an approved moodboard, a brand reference).
+    // When set, the call routes to the reference model instead of FLUX.
+    referenceImages?: string[];
   }): Promise<ResolvedImage> {
-    const model = this.cfg.model ?? "fal-ai/flux/schnell";
+    const useReference = (opts.referenceImages?.length ?? 0) > 0;
+    const model = useReference
+      ? (this.cfg.referenceModel ?? "fal-ai/nano-banana/edit")
+      : (this.cfg.model ?? "fal-ai/flux/schnell");
+    // The gemini-image family has no negative_prompt parameter; fold the
+    // negatives into the prompt instead.
+    const body = useReference
+      ? {
+          prompt: opts.negative
+            ? `${opts.prompt}. Avoid: ${opts.negative}`
+            : opts.prompt,
+          image_urls: opts.referenceImages,
+          aspect_ratio: aspectRatioFor(opts.width, opts.height),
+          output_format: "jpeg",
+          num_images: 1,
+        }
+      : {
+          prompt: opts.prompt,
+          negative_prompt: opts.negative,
+          image_size: { width: opts.width, height: opts.height },
+          num_inference_steps: this.steps(),
+          num_images: 1,
+          enable_safety_checker: true,
+        };
     const res = await fetch(`https://fal.run/${model}`, {
       method: "POST",
       headers: {
         Authorization: `Key ${this.cfg.apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt: opts.prompt,
-        negative_prompt: opts.negative,
-        image_size: { width: opts.width, height: opts.height },
-        num_inference_steps: this.steps(),
-        num_images: 1,
-        enable_safety_checker: true,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -101,13 +144,14 @@ export class FalBackgroundProvider {
     prompt: string,
     width: number,
     height: number,
-    opts?: { negative?: string },
+    opts?: { negative?: string; referenceImages?: string[] },
   ): Promise<string> {
     const img = await this.fal.generate({
       prompt,
       negative: opts?.negative,
       width,
       height,
+      referenceImages: opts?.referenceImages,
     });
     const res = await fetch(img.url);
     if (!res.ok) throw new Error(`Failed to fetch FAL image: ${res.status}`);

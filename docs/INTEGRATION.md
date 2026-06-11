@@ -90,6 +90,8 @@ const resolver = new FederatedImageResolver({
 
 Model guidance: `flux/dev` is the quality tier for backgrounds and moodboards (about $0.025 per image); `flux/schnell` is the cheap tier (about $0.003) and visibly weaker. The provider picks the right inference-step count per model automatically; running dev at schnell's step count bakes a grid artifact into flat surfaces, so do not override `steps` unless you know why.
 
+Reference-anchored generation: when a `generate()` call carries `referenceImages` (an approved moodboard, a brand shot, a customer-supplied look), the provider routes to the gemini-image family instead of FLUX (`fal-ai/nano-banana/edit` by default, about $0.039 per image; override via `referenceModel`, e.g. `fal-ai/gemini-3-pro-image-preview/edit` for the pro tier at about $0.15). FLUX cannot condition on input images; this path produces backgrounds that follow a concrete reference instead of a text description of one. The same option flows through `BackgroundGenerator` and `FalBackgroundProvider`.
+
 Bring your own keys. The repo never ships keys; everything reads from env.
 
 | Provider | Env var | Cost order |

@@ -340,7 +340,7 @@
     <div class="ox-stage flow-stage">
       <div class="ox-eyebrow">{{eyebrow}}</div>
       <h2 class="ox-title">{{action-title}}</h2>
-      <div class="ox-road flow-grow">
+      <div class="ox-road flow-grid-fill">
         <div class="rail"></div>
         <div class="ph">
           <div class="node"><span class="dot"></span><span class="pn">{{p1-no}}</span></div>
@@ -412,9 +412,9 @@
       <div class="ox-eyebrow">{{eyebrow}}</div>
       <h2 class="ox-title">{{action-title}}</h2>
       <div class="ox-ben flow-grid-fill">
-        <div class="ox-bcol flow-fill"><div class="ch"><span class="nn">A</span><h4>{{cat1-title}}</h4></div>{{@list slot=cat1-items}}</div>
-        <div class="ox-bcol flow-fill"><div class="ch"><span class="nn">B</span><h4>{{cat2-title}}</h4></div>{{@list slot=cat2-items}}</div>
-        <div class="ox-bcol flow-fill"><div class="ch"><span class="nn">C</span><h4>{{cat3-title}}</h4></div>{{@list slot=cat3-items}}</div>
+        <div class="ox-bcol"><div class="ch"><span class="nn">A</span><h4>{{cat1-title}}</h4></div>{{@list slot=cat1-items}}</div>
+        <div class="ox-bcol"><div class="ch"><span class="nn">B</span><h4>{{cat2-title}}</h4></div>{{@list slot=cat2-items}}</div>
+        <div class="ox-bcol"><div class="ch"><span class="nn">C</span><h4>{{cat3-title}}</h4></div>{{@list slot=cat3-items}}</div>
       </div>
       <div class="ox-band"><span class="lbl">In short</span><p>{{takeaway}}</p></div>
     </div>

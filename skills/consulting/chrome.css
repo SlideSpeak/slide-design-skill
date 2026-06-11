@@ -12,7 +12,7 @@
 .slide .eyebrow {
   font-family: var(--font-data);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-ink);
 }
 
@@ -22,7 +22,7 @@
   bottom: 28px;
   left: var(--page-safe);
   right: var(--page-safe);
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--color-muted);
   border-top: 1px solid var(--color-rule);
   padding-top: 8px;
@@ -84,7 +84,7 @@
 .dir-table thead th {
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--color-ink);
   text-align: left;
   padding: 10px 18px 10px 0;

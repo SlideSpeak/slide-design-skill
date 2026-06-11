@@ -136,6 +136,27 @@ function checkGraphicLayer(rawComponents: string, rawChrome: string): string | n
   return null;
 }
 
+/**
+ * Type floor — CSS font sizes below 14px on a 1920×1080 slide are too small to
+ * consume ("some font sizes feel too small", client feedback 2026-06). Applies
+ * to CSS `font-size: Npx` declarations only; SVG font-size ATTRIBUTES scale with
+ * their viewBox and are exempt.
+ */
+const TYPE_FLOOR_PX = 14;
+function checkTypeFloor(rawComponents: string, rawChrome: string): string | null {
+  const both = stripComments(rawComponents) + stripComments(rawChrome);
+  const tooSmall = new Set<string>();
+  const re = /font-size\s*:\s*([0-9.]+)px/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(both)) !== null) {
+    if (parseFloat(m[1]) < TYPE_FLOOR_PX) tooSmall.add(`${m[1]}px`);
+  }
+  if (tooSmall.size > 0) {
+    return `type below floor: ${[...tooSmall].join(", ")} (floor ${TYPE_FLOOR_PX}px) — labels stay >= ${TYPE_FLOOR_PX}px, body text 16-21px; if it does not fit, change the layout, never the type`;
+  }
+  return null;
+}
+
 /** Coarse grid signature: collapse a template's column layout to "Nx1fr" / "cols" / "flow". */
 function gridSignature(body: string): string {
   const grids = [...body.matchAll(/grid-template-columns\s*:\s*([^;"']+)/gi)].map((x) =>
@@ -252,6 +273,10 @@ async function main() {
       // Graphic-layer gate — hard. Styled text boxes alone are the bland tell.
       const graphicGap = checkGraphicLayer(rawComponents, rawChrome);
       if (graphicGap) failures.push(graphicGap);
+
+      // Type-floor gate — hard. Tiny labels are the "hard to consume" tell.
+      const typeGap = checkTypeFloor(rawComponents, rawChrome);
+      if (typeGap) failures.push(typeGap);
 
       // Composition-family contract (generated skills) — hard gate, opt-in.
       failures.push(...checkFamilyContract(skill));

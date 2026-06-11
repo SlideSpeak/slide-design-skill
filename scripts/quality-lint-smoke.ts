@@ -118,6 +118,47 @@ function rulesOn(findings: LintFinding[], slideIndex: number): string[] {
   check("sparse eyebrows not flagged", !has(findings, "eyebrow-overuse"));
 }
 
+// 12b. running section kicker (same few values repeating) → NOT flagged
+{
+  const sections = ["The market", "The options", "The plan"];
+  const slides = Array.from({ length: 9 }, (_, i) =>
+    slide("section", { kicker: sections[Math.floor(i / 3)], headline: `Head ${i}` }),
+  );
+  const { findings } = lintSlideTree(slides);
+  check("running section kicker not flagged", !has(findings, "eyebrow-overuse"));
+}
+
+// 12c. data-dense slide with thin content → thin-dense-slide
+{
+  const { findings } = lintSlideTree([
+    { type: "grid", density: "data-dense", slots: { "action-title": "Four areas matter most for the rollout", "a": "Speed", "b": "Cost", "c": "Risk", "d": "Control" } },
+  ] as never);
+  check("thin data-dense slide flagged", has(findings, "thin-dense-slide"));
+}
+
+// 12d. data-dense slide with real volume → NOT flagged
+{
+  const cells = Array.from({ length: 8 }, (_, r) => Array.from({ length: 6 }, (_, c) => `${r * c + 4}`).join(" / ")).join(" || ");
+  const { findings } = lintSlideTree([
+    { type: "table", density: "data-dense", slots: { "action-title": "The options differ on capital, speed and control across all six criteria", "rows": "Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta", "cols": "Capex|Speed|Margin|Control|Risk|Fit", "cells": cells, "insight": "The middle options dominate on every criterion that the board weighted highly in the spring review", "source": "Team analysis" } },
+  ] as never);
+  check("full data-dense slide not flagged", !has(findings, "thin-dense-slide"));
+}
+
+// 12e. parallel chart-data slot families (ex#-labels, ex#-unit-line) → NOT uniform-bullets
+{
+  const { findings } = lintSlideTree([
+    { type: "chart-trio", density: "data-dense", slots: {
+      "action-title": "The case is self-funding from 2030 across all three views of the build",
+      "ex1-title": "Revenue and cost", "ex1-unit-line": "EUR millions per year", "ex1-data": "1 2 3", "ex1-labels": "26|27|28",
+      "ex2-title": "EBITDA per year", "ex2-unit-line": "EUR millions", "ex2-data": "1 2 3", "ex2-labels": "26|27|28",
+      "ex3-title": "Cumulative cash", "ex3-unit-line": "EUR millions, since 2026", "ex3-data": "1 2 3", "ex3-labels": "26|27|28",
+      "source": "Team analysis",
+    } },
+  ] as never);
+  check("chart data slot families not uniform-bullets", !has(findings, "uniform-bullets"));
+}
+
 // 13. density monotony on a long deck → density-monotony
 {
   const slides = Array.from({ length: 8 }, () =>

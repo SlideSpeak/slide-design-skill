@@ -131,6 +131,8 @@ export interface GenerateDeckArgs {
   slideCount: number;
   imageBudget?: number;
   language?: string;
+  /** Deck is explicitly sample/illustrative content — skips the fake-precise-number lint. */
+  illustrative?: boolean;
 }
 
 export interface GenerateDeckResult {

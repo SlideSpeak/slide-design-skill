@@ -158,10 +158,18 @@ function interpolate(
       return `<img src="${escapeHtmlAttr(safe)}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
     }
     const value = slots[key];
-    return typeof value === "string" ? escapeHtml(value) : "";
+    return typeof value === "string" ? emphasize(escapeHtml(value)) : "";
   });
 
   return out;
+}
+
+// Inline emphasis: **text** inside a slot value becomes <strong>text</strong>.
+// Runs AFTER escaping, so the only markup that can emerge is the tag the engine
+// itself writes here — slot authors still cannot inject HTML. Skills decide what
+// emphasis looks like by styling `.slide strong` in their chrome.css.
+function emphasize(escaped: string): string {
+  return escaped.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
 }
 
 function parseDirectiveArgs(s: string): Record<string, string> {
@@ -296,8 +304,18 @@ function renderListDirective(
     .split(sep)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+  // Item content rides in a span so an item div that a skill styles as
+  // display:grid (numbered claims, tracker rows) keeps ONE content cell —
+  // otherwise inline <strong> emphasis would split the text into separate
+  // anonymous grid items and shred the layout.
+  // An item starting with "--" is a SUB-item (second outline level): the
+  // prefix is stripped and the div gets class "sub" for the skill to style.
   const inner = items
-    .map((it) => `<div>${escapeHtml(it)}</div>`)
+    .map((it) => {
+      const isSub = it.startsWith("--");
+      const text = isSub ? it.slice(2).trim() : it;
+      return `<div${isSub ? ' class="sub"' : ""}><span>${emphasize(escapeHtml(text))}</span></div>`;
+    })
     .join("");
   return `<div class="dir-list dir-list-${escapeHtmlAttr(slotName)}">${inner}</div>`;
 }
@@ -345,9 +363,9 @@ function renderTableDirective(
     .map((rh, i) => {
       const row = cellRows[i] ?? [];
       const cells = Array.from({ length: colCount }).map(
-        (_, j) => `<td>${escapeHtml(row[j] ?? "")}</td>`,
+        (_, j) => `<td>${emphasize(escapeHtml(row[j] ?? ""))}</td>`,
       );
-      return `<tr><th scope="row">${escapeHtml(rh)}</th>${cells.join("")}</tr>`;
+      return `<tr><th scope="row">${emphasize(escapeHtml(rh))}</th>${cells.join("")}</tr>`;
     })
     .join("");
 
@@ -404,6 +422,8 @@ function renderChartDirective(
   if (type === "line") return renderLineChart(args, slots);
   if (type === "dots-2x2") return renderDots2x2(args, slots);
   if (type === "stacked-bar") return renderStackedBar(args, slots);
+  if (type === "stacked-cols") return renderStackedCols(args, slots);
+  if (type === "stacked-area") return renderStackedArea(args, slots);
   if (type === "radar") return renderRadar(args, slots);
   if (type === "dot-map") return renderDotMap(args, slots);
   if (type === "glyph") return renderGlyph(args, slots);
@@ -440,7 +460,8 @@ function renderHeatmap(
   const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
   const cellColor = (v: number) => {
     const t = Math.max(0, Math.min(1, (Number.isFinite(v) ? v : 0) / max));
-    return `rgb(${lerp(low[0], high[0], t)},${lerp(low[1], high[1], t)},${lerp(low[2], high[2], t)})`;
+    const n = (lerp(low[0], high[0], t) << 16) | (lerp(low[1], high[1], t) << 8) | lerp(low[2], high[2], t);
+    return `#${n.toString(16).padStart(6, "0")}`;
   };
 
   const headRow =
@@ -452,12 +473,21 @@ function renderHeatmap(
       )
       .join("");
 
+  // values=1 prints the value INSIDE each cell (the reference matrix carries
+  // a number in every cell, the ramp only encodes it a second time)
+  const showValues = args.values === "1";
   const bodyRows = rowHeaders
     .map((rh, i) => {
       const vals = cellRows[i] ?? [];
       const head = `<div style="font-family:var(--font-body);font-size:12px;color:${ink};white-space:nowrap;padding-right:10px;align-self:center;text-align:right;">${escapeHtml(rh)}</div>`;
       const cells = colHeaders
-        .map((_, j) => `<div style="min-height:${cellH}px;background:${cellColor(vals[j])};border:1px solid #fff;"></div>`)
+        .map((_, j) => {
+          const fill = cellColor(vals[j]);
+          const inner = showValues && Number.isFinite(vals[j])
+            ? `<span style="font-family:var(--font-data);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:${readableOn(fill)};">${escapeHtml(String(vals[j]))}</span>`
+            : "";
+          return `<div style="min-height:${cellH}px;background:${fill};border:1px solid #fff;display:flex;align-items:center;justify-content:center;">${inner}</div>`;
+        })
         .join("");
       return head + cells;
     })
@@ -532,12 +562,44 @@ function parseLabels(s: string): string[] {
     .filter((x) => x.length > 0);
 }
 
+// "Nice" y-axis ticks spanning the data domain (reference decks carry a full
+// tick scale on every chart — 6 to 18 labels). Returns ticks from
+// floor(min/step) to ceil(max/step) at a 1/2/2.5/5 step.
+function niceTicks(min: number, max: number, target = 6): number[] {
+  const span = max - min || 1;
+  const raw = span / target;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+  const lo = Math.floor(min / step) * step;
+  const hi = Math.ceil(max / step) * step;
+  const ticks: number[] = [];
+  for (let t = lo; t <= hi + step * 1e-9; t += step) ticks.push(Math.round(t * 1e9) / 1e9);
+  return ticks;
+}
+
+function tickFormat(ticks: number[], unit: string): string[] {
+  const dec = ticks.reduce((d, t) => {
+    const s = String(t);
+    const i = s.indexOf(".");
+    return Math.max(d, i >= 0 ? s.length - i - 1 : 0);
+  }, 0);
+  return ticks.map((t) => formatNum(t, unit, false, dec));
+}
+
 function resolveSlotOrLiteral(
   value: string | undefined,
   slots: Record<string, string>,
 ): string {
   if (!value) return "";
   if (Object.prototype.hasOwnProperty.call(slots, value)) return slots[value];
+  // A kebab-case token that is NOT an authored slot reads as a dangling slot
+  // reference (e.g. unit=chart-unit with no chart-unit in the tree) — resolve
+  // to empty instead of leaking the slot name into rendered chart text. True
+  // literals at these call sites (navy, Lora, auto, %, #2B6CB0, 5) never carry
+  // an interior hyphen; directive-routing args (type=, variant=, slot=) are
+  // read directly and never pass through here.
+  if (/^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/.test(value)) return "";
   return value;
 }
 
@@ -549,16 +611,37 @@ function renderBarChart(
   const labels = parseLabels(slots[args.labels] ?? "");
   const highlight = Number(resolveSlotOrLiteral(args.highlight, slots) || "-1");
   if (data.length === 0) return "";
-  const w = 920, h = 440;
-  const padL = 56, padR = 16, padT = 48, padB = 104;
-  const chartW = w - padL - padR;
-  const chartH = h - padT - padB;
-  const max = Math.max(...data, 0);
-  const min = Math.min(...data, 0);
+  // Secondary values strip (a second measure per period under the axis, the
+  // USPS-RHB device): stripData=<slot> numbers + stripLabel=<slot> row label.
+  const stripVals = args.stripData ? parseNums(slots[args.stripData] ?? "") : [];
+  const hasStrip = stripVals.length > 0;
+  // Reference-grade chart furniture (each opt-in per template): fontScale=
+  // scales all type (multi-up panels render the same viewBox smaller),
+  // height= overrides the viewBox height, yAxis=1 draws a full tick scale,
+  // refLine/refLabel a dashed reference line with a right-edge marker,
+  // divider/dividerLabels an actual/forecast split.
+  const fScale = Math.min(2, Math.max(0.8, Number(args.fontScale ?? "1") || 1));
+  const F = (n: number) => Math.round(n * fScale * 2) / 2;
+  const hOverride = Number(args.height ?? "");
+  const hBase = Number.isFinite(hOverride) && hOverride >= 360 && hOverride <= 760 ? hOverride : 440;
+  const w = 920, h = hBase + (hasStrip ? 28 : 0);
+  const refRaw = args.refLine ? resolveSlotOrLiteral(args.refLine, slots).trim() : "";
+  const refVal = refRaw ? Number(refRaw) : NaN;
+  let max = Math.max(...data, 0);
+  let min = Math.min(...data, 0);
+  if (Number.isFinite(refVal)) {
+    max = Math.max(max, refVal);
+    min = Math.min(min, refVal);
+  }
+  const hasAxis = args.yAxis === "1";
+  // the reference scale is DENSE (USPS: up to 17 ticks); multi-up panels with
+  // scaled-up type get a coarser scale so labels never collide
+  const ticks = hasAxis ? niceTicks(min, max, fScale >= 1.5 ? 6 : 10) : [];
+  if (ticks.length >= 2) {
+    min = Math.min(min, ticks[0]);
+    max = Math.max(max, ticks[ticks.length - 1]);
+  }
   const range = max - min || 1;
-  const barW = (chartW / data.length) * 0.62;
-  const gap = (chartW / data.length) * 0.38;
-  const zeroY = padT + chartH * (max / range);
 
   const accent = args.accent ?? "#FF6A13";
   const base = args.base ?? "#1F3A5F";
@@ -567,6 +650,58 @@ function renderBarChart(
 
   const unit = resolveSlotOrLiteral(args.unit, slots);
   const dec = maxDecimals(slots[args.data] ?? "");
+  const tickStrs = tickFormat(ticks, unit);
+  const padL = hasAxis
+    ? Math.max(56, 16 + Math.max(0, ...tickStrs.map((s) => s.length)) * F(13) * 0.66)
+    : 56;
+  const padR = 16, padT = 48, padB = 104 + (hasStrip ? 28 : 0);
+  const chartW = w - padL - padR;
+  const chartH = h - padT - padB;
+  const barW = (chartW / data.length) * 0.62;
+  const gap = (chartW / data.length) * 0.38;
+  const zeroY = padT + chartH * (max / range);
+  // Dense year-series stay readable: value type steps down with bar count;
+  // the reference labels EVERY period up to ~16, only longer series thin out.
+  const valueFs = F(data.length <= 8 ? 22 : data.length <= 14 ? 18 : 15);
+  const labelStep = Math.ceil(data.length / 16);
+  const labelFs = F(data.length <= 14 ? 17 : 15);
+
+  let axisSvg = "";
+  if (hasAxis) {
+    ticks.forEach((t, i) => {
+      const ty = padT + ((max - t) / range) * chartH;
+      if (Math.abs(t) > 1e-9) {
+        axisSvg += `<line x1="${padL}" x2="${w - padR}" y1="${ty.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${muted}" stroke-width="0.5" stroke-dasharray="2 4"/>`;
+      }
+      axisSvg += `<text x="${(padL - 10).toFixed(1)}" y="${(ty + F(13) * 0.35).toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(13)}" fill="${ink}">${escapeHtml(tickStrs[i])}</text>`;
+    });
+  }
+  let dividerSvg = "";
+  const divRaw = args.divider ? resolveSlotOrLiteral(args.divider, slots).trim() : "";
+  const divIdx = divRaw ? Number(divRaw) : NaN;
+  if (Number.isFinite(divIdx) && divIdx > 0 && divIdx < data.length) {
+    const dx = padL + divIdx * (barW + gap);
+    dividerSvg += `<line x1="${dx.toFixed(1)}" x2="${dx.toFixed(1)}" y1="22" y2="${(padT + chartH).toFixed(1)}" stroke="${ink}" stroke-width="1" stroke-dasharray="4 5"/>`;
+    const dlRaw = args.dividerLabels ? resolveSlotOrLiteral(args.dividerLabels, slots) : "";
+    const dl = dlRaw.split("|").map((s) => s.trim());
+    if (dl[0]) dividerSvg += `<text x="${(dx - 10).toFixed(1)}" y="16" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(12.5)}" fill="${ink}" font-weight="700">${escapeHtml(dl[0])}</text>`;
+    if (dl[1]) dividerSvg += `<text x="${(dx + 10).toFixed(1)}" y="16" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(12.5)}" fill="${ink}" fill-opacity="0.55" font-weight="700">${escapeHtml(dl[1])}</text>`;
+  }
+  let refSvg = "";
+  if (Number.isFinite(refVal)) {
+    const ry = padT + ((max - refVal) / range) * chartH;
+    refSvg += `<line x1="${padL}" x2="${w - padR}" y1="${ry.toFixed(1)}" y2="${ry.toFixed(1)}" stroke="${ink}" stroke-width="1.5" stroke-dasharray="7 5"/>`;
+    refSvg += `<polygon points="${(w - padR + 2).toFixed(1)},${ry.toFixed(1)} ${(w - padR + 12).toFixed(1)},${(ry - 5).toFixed(1)} ${(w - padR + 12).toFixed(1)},${(ry + 5).toFixed(1)}" fill="${ink}"/>`;
+    const refValText = formatNum(refVal, unit, false, dec);
+    refSvg += `<text x="${(w - padR - 8).toFixed(1)}" y="${(ry - 9).toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(14)}" fill="${ink}" font-weight="700">${escapeHtml(refValText)}</text>`;
+    const refLabel = args.refLabel ? resolveSlotOrLiteral(args.refLabel, slots) : "";
+    if (refLabel) {
+      // same line, left of the value — below the rule it collides with the
+      // x labels when the threshold runs near the chart floor
+      const labelX = w - padR - 8 - refValText.length * F(14) * 0.66 - 12;
+      refSvg += `<text x="${labelX.toFixed(1)}" y="${(ry - 9).toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(12.5)}" fill="${ink}" fill-opacity="0.55">${escapeHtml(refLabel)}</text>`;
+    }
+  }
   let bars = "";
   data.forEach((v, i) => {
     const x = padL + gap / 2 + i * (barW + gap);
@@ -574,17 +709,33 @@ function renderBarChart(
     const y = v >= 0 ? zeroY - barH : zeroY;
     const fill = i === highlight ? accent : base;
     bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${fill}"/>`;
-    bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 12).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(v, unit, false, dec))}</text>`;
-    if (labels[i]) {
-      bars += renderWrappedLabel(labels[i], x + barW / 2, padT + chartH + 28, barW + gap * 0.85, muted, 17);
+    bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 10).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${valueFs}" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(v, unit, false, dec))}</text>`;
+    if (labels[i] && (i % labelStep === 0 || i === data.length - 1)) {
+      bars += renderWrappedLabel(labels[i], x + barW / 2, padT + chartH + 28, (barW + gap * 0.85) * labelStep, muted, labelFs);
     }
   });
 
   // zero baseline carries the chart — strong, not a hairline
   const axis = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${ink}" stroke-width="2"/>`;
+  let strip = "";
+  if (hasStrip) {
+    // own block under the category labels: small label line, hairline, values
+    const labelY = padT + chartH + 56;
+    const stripY = padT + chartH + 82;
+    const stripLabel = args.stripLabel ? (slots[args.stripLabel] ?? "") : "";
+    const stripDec = maxDecimals(slots[args.stripData!] ?? "");
+    if (stripLabel) {
+      strip += `<text x="${padL}" y="${labelY}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(13)}" fill="${muted}" font-weight="600">${escapeHtml(stripLabel)}</text>`;
+    }
+    strip += `<line x1="${padL}" x2="${w - padR}" y1="${labelY + 6}" y2="${labelY + 6}" stroke="${muted}" stroke-width="0.5"/>`;
+    stripVals.forEach((v, i) => {
+      const x = padL + gap / 2 + i * (barW + gap) + barW / 2;
+      strip += `<text x="${x.toFixed(1)}" y="${stripY}" text-anchor="middle" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(data.length <= 14 ? 14 : 13)}" fill="${ink}" font-weight="600">${escapeHtml(formatNum(v, "", false, stripDec))}</text>`;
+    });
+  }
   const note = renderChartNote(args, slots, w - padR, 24, accent);
 
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${axis}${bars}${note}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${axisSvg}${dividerSvg}${axis}${bars}${refSvg}${strip}${note}</svg>`;
 }
 
 /**
@@ -613,7 +764,8 @@ function renderHBarChart(
   const dec = maxDecimals(slots[args.data] ?? "");
   const highlight = Number(resolveSlotOrLiteral(args.highlight, slots) || "-1");
   const w = 920;
-  const rowH = 52;
+  // long rankings tighten the row pitch so 8-14 rows stay inside the exhibit
+  const rowH = data.length <= 8 ? 52 : data.length <= 12 ? 44 : 38;
   const h = data.length * rowH + 32;
   const padL = 260, padR = 100, padT = 8;
   const chartW = w - padL - padR;
@@ -635,7 +787,7 @@ function renderHBarChart(
     rows += `<text x="${(padL + barW + 10).toFixed(1)}" y="${(y + rowH / 2 + 6).toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="${ink}" font-weight="600">${escapeHtml(formatNum(v, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
   });
 
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${rows}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${rows}</svg>`;
 }
 
 function renderWaterfallChart(
@@ -717,7 +869,7 @@ function renderWaterfallChart(
 
   const baseline = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${ink}" stroke-width="2" stroke-opacity="0.85"/>`;
   const note = renderChartNote(args, slots, w - padR, 24, accent);
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${baseline}${bars}${note}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${baseline}${bars}${note}</svg>`;
 }
 
 // Wrap a label onto up to 2 lines within maxWidth. Uses approximate em-width
@@ -768,16 +920,73 @@ function renderLineChart(
   const compareLabel = resolveSlotOrLiteral(args.compareLabel, slots);
   const primaryLabel = resolveSlotOrLiteral(args.primaryLabel, slots);
   const hasCompare = compareData.length >= 2;
+  // Inline series labels (the reference style): primaryNote/compareNote put
+  // the series name + growth note ON the trace ("Cost  +1.5% p.a.") and
+  // replace the detached legend.
+  const primaryNote = args.primaryNote ? resolveSlotOrLiteral(args.primaryNote, slots) : "";
+  const compareNote = args.compareNote ? resolveSlotOrLiteral(args.compareNote, slots) : "";
+  const inline = args.inline === "1" || !!primaryNote || !!compareNote;
+  const fScale = Math.min(2, Math.max(0.8, Number(args.fontScale ?? "1") || 1));
+  const F = (n: number) => Math.round(n * fScale * 2) / 2;
 
-  const w = 920, h = 420;
-  const padL = 64, padR = 48, padT = hasCompare ? 92 : 36, padT0 = hasCompare ? 28 : 36;
-  const padB = 68;
+  // Annotation callouts: callouts=<slot>, value "idx:text|idx:text" (idx is a
+  // 0-based data index). Each becomes a white box with a leader line pointing
+  // at its data point — causes explained ON the chart. Boxes stack in lanes
+  // above the plot area, which grows downward to make room.
+  const calloutItems: { idx: number; text: string }[] = [];
+  if (args.callouts) {
+    for (const part of (slots[args.callouts] ?? "").split("|")) {
+      const m = /^(\d+)\s*:\s*(.+)$/.exec(part.trim());
+      if (!m) continue;
+      const idx = Number(m[1]);
+      if (idx >= 0 && idx < data.length) calloutItems.push({ idx, text: m[2].trim() });
+    }
+  }
+  const calloutBoxH = 34, calloutGap = 10;
+  const calloutBase = hasCompare && !inline ? 48 : 12;
+  const calloutZone = calloutItems.length
+    ? calloutBase + calloutItems.length * (calloutBoxH + calloutGap) + 8
+    : 0;
+
+  // Secondary values strip under the axis (same device as the bar chart):
+  // stripData=<slot> numbers per period + stripLabel=<slot> row label.
+  const stripVals = args.stripData ? parseNums(slots[args.stripData] ?? "") : [];
+  const hasStrip = stripVals.length > 0;
+
+  const hOverride = Number(args.height ?? "");
+  const hBase = Number.isFinite(hOverride) && hOverride >= 360 && hOverride <= 760 ? hOverride : 420;
+  const w = 920;
+  const refRaw = args.refLine ? resolveSlotOrLiteral(args.refLine, slots).trim() : "";
+  const refVal = refRaw ? Number(refRaw) : NaN;
+  // fill=solid: saturated area under the trace (the reference look for a
+  // single amount-series); the domain then includes 0 so the area is honest
+  const fillSolid = args.fill === "solid";
+  const allVals = hasCompare ? [...data, ...compareData] : [...data];
+  if (Number.isFinite(refVal)) allVals.push(refVal);
+  if (fillSolid) allVals.push(0);
+  let max = Math.max(...allVals);
+  let min = Math.min(...allVals);
+  const hasAxis = args.yAxis === "1";
+  // dense reference scale on full-width charts, coarser in multi-up panels
+  const ticks = hasAxis ? niceTicks(min, max, fScale >= 1.5 ? 6 : 10) : [];
+  if (ticks.length >= 2) {
+    min = Math.min(min, ticks[0]);
+    max = Math.max(max, ticks[ticks.length - 1]);
+  }
+  const range = max - min || 1;
+  const unitStr = resolveSlotOrLiteral(args.unit, slots);
+  const tickStrs = tickFormat(ticks, unitStr);
+  const padL = hasAxis
+    ? Math.max(64, 16 + Math.max(0, ...tickStrs.map((s) => s.length)) * F(13) * 0.66)
+    : 64;
+  const padTBase = hasCompare && !inline ? 92 : 36;
+  const padR = 48, padT = Math.max(padTBase, calloutZone), padT0 = hasCompare && !inline ? 28 : 36;
+  const padB = 68 + (hasStrip ? 32 : 0);
+  // callout lanes may not crush the plot: the viewBox grows by whatever the
+  // callout zone adds on top, keeping the plot area constant
+  const h = hBase + (hasStrip ? 32 : 0) + Math.max(0, padT - padTBase);
   const chartW = w - padL - padR;
   const chartH = h - padT - padB;
-  const allVals = hasCompare ? [...data, ...compareData] : data;
-  const max = Math.max(...allVals);
-  const min = Math.min(...allVals);
-  const range = max - min || 1;
   const step = chartW / (data.length - 1);
   const compareStep = hasCompare ? chartW / (compareData.length - 1) : 0;
 
@@ -794,11 +1003,38 @@ function renderLineChart(
   const path = "M " + points.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" L ");
   const fillPath = path + ` L ${padL + chartW} ${padT + chartH} L ${padL} ${padT + chartH} Z`;
   let svg = `<defs><linearGradient id="lc-grad" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${base}" stop-opacity="0.22"/><stop offset="100%" stop-color="${base}" stop-opacity="0"/></linearGradient></defs>`;
-  svg += `<path d="${fillPath}" fill="url(#lc-grad)"/>`;
-  // gridlines first, so the line draws over them
-  for (let g = 0; g <= 4; g++) {
-    const gy = padT + (g / 4) * chartH;
-    svg += `<line x1="${padL}" x2="${w - padR}" y1="${gy}" y2="${gy}" stroke="${muted}" stroke-width="0.5" stroke-dasharray="2 4"/>`;
+  svg += fillSolid
+    ? `<path d="${fillPath}" fill="${base}" fill-opacity="0.9"/>`
+    : `<path d="${fillPath}" fill="url(#lc-grad)"/>`;
+  // gridlines first, so the line draws over them; with yAxis=1 the grid sits
+  // on the ticks and every tick carries its value (the reference scale)
+  if (hasAxis) {
+    ticks.forEach((t, i) => {
+      const gy = padT + ((max - t) / range) * chartH;
+      svg += `<line x1="${padL}" x2="${w - padR}" y1="${gy.toFixed(1)}" y2="${gy.toFixed(1)}" stroke="${muted}" stroke-width="0.5" stroke-dasharray="2 4"/>`;
+      svg += `<text x="${(padL - 10).toFixed(1)}" y="${(gy + F(13) * 0.35).toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(13)}" fill="${ink}">${escapeHtml(tickStrs[i])}</text>`;
+    });
+  } else {
+    for (let g = 0; g <= 4; g++) {
+      const gy = padT + (g / 4) * chartH;
+      svg += `<line x1="${padL}" x2="${w - padR}" y1="${gy}" y2="${gy}" stroke="${muted}" stroke-width="0.5" stroke-dasharray="2 4"/>`;
+    }
+  }
+  // actual/forecast divider: dashed vertical at a data index, zone labels
+  const divRaw = args.divider ? resolveSlotOrLiteral(args.divider, slots).trim() : "";
+  const divIdx = divRaw ? Number(divRaw) : NaN;
+  if (Number.isFinite(divIdx) && divIdx > 0 && divIdx < data.length) {
+    const dx = padL + divIdx * step;
+    // with callouts the top zone is taken (boxes + endpoint values) — zone
+    // labels drop to the plot floor instead; over a solid fill they invert
+    const labelY = calloutItems.length ? padT + chartH - 12 : padT - 10;
+    const onFill = fillSolid && calloutItems.length > 0;
+    const dlFill = onFill ? "#FFFFFF" : ink;
+    svg += `<line x1="${dx.toFixed(1)}" x2="${dx.toFixed(1)}" y1="${(calloutItems.length ? padT : padT - 22).toFixed(1)}" y2="${(padT + chartH).toFixed(1)}" stroke="${ink}" stroke-width="1" stroke-dasharray="4 5"/>`;
+    const dlRaw = args.dividerLabels ? resolveSlotOrLiteral(args.dividerLabels, slots) : "";
+    const dl = dlRaw.split("|").map((s) => s.trim());
+    if (dl[0]) svg += `<text x="${(dx - 10).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(12.5)}" fill="${dlFill}" font-weight="700">${escapeHtml(dl[0])}</text>`;
+    if (dl[1]) svg += `<text x="${(dx + 10).toFixed(1)}" y="${labelY.toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(12.5)}" fill="${dlFill}" fill-opacity="0.7" font-weight="700">${escapeHtml(dl[1])}</text>`;
   }
   // Compare trace (dashed) renders behind primary; endpoint dot only — legend at top names the series
   if (hasCompare) {
@@ -818,23 +1054,83 @@ function renderLineChart(
     const primLastY = points[points.length - 1].y;
     const cmpAbove = last.y <= primLastY;
     const cmpLabelY = cmpAbove ? last.y - 13 : last.y + 21;
-    svg += `<text x="${(last.x - 12).toFixed(1)}" y="${cmpLabelY.toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="14" fill="${muted}" text-anchor="end" font-weight="600">${escapeHtml(formatNum(lastV, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+    svg += `<text x="${(last.x - 12).toFixed(1)}" y="${cmpLabelY.toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(14)}" fill="${muted}" text-anchor="end" font-weight="600">${escapeHtml(formatNum(lastV, resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+    // inline compare label sits below the dashed trace in the flatter early
+    // run (mid-run it strikes through steep segments when the traces overlap)
+    if (inline && compareLabel) {
+      const ci = Math.round((cmpPoints.length - 1) * 0.32);
+      const cp = cmpPoints[ci];
+      svg += `<text x="${cp.x.toFixed(1)}" y="${(cp.y + 28).toFixed(1)}" text-anchor="middle" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(15)}" fill="${ink}" fill-opacity="0.62" font-weight="700">${escapeHtml(compareLabel)}${compareNote ? `<tspan dx="10" font-weight="600" font-size="${F(13.5)}">${escapeHtml(compareNote)}</tspan>` : ""}</text>`;
+    }
   }
   svg += `<path d="${path}" fill="none" stroke="${base}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
-  // dots: first, last, peak
+  // inline primary label rides above the trace mid-run (the end zone belongs
+  // to the endpoint values); over a solid fill it clears the local maximum of
+  // the surrounding points so it never sinks into the area
+  if (inline && primaryLabel) {
+    const pi = Math.round((points.length - 1) * 0.55);
+    const pp = points[pi];
+    let labelY = pp.y - 16;
+    if (fillSolid) {
+      const lo = Math.max(0, pi - 2), hi = Math.min(points.length - 1, pi + 2);
+      labelY = Math.min(...points.slice(lo, hi + 1).map((q) => q.y)) - 16;
+    }
+    svg += `<text x="${pp.x.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(15.5)}" fill="${base}" font-weight="700">${escapeHtml(primaryLabel)}${primaryNote ? `<tspan dx="10" font-weight="600" font-size="${F(13.5)}" fill="${ink}">${escapeHtml(primaryNote)}</tspan>` : ""}</text>`;
+  }
+  // reference line with right-edge marker ("◀ 15"), the statutory-cap device
+  if (Number.isFinite(refVal)) {
+    const ry = padT + ((max - refVal) / range) * chartH;
+    svg += `<line x1="${padL}" x2="${w - padR}" y1="${ry.toFixed(1)}" y2="${ry.toFixed(1)}" stroke="${ink}" stroke-width="1.5" stroke-dasharray="7 5"/>`;
+    svg += `<polygon points="${(w - padR + 4).toFixed(1)},${ry.toFixed(1)} ${(w - padR + 14).toFixed(1)},${(ry - 5).toFixed(1)} ${(w - padR + 14).toFixed(1)},${(ry + 5).toFixed(1)}" fill="${ink}"/>`;
+    const refValText = formatNum(refVal, unitStr, false, dec);
+    svg += `<text x="${(w - padR - 8).toFixed(1)}" y="${(ry - 9).toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(14)}" fill="${ink}" font-weight="700">${escapeHtml(refValText)}</text>`;
+    const refLabel = args.refLabel ? resolveSlotOrLiteral(args.refLabel, slots) : "";
+    if (refLabel) {
+      // label sits on the same line, left of the value — below the rule it
+      // would collide with the x labels when the threshold runs near the floor
+      const labelX = w - padR - 8 - refValText.length * F(14) * 0.66 - 12;
+      svg += `<text x="${labelX.toFixed(1)}" y="${(ry - 9).toFixed(1)}" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(12.5)}" fill="${ink}" fill-opacity="0.55">${escapeHtml(refLabel)}</text>`;
+    }
+  }
+  // dots: first, last, peak; the reference labels EVERY period up to ~16
+  const labelStep = Math.ceil(data.length / 16);
+  const dataMax = Math.max(...data);
   points.forEach((p, i) => {
-    const isPeak = data[i] === max;
+    const isPeak = data[i] === dataMax;
     if (i === 0 || i === points.length - 1 || isPeak) {
       const dotFill = isPeak ? accent : base;
       svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isPeak ? 7 : 5}" fill="${dotFill}"/>`;
-      svg += `<text x="${p.x.toFixed(1)}" y="${(p.y - 14).toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="16" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(data[i], resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+      // with a tick scale, a first point sitting exactly on a tick would print
+      // the same number twice (axis label + value) — the axis carries it
+      const dupesTick = hasAxis && i === 0 && ticks.includes(data[i]);
+      if (!dupesTick) {
+        // the first point sits ON the axis — its value anchors to the right of
+        // the dot so it never overprints a tick label
+        const firstOnAxis = hasAxis && i === 0;
+        svg += `<text x="${(firstOnAxis ? p.x + 8 : p.x).toFixed(1)}" y="${(p.y - 14).toFixed(1)}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(16)}" fill="${ink}" text-anchor="${firstOnAxis ? "start" : "middle"}" font-weight="700">${escapeHtml(formatNum(data[i], resolveSlotOrLiteral(args.unit, slots), false, dec))}</text>`;
+      }
     }
-    if (labels[i]) {
-      svg += `<text x="${p.x.toFixed(1)}" y="${(padT + chartH + 28).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="${muted}" text-anchor="middle">${escapeHtml(labels[i])}</text>`;
+    if (labels[i] && (i % labelStep === 0 || i === data.length - 1)) {
+      svg += `<text x="${p.x.toFixed(1)}" y="${(padT + chartH + 28).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(15)}" fill="${muted}" text-anchor="middle">${escapeHtml(labels[i])}</text>`;
     }
   });
-  // legend at top when we have two traces
-  if (hasCompare) {
+  if (hasStrip) {
+    const labelY = padT + chartH + 54;
+    const stripY = padT + chartH + 80;
+    const stripLabel = args.stripLabel ? (slots[args.stripLabel] ?? "") : "";
+    const stripDec = maxDecimals(slots[args.stripData!] ?? "");
+    if (stripLabel) {
+      svg += `<text x="${padL}" y="${labelY}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(13)}" fill="${muted}" font-weight="600">${escapeHtml(stripLabel)}</text>`;
+    }
+    svg += `<line x1="${padL}" x2="${w - padR}" y1="${labelY + 6}" y2="${labelY + 6}" stroke="${muted}" stroke-width="0.5"/>`;
+    stripVals.forEach((v, i) => {
+      if (i % labelStep !== 0 && i !== stripVals.length - 1) return;
+      const x = padL + i * step;
+      svg += `<text x="${x.toFixed(1)}" y="${stripY}" text-anchor="middle" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="${F(14)}" fill="${ink}" font-weight="600">${escapeHtml(formatNum(v, "", false, stripDec))}</text>`;
+    });
+  }
+  // legend at top when we have two traces (inline labels replace it)
+  if (hasCompare && !inline) {
     const lx = padL;
     const ly = padT0;
     svg += `<line x1="${lx}" x2="${lx + 24}" y1="${ly}" y2="${ly}" stroke="${base}" stroke-width="3"/>`;
@@ -844,7 +1140,20 @@ function renderLineChart(
     svg += `<text x="${lx2 + 32}" y="${(ly + 5).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="13" fill="${muted}" font-weight="500">${escapeHtml(compareLabel || "Benchmark")}</text>`;
   }
   svg += renderChartNote(args, slots, w - padR, padT0 + 5, accent);
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${svg}</svg>`;
+  // callout boxes draw last so they sit above gridlines and traces
+  calloutItems.forEach((c, lane) => {
+    const p = points[c.idx];
+    const fs = F(14);
+    const bw = Math.min(360, Math.max(80, c.text.length * fs * 0.56)) + 24;
+    const bx = Math.max(8, Math.min(w - 8 - bw, p.x - bw / 2));
+    const by = calloutBase + lane * (calloutBoxH + calloutGap);
+    const anchorX = Math.max(bx + 10, Math.min(bx + bw - 10, p.x));
+    svg += `<line x1="${anchorX.toFixed(1)}" y1="${by + calloutBoxH}" x2="${p.x.toFixed(1)}" y2="${(p.y - 9).toFixed(1)}" stroke="${ink}" stroke-width="1"/>`;
+    svg += `<polygon points="${(p.x - 4).toFixed(1)},${(p.y - 10).toFixed(1)} ${(p.x + 4).toFixed(1)},${(p.y - 10).toFixed(1)} ${p.x.toFixed(1)},${(p.y - 3).toFixed(1)}" fill="${ink}"/>`;
+    svg += `<rect x="${bx.toFixed(1)}" y="${by}" width="${bw.toFixed(1)}" height="${calloutBoxH}" fill="#FFFFFF" stroke="${ink}" stroke-width="1"/>`;
+    svg += `<text x="${(bx + bw / 2).toFixed(1)}" y="${(by + calloutBoxH / 2 + 5).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${fs}" fill="${ink}" text-anchor="middle" font-weight="500">${escapeHtml(c.text)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${svg}</svg>`;
 }
 
 function renderDots2x2(
@@ -890,9 +1199,11 @@ function renderDots2x2(
     const cy = padT + ((100 - p.y) / 100) * chartH;
     const isHi = p.label.toLowerCase() === highlight;
     svg += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${isHi ? 10 : 7}" fill="${isHi ? accent : base}"/>`;
-    svg += `<text x="${(cx + 14).toFixed(1)}" y="${(cy + 4).toFixed(1)}" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="${ink}" font-weight="${isHi ? 700 : 500}">${escapeHtml(p.label)}</text>`;
+    // labels on the right quarter anchor left of the dot so they stay inside the frame
+    const flip = p.x > 72;
+    svg += `<text x="${(flip ? cx - 14 : cx + 14).toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="${flip ? "end" : "start"}" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="${ink}" font-weight="${isHi ? 700 : 500}">${escapeHtml(p.label)}</text>`;
   }
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${svg}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${svg}</svg>`;
 }
 
 // ─── stacked-bar ─────────────────────────────────────────────────────────────
@@ -918,7 +1229,11 @@ function renderStackedBar(
   const base = args.base ?? "#1A1A1A";
   const muted = args.muted ?? "#9AA0A6";
   const ink = args.ink ?? "#1A1A1A";
-  const palette = [accent, base, "#3A3F45", "#6B7178", "#B0B6BD"];
+  const customPalette = args.palette
+    ? args.palette.split("|").filter((c) => /^#[0-9a-fA-F]{6}$/.test(c.trim()))
+    : [];
+  const palette = customPalette.length >= 2 ? customPalette : [accent, base, "#3A3F45", "#6B7178", "#B0B6BD"];
+  const valueSize = Math.max(24, Math.min(140, Number(args.valueSize) || 116));
   const serif = fontStack(args.font, SERIF_FALLBACK);
   const sans = "'Inter Tight', system-ui, sans-serif";
   const title = resolveSlotOrLiteral(args.title, slots);
@@ -934,8 +1249,13 @@ function renderStackedBar(
     segs += `<rect x="${x.toFixed(1)}" y="${barY}" width="${segW.toFixed(1)}" height="${barH}" fill="${fill}"/>`;
     // oversized serif numeral, optically centered in the segment via SVG
     // baseline semantics (font-agnostic — no hardcoded cap-height ratio)
-    if (segW > 70) {
-      segs += `<text x="${(x + 30).toFixed(1)}" y="${(barY + barH / 2).toFixed(1)}" dominant-baseline="central" font-family="${serif}" font-size="116" fill="${txt}" font-weight="400" letter-spacing="-0.01em">${pct}%</text>`;
+    // Per-segment fit: render the numeral at full size when it fits, step down
+    // once for narrow segments, and skip rather than clip at the viewBox edge.
+    const pctText = `${pct}%`;
+    const fits = (size: number) => segW > pctText.length * size * 0.62 + size * 0.4;
+    const size = fits(valueSize) ? valueSize : fits(valueSize * 0.5) ? valueSize * 0.5 : 0;
+    if (size >= 20) {
+      segs += `<text x="${(x + size * 0.26).toFixed(1)}" y="${(barY + barH / 2).toFixed(1)}" dominant-baseline="central" font-family="${serif}" font-size="${size.toFixed(0)}" fill="${txt}" font-weight="400" letter-spacing="-0.01em">${pctText}</text>`;
     }
     x += segW;
   });
@@ -961,7 +1281,187 @@ function renderStackedBar(
   // thin rule under the top row
   top += `<line x1="${padX}" x2="${w - padX}" y1="${topH - 8}" y2="${topH - 8}" stroke="${muted}" stroke-width="1" stroke-opacity="0.4"/>`;
 
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${top}${segs}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${top}${segs}</svg>`;
+}
+
+// ─── stacked-area ────────────────────────────────────────────────────────────
+// Composition over time as saturated stacked bands — the reference's
+// volume-forecast device (USPS p12): the exhibit is one solid block of ink,
+// never a thin line floating in white. args: data (slot, "a/b/c || a/b/c" one
+// row per period), labels (slot, period names), segLabels (slot, legend),
+// palette (#hex|...), yAxis=1 (tick scale), height= (360-760), fontScale=,
+// unit, ink, muted. Total values print at first/last/peak of the top line.
+function renderStackedArea(
+  args: Record<string, string>,
+  slots: Record<string, string>,
+): string {
+  const rows = (slots[args.data] ?? "")
+    .split("||")
+    .map((r) => r.split("/").map((c) => Number(c.trim())).filter((n) => Number.isFinite(n)))
+    .filter((r) => r.length > 0);
+  const labels = parseLabels(slots[args.labels] ?? "");
+  const segLabels = args.segLabels ? parseLabels(slots[args.segLabels] ?? "") : [];
+  if (rows.length < 2) return "";
+  const segCount = Math.min(...rows.map((r) => r.length));
+  if (segCount < 1) return "";
+
+  const fScale = Math.min(2, Math.max(0.8, Number(args.fontScale ?? "1") || 1));
+  const F = (n: number) => Math.round(n * fScale * 2) / 2;
+  const hOverride = Number(args.height ?? "");
+  const h = Number.isFinite(hOverride) && hOverride >= 360 && hOverride <= 760 ? hOverride : 480;
+  const w = 920;
+
+  const ink = args.ink ?? "#1A1A1A";
+  const muted = args.muted ?? "#9AA0A6";
+  const palette = (args.palette ?? "")
+    .split("|")
+    .filter((c) => /^#[0-9a-fA-F]{6}$/.test(c.trim()));
+  if (palette.length === 0) palette.push("#1F3A5F", "#2B6CB0", "#6FA8DC", "#9DBFDD");
+  const sans = "var(--font-data, 'Inter Tight', system-ui, sans-serif)";
+  const mono = "var(--font-data, ui-monospace, monospace)";
+  const unit = resolveSlotOrLiteral(args.unit, slots);
+  const dec = maxDecimals(slots[args.data] ?? "");
+
+  const totals = rows.map((r) => r.slice(0, segCount).reduce((a, v) => a + Math.max(0, v), 0));
+  let max = Math.max(...totals);
+  const hasAxis = args.yAxis === "1";
+  const ticks = hasAxis ? niceTicks(0, max, fScale >= 1.5 ? 6 : 9) : [];
+  if (ticks.length >= 2) max = Math.max(max, ticks[ticks.length - 1]);
+  const range = max || 1;
+  const tickStrs = tickFormat(ticks, unit);
+  const padL = hasAxis
+    ? Math.max(56, 16 + Math.max(0, ...tickStrs.map((s) => s.length)) * F(13) * 0.66)
+    : 24;
+  const padR = 24, padT = 72, padB = 44;
+  const chartW = w - padL - padR;
+  const chartH = h - padT - padB;
+  const n = rows.length;
+  const step = chartW / (n - 1);
+  const yOf = (v: number) => padT + ((max - v) / range) * chartH;
+
+  let svg = "";
+  // tick labels + tick marks (no gridlines across the saturated bands)
+  if (hasAxis) {
+    ticks.forEach((t, i) => {
+      const ty = yOf(t);
+      svg += `<line x1="${padL - 6}" x2="${padL}" y1="${ty.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="${ink}" stroke-width="1"/>`;
+      svg += `<text x="${(padL - 12).toFixed(1)}" y="${(ty + F(13) * 0.35).toFixed(1)}" text-anchor="end" style="font-family:${mono};font-variant-numeric:tabular-nums" font-size="${F(13)}" fill="${ink}">${escapeHtml(tickStrs[i])}</text>`;
+    });
+  }
+  // cumulative bands, bottom-up; white hairline between bands keeps them crisp
+  const cum: number[][] = [];
+  for (let k = 0; k < segCount; k++) {
+    cum[k] = rows.map((r, i) => (k === 0 ? 0 : cum[k - 1][i]) + Math.max(0, r[k]));
+  }
+  for (let k = 0; k < segCount; k++) {
+    const upper = cum[k].map((v, i) => `${(padL + i * step).toFixed(1)},${yOf(v).toFixed(1)}`);
+    const lowerVals = k === 0 ? rows.map(() => 0) : cum[k - 1];
+    const lower = lowerVals.map((v, i) => `${(padL + i * step).toFixed(1)},${yOf(v).toFixed(1)}`).reverse();
+    svg += `<polygon points="${upper.join(" ")} ${lower.join(" ")}" fill="${palette[k % palette.length]}" stroke="#FFFFFF" stroke-width="1"/>`;
+  }
+  // total line on top + first/last/peak values
+  const topPath = "M " + cum[segCount - 1].map((v, i) => `${(padL + i * step).toFixed(1)} ${yOf(v).toFixed(1)}`).join(" L ");
+  svg += `<path d="${topPath}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const peakIdx = totals.indexOf(Math.max(...totals));
+  totals.forEach((t, i) => {
+    if (i !== 0 && i !== n - 1 && i !== peakIdx) return;
+    const x = padL + i * step;
+    const anchor = i === 0 ? "start" : i === n - 1 ? "end" : "middle";
+    svg += `<text x="${x.toFixed(1)}" y="${(yOf(t) - 12).toFixed(1)}" text-anchor="${anchor}" style="font-family:${mono};font-variant-numeric:tabular-nums" font-size="${F(16)}" fill="${ink}" font-weight="700">${escapeHtml(formatNum(t, unit, false, dec))}</text>`;
+  });
+  // x labels: every period up to ~16
+  const labelStep = Math.ceil(n / 16);
+  for (let i = 0; i < n; i++) {
+    if (!labels[i] || (i % labelStep !== 0 && i !== n - 1)) continue;
+    svg += `<text x="${(padL + i * step).toFixed(1)}" y="${(padT + chartH + 26).toFixed(1)}" text-anchor="middle" style="font-family:${sans}" font-size="${F(15)}" fill="${muted}">${escapeHtml(labels[i])}</text>`;
+  }
+  // baseline carries the chart
+  svg += `<line x1="${padL}" x2="${w - padR}" y1="${(padT + chartH).toFixed(1)}" y2="${(padT + chartH).toFixed(1)}" stroke="${ink}" stroke-width="2"/>`;
+  // legend swatches top-left
+  let lx = padL;
+  segLabels.slice(0, segCount).forEach((l, k) => {
+    svg += `<rect x="${lx.toFixed(1)}" y="20" width="14" height="14" fill="${palette[k % palette.length]}"/>`;
+    svg += `<text x="${(lx + 22).toFixed(1)}" y="32" style="font-family:${sans}" font-size="${F(13.5)}" fill="${ink}" font-weight="500">${escapeHtml(l)}</text>`;
+    lx += 22 + l.length * F(13.5) * 0.58 + 28;
+  });
+  svg += renderChartNote(args, slots, w - padR, 32, args.accent ?? ink);
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${svg}</svg>`;
+}
+
+// ─── stacked-cols ────────────────────────────────────────────────────────────
+// Multi-period stacked columns with values INSIDE the segments (white on dark
+// fills, ink on light) — the consulting workhorse for composition over time.
+// args: data (slot, "a/b/c || a/b/c" one row per period, segments in order),
+//       labels (slot, period names "2026|2027|..."), segLabels (slot, legend
+//       names per segment), palette (#hex|#hex|... per segment), ink, muted,
+//       unit. Column totals print above each column.
+function renderStackedCols(
+  args: Record<string, string>,
+  slots: Record<string, string>,
+): string {
+  const rows = (slots[args.data] ?? "")
+    .split("||")
+    .map((r) => r.split("/").map((c) => Number(c.trim())).filter((n) => Number.isFinite(n)))
+    .filter((r) => r.length > 0);
+  const labels = parseLabels(slots[args.labels] ?? "");
+  const segLabels = args.segLabels ? parseLabels(slots[args.segLabels] ?? "") : [];
+  if (rows.length === 0) return "";
+
+  const w = 920, h = 460;
+  const padL = 12, padR = 12, padT = 76, padB = 44;
+  const chartW = w - padL - padR;
+  const chartH = h - padT - padB;
+  const n = rows.length;
+  const colW = (chartW / n) * 0.62;
+  const gap = (chartW / n) * 0.38;
+
+  const ink = args.ink ?? "#1A1A1A";
+  const muted = args.muted ?? "#9AA0A6";
+  const palette = (args.palette ?? "")
+    .split("|")
+    .filter((c) => /^#[0-9a-fA-F]{6}$/.test(c.trim()));
+  if (palette.length === 0) palette.push("#1F3A5F", "#2B6CB0", "#6FA8DC", "#9DBFDD", "#CFE0EE");
+  const sans = "var(--font-data, 'Inter Tight', system-ui, sans-serif)";
+  const unit = resolveSlotOrLiteral(args.unit, slots);
+  const dec = maxDecimals(slots[args.data] ?? "");
+
+  const totals = rows.map((r) => r.reduce((a, v) => a + Math.abs(v), 0));
+  const maxTotal = Math.max(...totals, 1);
+  const scale = chartH / maxTotal;
+
+  let svg = "";
+  // legend (top-left swatch row)
+  if (segLabels.length) {
+    let lx = padL;
+    segLabels.forEach((l, i) => {
+      svg += `<rect x="${lx}" y="14" width="14" height="14" fill="${palette[i % palette.length]}"/>`;
+      svg += `<text x="${lx + 20}" y="26" style="font-family:${sans}" font-size="14" fill="${muted}" font-weight="500">${escapeHtml(l)}</text>`;
+      lx += 20 + l.length * 7.6 + 26;
+    });
+  }
+  rows.forEach((r, i) => {
+    const x = padL + gap / 2 + i * (colW + gap);
+    let y = padT + chartH;
+    r.forEach((v, j) => {
+      const segH = Math.abs(v) * scale;
+      y -= segH;
+      const fill = palette[j % palette.length];
+      svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${colW.toFixed(1)}" height="${segH.toFixed(1)}" fill="${fill}"/>`;
+      // value inside the segment when it fits (the anatomy device: white on dark)
+      if (segH > 26) {
+        svg += `<text x="${(x + colW / 2).toFixed(1)}" y="${(y + segH / 2).toFixed(1)}" dominant-baseline="central" text-anchor="middle" style="font-family:${sans}" font-size="15" font-weight="600" fill="${readableOn(fill)}">${escapeHtml(formatNum(v, "", false, dec))}</text>`;
+      }
+    });
+    // column total above
+    svg += `<text x="${(x + colW / 2).toFixed(1)}" y="${(y - 10).toFixed(1)}" text-anchor="middle" style="font-family:${sans}" font-size="17" font-weight="700" fill="${ink}">${escapeHtml(formatNum(totals[i], unit, false, dec))}</text>`;
+    if (labels[i]) {
+      svg += `<text x="${(x + colW / 2).toFixed(1)}" y="${(padT + chartH + 28).toFixed(1)}" text-anchor="middle" style="font-family:${sans}" font-size="15" fill="${muted}">${escapeHtml(labels[i])}</text>`;
+    }
+  });
+  // baseline
+  svg += `<line x1="${padL}" x2="${w - padR}" y1="${padT + chartH}" y2="${padT + chartH}" stroke="${ink}" stroke-width="2"/>`;
+  svg += renderChartNote(args, slots, w - padR, 26, palette[1] ?? ink);
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${svg}</svg>`;
 }
 
 // ─── radar / spider ──────────────────────────────────────────────────────────
@@ -1117,7 +1617,7 @@ function renderDotMap(
     pins += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(r * 1.3).toFixed(1)}" fill="${pinColor}"/>`;
   }
 
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${dots}${pins}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${dots}${pins}</svg>`;
 }
 
 // ─── glyph ───────────────────────────────────────────────────────────────────
@@ -1172,7 +1672,7 @@ function renderGlyph(
     g += Sq(cx, cy, 40);
     g += Dot(cx, cy, 4);
   }
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">${g}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${g}</svg>`;
 }
 
 // ─── icon ────────────────────────────────────────────────────────────────────

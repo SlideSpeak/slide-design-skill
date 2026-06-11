@@ -236,10 +236,13 @@ export function lintSlideTree(
     }
 
     // Uniform bullets: 3+ parallel items in one slot family opening with the
-    // same word reads as a checkbox list, not arguments.
+    // same word reads as a checkbox list, not arguments. Chart furniture
+    // (ex#-data, ex#-labels, ex#-unit-line, ...) is data, not rhetoric —
+    // parallel structure there is correct, never a finding.
     const families = new Map<string, string[]>();
     for (const [slot, value] of visibleSlots(slide)) {
       if (!/\d/.test(slot)) continue;
+      if (/-(data|labels|cells|unit|unit-line|highlight|ref-line|ref-label)$/.test(slot)) continue;
       const stem = slot.replace(/\d+/g, "#");
       const list = families.get(stem) ?? [];
       list.push(value);
@@ -310,16 +313,24 @@ export function lintSlideTree(
     }
   }
 
-  // Deck-level: eyebrow overuse.
+  // Deck-level: eyebrow overuse. A running section header (the same few values
+  // repeating across slides, the consulting-register kicker) is structure, not
+  // decoration — only mostly-unique per-slide labels are the agency tell.
   const n = slides.length;
   if (n > 0) {
-    const eyebrowSlides = slides.filter((s) =>
-      Object.entries(s.slots ?? {}).some(
+    const eyebrowValues: string[] = [];
+    const eyebrowSlides = slides.filter((s) => {
+      const vals = Object.entries(s.slots ?? {}).filter(
         ([k, v]) => EYEBROW_SLOTS.has(k) && typeof v === "string" && v.length > 0,
-      ),
-    ).length;
+      );
+      if (vals.length === 0) return false;
+      for (const [, v] of vals) eyebrowValues.push((v as string).trim().toLowerCase());
+      return true;
+    }).length;
+    const distinct = new Set(eyebrowValues).size;
+    const mostlyUnique = distinct >= Math.max(2, Math.ceil(eyebrowValues.length * 0.7));
     const cap = Math.ceil(n / 3);
-    if (eyebrowSlides > cap) {
+    if (eyebrowSlides > cap && mostlyUnique) {
       findings.push({
         rule: "eyebrow-overuse",
         severity: "warn",
@@ -328,6 +339,31 @@ export function lintSlideTree(
       });
     }
   }
+
+  // Per-slide: a slide that DECLARES data-dense must carry the volume. Token
+  // count across visible slots is a crude but honest proxy — four bullets in
+  // a big multi-zone layout is underfill wearing a dense label.
+  slides.forEach((s, i) => {
+    if (s.density !== "data-dense") return;
+    let tokens = 0;
+    for (const [k, v] of Object.entries(s.slots ?? {})) {
+      if (NON_TEXT_SLOT_RE.test(k)) continue;
+      if (typeof v !== "string" || v.startsWith("data:")) continue;
+      tokens += v.split(/[\s|/]+/).filter(Boolean).length;
+    }
+    // Floor derived from the counted reference decks (anatomy spec): a median
+    // reference content page renders ~100 tokens, of which ~25-40 are chart
+    // numerals the renderer adds — so authored content below ~70 tokens cannot
+    // reach the reference page weight.
+    if (tokens < 70) {
+      findings.push({
+        rule: "thin-dense-slide",
+        severity: "warn",
+        slideIndex: i,
+        message: `Slide declares data-dense but carries only ~${tokens} content tokens (reference floor ~70 authored). Reference-grade density means long series, full tables, full panels — add volume or drop the tier.`,
+      });
+    }
+  });
 
   // Deck-level: density monotony (only when every slide declares a density).
   if (n > 6) {

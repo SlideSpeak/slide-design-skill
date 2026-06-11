@@ -15,7 +15,7 @@ const payload = JSON.parse(await readFile(resolve(repoRoot, fixtureArg), "utf8")
 const llm: LLMClient = { async generateSlideTree() { return payload; } };
 const noImg: ImageResolver = { async resolve() { throw new Error("none"); } };
 const result = await generateDeck(
-  { skillName, userPrompt: `${skillName} fixture`, slideCount: payload.slides.length, imageBudget: 0 },
+  { skillName, userPrompt: `${skillName} fixture`, slideCount: payload.slides.length, imageBudget: 0, illustrative: true },
   { skillsRoot, llm, images: noImg },
 );
 const skill = await loadSkill(resolve(skillsRoot, skillName));

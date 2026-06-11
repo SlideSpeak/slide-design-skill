@@ -53,7 +53,7 @@ export const DENSITY: Record<DensityTier, DensitySpec> = {
   "data-dense": {
     tier: "data-dense",
     intent:
-      "Maximum information, still readable. Multiple structured zones, organized — not a wall of shrunken text.",
+      "Maximum information, still readable. Multiple structured zones, organized — not a wall of shrunken text. Reference-grade volume: long series (10+ points), full tables (6+ rows), full panels — not four bullets stretched across a big layout.",
     layout:
       "a multi-zone layout built for volume: multi-column body, a stat grid, a matrix/heatmap, small-multiples, or a comparison table — type stays readable",
     exhibits: "encouraged",

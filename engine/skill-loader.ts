@@ -2,7 +2,8 @@ import { readFile, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import matter from "gray-matter";
 import { stripUppercaseTypography } from "./brand-guard.ts";
-import { normalizeFamily } from "./composition-families.ts";
+import { normalizeFamily, normalizeVisualRole } from "./composition-families.ts";
+import type { VisualRole } from "./composition-families.ts";
 import type {
   Skill,
   SkillFrontmatter,
@@ -84,8 +85,9 @@ function parseGrammar(md: string): LayoutGrammar {
   let inRules = false;
   // Column index map, read from the header row. Lets a `family` column live at
   // any position while old 4-column grammars (no family) still parse correctly.
-  let cols: { name: number; when: number; required: number; optional: number; family: number } | null =
-    null;
+  let cols:
+    | { name: number; when: number; required: number; optional: number; family: number; visualRoles: number }
+    | null = null;
 
   const splitCells = (row: string) =>
     row.split("|").slice(1, -1).map((c) => c.trim());
@@ -104,6 +106,7 @@ function parseGrammar(md: string): LayoutGrammar {
         required: find("required"),
         optional: find("optional"),
         family: find("family"),
+        visualRoles: find("visual"),
       };
       continue;
     }
@@ -113,6 +116,10 @@ function parseGrammar(md: string): LayoutGrammar {
       const at = (i: number) => (i >= 0 && i < cells.length ? cells[i] : "");
       if (at(cols.name)) {
         const family = normalizeFamily(at(cols.family));
+        const visualRoles = at(cols.visualRoles)
+          .split(",")
+          .map((s) => normalizeVisualRole(s))
+          .filter((r): r is VisualRole => !!r);
         slideTypes.push({
           name: at(cols.name).replace(/`/g, ""),
           when: at(cols.when),
@@ -125,6 +132,7 @@ function parseGrammar(md: string): LayoutGrammar {
             .map((s) => s.trim().replace(/`/g, ""))
             .filter(Boolean),
           ...(family ? { family } : {}),
+          ...(visualRoles.length ? { visualRoles } : {}),
         });
       }
       continue;

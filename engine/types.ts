@@ -1,5 +1,5 @@
 import type { DensityTier } from "./density.ts";
-import type { CompositionFamily } from "./composition-families.ts";
+import type { CompositionFamily, VisualRole } from "./composition-families.ts";
 
 export type Hex = `#${string}`;
 
@@ -46,6 +46,12 @@ export interface SlideTypeSpec {
    * authored before the family column; undefined when the grammar omits it.
    */
   family?: CompositionFamily;
+  /**
+   * Visual roles this type's template is expected to realize (see VISUAL_ROLES in
+   * composition-families.ts). Optional; parsed from a `visual roles` grammar
+   * column. Steers the planner toward realizing visuals; absent on legacy grammars.
+   */
+  visualRoles?: VisualRole[];
 }
 
 export interface LayoutGrammar {

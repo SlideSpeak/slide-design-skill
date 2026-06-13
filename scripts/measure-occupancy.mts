@@ -12,6 +12,7 @@ import { promisify } from "node:util";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scoreOccupancy, scoreCellOccupancy } from "../engine/occupancy.ts";
+import { scoreDeckRichness } from "../engine/richness.ts";
 
 const execFileP = promisify(execFile);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -26,6 +27,16 @@ if (!htmlArg) {
 
 const htmlPath = resolve(repoRoot, htmlArg);
 const html = await readFile(htmlPath, "utf8");
+
+// Density-agnostic gate: a {{@chart}} that rendered to nothing leaves an
+// invisible <!--chart-empty:TYPE--> marker (renderer.ts). The occupancy scorer
+// exempts editorial slides, so a blank chart on a hero slide would otherwise
+// pass green. Fail hard on any marker, regardless of density.
+const emptyCharts = [...html.matchAll(/<!--chart-empty:([a-z0-9-]*)-->/gi)].map((m) => m[1] || "none");
+if (emptyCharts.length) {
+  console.error(`CHART-EMPTY: ${emptyCharts.length} chart(s) rendered no output [${emptyCharts.join(", ")}]. Fix the data slot (comma/space/pipe separated numbers) or the chart type, then re-render. A blank chart fails the gate on any density.`);
+  process.exit(1);
+}
 
 const measurer = `
 <script>
@@ -138,14 +149,66 @@ window.addEventListener('load', function () {
         bg: (ownBg && ownBg.a > 0.5) ? (ownBg.r + ',' + ownBg.g + ',' + ownBg.b) : null,
       });
     });
+    // --- Visual-event richness: count REALIZED visual elements on this slide. ---
+    // Sources: directive output stamped data-visual-event (chart/icon/table/...),
+    // skill opt-in marks (meter/signature-mark/...), plus heuristic credit so skills
+    // that do not opt in still register their charts/images/tables/giant numerals.
+    var SYSK = { chart: 1, table: 1, placeholder: 1, 'visual-plate': 1 };
+    var sys = 0, mk = 0;
+    slide.querySelectorAll('[data-visual-event]').forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.width < 6 || r.height < 6) return; // invisible / collapsed
+      var kind = el.getAttribute('data-visual-event') || '';
+      var area = r.width * r.height;
+      if (SYSK[kind] && area >= 8000) sys++; else mk++;
+    });
+    // Heuristic credit for un-stamped exhibits (charts/images/tables in hand-built skills).
+    slide.querySelectorAll('img,svg,table').forEach(function (el) {
+      if (el.hasAttribute('data-visual-event') || el.closest('[data-visual-event]')) return;
+      var r = el.getBoundingClientRect(); var area = r.width * r.height; var tag = el.tagName.toLowerCase();
+      if (tag === 'table' && area >= 8000) sys++;
+      else if (tag === 'img' && area >= 12000) sys++;
+      else if (tag === 'svg' && r.width >= 160 && area >= 30000) sys++;
+    });
+    // Oversized display type (a giant numeral / display word) is itself a visual event.
+    var giant = false;
+    var gw = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT, null), gn2;
+    while ((gn2 = gw.nextNode())) {
+      if (!gn2.textContent.trim()) continue;
+      var pe = gn2.parentElement; if (!pe) continue;
+      if ((parseFloat(getComputedStyle(pe).fontSize) || 0) >= 60) { giant = true; break; }
+    }
+    if (giant) mk++;
+    // A grid of >=2 distinct card-like cells reads as a visual structure.
+    if (cells.length >= 2) sys++;
+
+    // Chromatic (saturated) painted area — for the soft, deck-level palette warning.
+    var chroma = 0;
+    slide.querySelectorAll('*').forEach(function (el) {
+      var ecs2 = getComputedStyle(el);
+      var cc = rgb(ecs2.backgroundColor);
+      if (cc && cc.a > 0.5) {
+        var sat = Math.max(cc.r, cc.g, cc.b) - Math.min(cc.r, cc.g, cc.b);
+        if (sat > 28) {
+          var rr = el.getBoundingClientRect();
+          if (rr.width > 2 && rr.height > 2) chroma += Math.min(rr.width * rr.height, sr.width * sr.height);
+        }
+      }
+    });
+
     out.push({
       i: i,
       type: slide.getAttribute('data-slide-type') || slide.className.replace('slide ', '').split(' ')[0] || '',
       density: slide.getAttribute('data-density') || '',
+      family: slide.getAttribute('data-family') || '',
       slideHeight: Math.round(sr.height),
       safe: Math.round(safe),
       rects: rects,
       cells: cells,
+      system: sys,
+      mark: mk,
+      chroma: Math.round(chroma),
+      area: Math.round(sr.width * sr.height),
     });
   });
   var pre = document.createElement('pre');
@@ -187,4 +250,43 @@ for (const s of slides) {
   }
 }
 console.log(`\n${slides.length - failures}/${slides.length} slides fill the frame.`);
-process.exit(failures ? 1 : 0);
+
+// Richness gate — does each slide REALIZE visual weight, or is it text-only?
+// Density-agnostic and opt-in: only enforced when the skill declares families.
+let richFail = false;
+const rich = scoreDeckRichness(
+  slides.map((s: any) => ({
+    family: s.family,
+    density: s.density,
+    systemEvents: s.system ?? 0,
+    markEvents: s.mark ?? 0,
+  })),
+);
+if (rich.enforced) {
+  console.log("\nvisual richness (events per slide)");
+  console.log("slide                         family         sys  mk   verdict");
+  for (const r of rich.slides) {
+    const s: any = slides[r.index];
+    const verdict = r.hardEmpty ? "EMPTY" : r.meetsFloor ? "ok" : "thin";
+    console.log(
+      `${((s.type || "") + " #" + r.index).padEnd(28)} ${r.family.padEnd(13)} ` +
+      `${String(s.system ?? 0).padStart(3)}  ${String(s.mark ?? 0).padStart(3)}  ${verdict}`,
+    );
+  }
+  console.log(rich.reason);
+  if (!rich.passed) richFail = true;
+
+  // Soft palette warning (never fails the gate): a near-monochrome deck where the
+  // signal colour barely appears. Fine if intentional; loud if the deck reads flat.
+  const totalArea = slides.reduce((a: number, s: any) => a + (s.area || 0), 0) || 1;
+  const chromaArea = slides.reduce((a: number, s: any) => a + (s.chroma || 0), 0);
+  const chromaPct = chromaArea / totalArea;
+  if (chromaPct < 0.004) {
+    console.log(
+      `\n⚠ palette: signal/accent colour covers ${(chromaPct * 100).toFixed(2)}% of the deck — near-monochrome. ` +
+      `Fine if intentional; if the deck reads flat, give the signal real estate (a filled band, a chart series, a plate).`,
+    );
+  }
+}
+
+process.exit(failures || richFail ? 1 : 0);

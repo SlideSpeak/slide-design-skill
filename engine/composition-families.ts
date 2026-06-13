@@ -58,6 +58,54 @@ export const BOXED_FAMILIES: readonly CompositionFamily[] = ["cards-grid", "tabl
 export const UNBOXED_FAMILIES: readonly CompositionFamily[] = ["statement", "metric-hero", "quote"];
 export const VISUAL_FAMILIES: readonly CompositionFamily[] = ["image-spread", "split-visual"];
 
+/**
+ * Families that carry DATA or STRUCTURE and therefore must realize a substantial
+ * visual in the rendered deck — a chart, table, meter, marked figure or diagram —
+ * not a title over text columns. The richness gate (engine/richness.ts) holds
+ * these to a higher floor; the skill validator warns when their templates carry
+ * no visual element at all. cover/closing/statement/quote/metric-hero are
+ * deliberately NOT here: a typographic slide is allowed to be carried by its type.
+ */
+export const DATA_BEARING_FAMILIES: readonly CompositionFamily[] = [
+  "comparison",
+  "timeline",
+  "matrix",
+  "cards-grid",
+  "table",
+  "flow-diagram",
+];
+
+/**
+ * Visual roles — the vocabulary a slide family can declare its template must
+ * realize, so "this family carries a visual" is enforceable without dictating a
+ * specific look. An austere skill satisfies `meter`/`oversized-number`/`item-marker`
+ * with bars and giant numerals; a lush one satisfies `visual-plate` with imagery.
+ * Used by the deck planner (guidance) and documented in the skill format.
+ */
+export const VISUAL_ROLES = [
+  "item-marker", // a drawn mark per list/comparison item (tick, node, index)
+  "chartlet", // a chart or data-viz exhibit
+  "meter", // a bar / gauge / progress meter
+  "signature-mark", // the skill's drawn signature (inline svg, stamp)
+  "oversized-number", // a dominant numeral as a visual object
+  "visual-plate", // an image, figure plate or distinct filled surface
+] as const;
+
+export type VisualRole = (typeof VISUAL_ROLES)[number];
+
+const ROLE_SET = new Set<string>(VISUAL_ROLES);
+
+export function isVisualRole(v: unknown): v is VisualRole {
+  return typeof v === "string" && ROLE_SET.has(v);
+}
+
+/** Coerce a free-text visual-role cell to a known role, or undefined if unknown. */
+export function normalizeVisualRole(v: unknown): VisualRole | undefined {
+  if (typeof v !== "string") return undefined;
+  const k = v.trim().toLowerCase().replace(/`/g, "").replace(/\s+/g, "-");
+  return isVisualRole(k) ? k : undefined;
+}
+
 export function isCompositionFamily(v: unknown): v is CompositionFamily {
   return typeof v === "string" && FAMILY_SET.has(v);
 }

@@ -24,4 +24,9 @@ html = html.replace("body { margin: 0; background: #1a1a1a; padding: 40px; }",
   "body { margin: 0; background: #d6d6d6; padding: 0; } .slide { margin: 0 0 24px; box-shadow: none; }");
 await writeFile(resolve(repoRoot, outArg), html);
 for (const w of result.warnings) console.log("warning:", w);
+const emptyCharts = [...html.matchAll(/<!--chart-empty:([a-z0-9-]*)-->/gi)].map((m) => m[1] || "none");
 console.log("wrote", outArg, "slides:", result.slides.length);
+if (emptyCharts.length) {
+  console.error(`ERROR: ${emptyCharts.length} {{@chart}} directive(s) rendered EMPTY [${emptyCharts.join(", ")}]. Usually a bad data slot (numbers must be comma/space/pipe separated) or an unknown chart type. A blank chart must never ship.`);
+  process.exit(1);
+}

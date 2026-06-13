@@ -1,7 +1,7 @@
 import type { Skill } from "./types.ts";
 import { densityPromptBlock } from "./density.ts";
 import { planDeck, deckPlanPromptBlock } from "./deck-plan.ts";
-import { BOXED_FAMILIES, UNBOXED_FAMILIES, VISUAL_FAMILIES } from "./composition-families.ts";
+import { BOXED_FAMILIES, UNBOXED_FAMILIES, VISUAL_FAMILIES, DATA_BEARING_FAMILIES } from "./composition-families.ts";
 
 const MAX_BG_PROMPT_CHARS = 600;
 
@@ -216,6 +216,7 @@ function composeVarietySection(
   const boxedHere = BOXED_FAMILIES.filter((f) => byFamily.has(f));
   const unboxedHere = UNBOXED_FAMILIES.filter((f) => byFamily.has(f));
   const visualHere = VISUAL_FAMILIES.filter((f) => byFamily.has(f));
+  const dataBearingHere = DATA_BEARING_FAMILIES.filter((f) => byFamily.has(f));
 
   const textureRules = [
     boxedHere.length && unboxedHere.length
@@ -223,6 +224,9 @@ function composeVarietySection(
       : "",
     visualHere.length
       ? `- INTEGRATE imagery into the argument, not only as covers and dividers. Use ${visualHere.join(" / ")} so photographs share slides with structured content (a photo column beside the points, a figure inset in the layout, a stat over an image). A deck that only alternates full-bleed photo ↔ text grid reads as two slides repeated.`
+      : "",
+    dataBearingHere.length
+      ? `- REALIZE a visual on every data-bearing slide (${dataBearingHere.join(" / ")}): a chart, table, meter/bar, icon set, oversized number or marked figure — never a title sitting over plain text columns. Use the chart and table directives where the slide type provides them. NEVER invent numbers to manufacture a chart: if a point has no real data, carry it visually another way (icons per item, a labelled diagram, a dominant numeral), not a fabricated series.`
       : "",
   ].filter(Boolean).join("\n");
 

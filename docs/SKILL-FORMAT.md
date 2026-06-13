@@ -68,7 +68,7 @@ A table of slide types plus composition rules. Each slide type maps 1:1 to a `<t
 | `cover` | first slide | title, subtitle, date | kicker |
 | ... | | | |
 
-Composition rules are prose bullets ("first slide is always cover", "max 2 consecutive data slides"). Each slide type should be annotated with its composition family (statement, metric-hero, cards-grid, table, split-visual, ...). The validator caps how much of a skill may sit in one family and requires unboxed typographic types alongside boxed grids.
+Composition rules are prose bullets ("first slide is always cover", "max 2 consecutive data slides"). Each slide type should be annotated with its composition family (statement, metric-hero, cards-grid, table, split-visual, ...). The validator caps how much of a skill may sit in one family and requires unboxed typographic types alongside boxed grids. An optional `visual roles` column declares which visual constructs a type is expected to realize (`item-marker`, `chartlet`, `meter`, `signature-mark`, `oversized-number`, `visual-plate`); it steers the deck planner and documents intent. Data-bearing family templates that render no visual element at all draw a (non-fatal) validator warning; the hard enforcement is the rendered-deck richness gate above.
 
 ## components.html
 
@@ -97,6 +97,10 @@ Deterministic primitives the renderer draws; the model never authors SVG.
 | `{{@logo-wall}}` / `{{@logo-wall names=<slot>}}` | obviously-replaceable dummy wordmarks, or the user's real customer names as type-only wordmarks |
 
 Directive arguments cannot contain spaces; multi-word values come through a slot reference. An argument that looks like a kebab-case slot name but is not authored in the tree resolves to empty (never leaks the slot name into chart text).
+
+Chart slot formats: a chart `data` slot accepts numbers separated by comma, space, OR pipe (`55, 27, 8` or `55|27|8`); `labels` are pipe-separated (`A|B|C`); `highlight=` accepts either a 0-based bar index (`4`) or a label string matched against the labels. A `{{@chart}}` fed bad or empty data renders nothing and emits an invisible `<!--chart-empty:TYPE-->` marker that the render step and the occupancy gate fail on, so a blank chart can never ship silently.
+
+Visual events and the richness gate: every directive stamps its rendered output with `data-visual-event="chart|table|icon|placeholder|logo-wall|surface"`, and each slide root carries `data-family`. The richness gate (`engine/richness.ts`, run from `measure-occupancy`) reads these from the rendered DOM and checks that each slide REALIZES visual weight — not just that the skill is capable of it. It measures visual-EVENT density, never colour saturation, so an austere near-monochrome skill stays valid as long as its slides carry real visual events (a soft palette warning fires separately and never fails the gate). Floors are per family: typographic families (statement/quote/cover/closing/metric-hero) pass on one event (oversized display type counts); data-bearing families (comparison/timeline/matrix/cards-grid/table/flow-diagram) need a substantial system (chart/table/grid) or ≥2 events, and a `data-density="data-dense"` slide needs a system or ≥3 events. A deck fails if a data-bearing non-editorial slide has zero events, or if more than ~30% of content slides fall below their floor. A skill element that is visual but not directive-drawn (a meter bar, a giant numeral, a marked figure) opts in by carrying its own `data-visual-event="meter|oversized-number|signature-mark|item-marker|visual-plate"` attribute; the gate counts visible, non-trivial elements only.
 
 Inline emphasis: `**text**` in any slot value renders as `<strong>` (applied after escaping — slot authors still cannot inject HTML). Skills define what emphasis looks like by styling `.slide strong`; skills that want none simply never prompt for it.
 

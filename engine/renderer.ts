@@ -74,6 +74,10 @@ export function renderSlide(
   // cascade into the template's inline styles (which reference var(--d-*)).
   if (node.density) html = injectDensityAttr(html, node.density);
   html = injectTypeAttr(html, node.type);
+  // Stamp the composition family so the richness gate can apply a per-family
+  // floor against the RENDERED deck (additive; only when the grammar declares one).
+  const family = ctx.skill.grammar.slideTypes.find((t) => t.name === node.type)?.family;
+  if (family) html = injectFamilyAttr(html, family);
   return html;
 }
 
@@ -94,6 +98,28 @@ function injectDensityAttr(html: string, density: string): string {
   return html.replace(/<section\b([^>]*)>/, (m, attrs) =>
     /\bdata-density=/.test(attrs) ? m : `<section data-density="${density}"${attrs}>`,
   );
+}
+
+// Add data-family to the first <section ...> of a rendered slide so the richness
+// gate (scripts/measure-occupancy.mts → engine/richness.ts) can read each slide's
+// composition family from the DOM and apply its per-family visual floor. Additive.
+function injectFamilyAttr(html: string, family: string): string {
+  return html.replace(/<section\b([^>]*)>/, (m, attrs) =>
+    /\bdata-family=/.test(attrs) ? m : `<section data-family="${family}"${attrs}>`,
+  );
+}
+
+// Stamp data-visual-event onto a directive's rendered output so the richness gate
+// can count REALIZED visual elements in the DOM (not just the skill's capability).
+// No-op on empty output and on invisible markers (e.g. the chart-empty comment),
+// and idempotent if the element is already stamped.
+function stampVisualEvent(html: string, eventType: string): string {
+  if (!html || html.startsWith("<!--")) return html;
+  const m = html.match(/^\s*<([a-zA-Z][\w-]*)/);
+  if (!m) return html;
+  const insertAt = m.index! + m[0].length;
+  if (/^[^>]*\sdata-visual-event=/.test(html.slice(insertAt))) return html;
+  return html.slice(0, insertAt) + ` data-visual-event="${eventType}"` + html.slice(insertAt);
 }
 
 function pickComponent(componentsHtml: string, slideType: string): string | null {
@@ -120,7 +146,7 @@ function interpolate(
     /\{\{\s*@placeholder(\s+[^{}]*?)?\s*\}\}/g,
     (_match, argString) => {
       const args = argString ? parseDirectiveArgs(argString) : {};
-      return renderPlaceholderDirective(args, slots);
+      return stampVisualEvent(renderPlaceholderDirective(args, slots), "placeholder");
     },
   );
 
@@ -130,7 +156,7 @@ function interpolate(
     /\{\{\s*@logo-wall(\s+[^{}]*?)?\s*\}\}/g,
     (_match, argString) => {
       const args = argString ? parseDirectiveArgs(argString) : {};
-      return renderLogoWallDirective(args, slots);
+      return stampVisualEvent(renderLogoWallDirective(args, slots), "logo-wall");
     },
   );
 
@@ -138,11 +164,11 @@ function interpolate(
     /\{\{\s*@(table|list|chart|gradient-bg|icon|scrim)\s+([^{}]+?)\s*\}\}/g,
     (_match, kind, argString) => {
       const args = parseDirectiveArgs(argString);
-      if (kind === "table") return renderTableDirective(args, slots);
+      if (kind === "table") return stampVisualEvent(renderTableDirective(args, slots), "table");
       if (kind === "list") return renderListDirective(args, slots);
-      if (kind === "chart") return renderChartDirective(args, slots);
-      if (kind === "gradient-bg") return renderGradientBgDirective(args, slots, ctx);
-      if (kind === "icon") return renderIconDirective(args, slots, ctx);
+      if (kind === "chart") return stampVisualEvent(renderChartDirective(args, slots), "chart");
+      if (kind === "gradient-bg") return stampVisualEvent(renderGradientBgDirective(args, slots, ctx), "surface");
+      if (kind === "icon") return stampVisualEvent(renderIconDirective(args, slots, ctx), "icon");
       if (kind === "scrim") return renderScrimDirective(args, slots);
       return "";
     },
@@ -415,6 +441,22 @@ function renderChartDirective(
   args: Record<string, string>,
   slots: Record<string, string>,
 ): string {
+  const out = dispatchChart(args, slots);
+  if (out === "") {
+    // A chart was requested but produced nothing: bad/empty data slot, or an
+    // unknown type. Emit an INVISIBLE marker (renders to nothing) so a blank
+    // chart cannot ship silently — render-fixture and the occupancy gate scan
+    // for it and fail. This is the signal the engine never gave before.
+    const t = (args.type || "none").replace(/[^a-z0-9-]/gi, "").slice(0, 24);
+    return `<!--chart-empty:${t}-->`;
+  }
+  return out;
+}
+
+function dispatchChart(
+  args: Record<string, string>,
+  slots: Record<string, string>,
+): string {
   const type = args.type;
   if (type === "bar") return renderBarChart(args, slots);
   if (type === "hbar") return renderHBarChart(args, slots);
@@ -536,7 +578,11 @@ function readableOn(fill: string, light = "#FFFFFF", dark = "#1A1A1A"): string {
 
 function parseNums(s: string): number[] {
   return s
-    .split(/[\s,]+/)
+    // Accept comma, whitespace AND pipe as separators. labels use pipe
+    // (parseLabels), so a chart's data slot was easy to write pipe-separated
+    // too; that silently parsed to NaN and the chart vanished. Tolerate all
+    // three so the same directive can't be split-by-the-wrong-delimiter.
+    .split(/[\s,|]+/)
     .map((x) => x.trim())
     .filter((x) => x.length > 0)
     .map((x) => Number(x))
@@ -560,6 +606,23 @@ function parseLabels(s: string): string[] {
     .split("|")
     .map((x) => x.trim())
     .filter((x) => x.length > 0);
+}
+
+// Resolve a bar `highlight` arg to a 0-based index. Accept EITHER a numeric
+// index OR a label string (matched case-insensitively against `labels`).
+// The index-only contract was an invisible footgun: passing the label (the
+// obvious guess) yielded NaN and highlighted nothing, silently. Returns -1
+// when the arg is absent or matches no label.
+function resolveHighlight(
+  arg: string | undefined,
+  slots: Record<string, string>,
+  labels: string[],
+): number {
+  const raw = (resolveSlotOrLiteral(arg, slots) || "").trim();
+  if (!raw) return -1;
+  const asNum = Number(raw);
+  if (Number.isFinite(asNum)) return asNum;
+  return labels.findIndex((l) => l.toLowerCase() === raw.toLowerCase());
 }
 
 // "Nice" y-axis ticks spanning the data domain (reference decks carry a full
@@ -609,7 +672,7 @@ function renderBarChart(
 ): string {
   const data = parseNums(slots[args.data] ?? "");
   const labels = parseLabels(slots[args.labels] ?? "");
-  const highlight = Number(resolveSlotOrLiteral(args.highlight, slots) || "-1");
+  const highlight = resolveHighlight(args.highlight, slots, labels);
   if (data.length === 0) return "";
   // Secondary values strip (a second measure per period under the axis, the
   // USPS-RHB device): stripData=<slot> numbers + stripLabel=<slot> row label.
@@ -805,7 +868,7 @@ function renderHBarChart(
   const labels = parseLabels(slots[args.labels] ?? "");
   if (data.length === 0) return "";
   const dec = maxDecimals(slots[args.data] ?? "");
-  const highlight = Number(resolveSlotOrLiteral(args.highlight, slots) || "-1");
+  const highlight = resolveHighlight(args.highlight, slots, labels);
   const w = 920;
   // long rankings tighten the row pitch so 8-14 rows stay inside the exhibit
   const rowH = data.length <= 8 ? 52 : data.length <= 12 ? 44 : 38;

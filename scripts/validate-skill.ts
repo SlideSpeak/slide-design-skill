@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSkill, listSkills } from "../engine/skill-loader.ts";
 import { defaultChromeCss } from "../engine/token-compiler.ts";
-import { COMPOSITION_FAMILIES, BOXED_FAMILIES, UNBOXED_FAMILIES } from "../engine/composition-families.ts";
+import { COMPOSITION_FAMILIES, BOXED_FAMILIES, UNBOXED_FAMILIES, DATA_BEARING_FAMILIES } from "../engine/composition-families.ts";
 import type { Skill } from "../engine/types.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -96,6 +96,36 @@ function checkTemplateMorphology(rawComponents: string): string | null {
     return `template monotony: ${top}/${content.length} grid templates share one morphology (${topSig}) — diversify compositions, don't re-skin the same column grid`;
   }
   return null;
+}
+
+/**
+ * Visual-realization check (opt-in, non-fatal warning): a data-bearing family
+ * (comparison/timeline/matrix/cards-grid/table/flow) whose TEMPLATE contains no
+ * visual element at all renders as a title over text columns — the boredom tell.
+ * Static backstop to the dynamic richness gate (engine/richness.ts), which is the
+ * hard enforcement on rendered decks. A warning (not a failure) so it does not
+ * retro-break legacy seeds; the rendered-deck gate is where it bites.
+ */
+const VISUAL_TOKEN_RE =
+  /\{\{\s*@(?:chart|table|icon|placeholder|logo-wall)\b|\{\{\s*image:|data-visual-event\s*=|<svg[\s>]/i;
+function checkVisualRealization(skill: Skill): string[] {
+  const warns: string[] = [];
+  if (!skill.grammar.slideTypes.some((t) => t.family)) return warns; // opt-in
+  const dataBearing = new Set<string>(DATA_BEARING_FAMILIES);
+  for (const t of skill.grammar.slideTypes) {
+    if (!t.family || !dataBearing.has(t.family)) continue;
+    const tmplRe = new RegExp(
+      `<template[^>]*id=["']slide-${t.name}["'][^>]*>([\\s\\S]*?)</template>`,
+      "i",
+    );
+    const tmpl = skill.components.match(tmplRe)?.[1] ?? "";
+    if (tmpl && !VISUAL_TOKEN_RE.test(tmpl)) {
+      warns.push(
+        `${t.name} [${t.family}] renders no visual element — a ${t.family} slide should realize a chart, table, icon, meter, plate or marked figure (a directive or a data-visual-event element), not pure text`,
+      );
+    }
+  }
+  return warns;
 }
 
 /**
@@ -285,6 +315,9 @@ async function main() {
       // so it informs the Phase-6 review rather than blocking; families are the gate.
       const morphology = checkTemplateMorphology(rawComponents);
       if (morphology) warnings.push(morphology);
+      // Visual-realization backstop (warning) — data-bearing templates that are
+      // pure text. The hard enforcement is the rendered-deck richness gate.
+      warnings.push(...checkVisualRealization(skill));
 
       // Image style
       if (!skill.imageStyle.aiPromptTemplate) failures.push("imageStyle.aiPromptTemplate missing");
@@ -395,7 +428,7 @@ function stripComments(src: string): string {
 
 function collectDirectiveSlots(tmpl: string): Set<string> {
   const slots = new Set<string>();
-  const re = /\{\{\s*@(?:table|list|chart|gradient-bg|scrim|placeholder|logo-wall)\s+([^{}]+?)\s*\}\}/g;
+  const re = /\{\{\s*@(?:table|list|chart|gradient-bg|scrim|placeholder|logo-wall|icon)\s+([^{}]+?)\s*\}\}/g;
   const argRe = /([a-zA-Z][\w-]*)=([^\s]+)/g;
   // arg names whose value is a slot reference (not a literal).
   const slotRefArgs = new Set([

@@ -84,8 +84,12 @@
 .nk-shift .row:last-child { border-bottom: 1px solid var(--color-rule); }
 .nk-shift .from { font-size: 19px; color: var(--color-muted); }
 .nk-shift .to { font-size: 20px; font-weight: 600; color: var(--color-ink); }
-.nk-shift .arr { display: flex; justify-content: center; }
-.nk-shift .arr svg { width: 30px; height: 14px; }
+/* shift meter: a charted weight that grows from the old benchmark to the new one,
+   capped by a blue head marker. A real drawn element per row (data-visual-event="meter"). */
+.nk-shift .meter { position: relative; height: 14px; margin: 0 22px; display: flex; align-items: center; }
+.nk-shift .meter .track { position: absolute; left: 0; right: 0; height: 2px; background: var(--color-rule); }
+.nk-shift .meter .fill { position: absolute; left: 0; height: 6px; background: var(--m-blue); }
+.nk-shift .meter .head { position: absolute; right: 0; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: var(--m-blue); transform: translate(50%, -50%); }
 
 /* ── expectations: 5 dimension columns (filled, fill the stage) ── */
 .slide-flow .nk-dims { grid-template-columns: repeat(5, 1fr); gap: 22px; align-content: center; }
@@ -99,12 +103,16 @@
 
 /* ── fragmentation: journey strip with seams ── */
 .nk-frag-intro { flex: 0 0 auto; font-size: 18px; line-height: 1.5; color: var(--color-muted); max-width: 1120px; margin: 0; }
-.slide-flow .nk-strip { flex: 0 0 auto; height: 320px; display: flex; flex-wrap: nowrap; gap: 0; border-top: 1px solid var(--color-ink); }
+.slide-flow .nk-strip { flex: 0 0 auto; height: 460px; display: flex; flex-wrap: nowrap; gap: 0; border-top: 1px solid var(--color-ink); }
 .nk-strip .seg { justify-content: center; }
-.nk-strip .seg { flex: 1 1 0; min-width: 0; padding: 18px 16px; border-right: 1px dashed var(--m-red); display: flex; flex-direction: column; gap: 8px; }
-.nk-strip .seg:last-child { border-right: none; }
-.nk-strip .seg .i { font-family: var(--font-data); font-size: 14px; color: var(--color-signal); font-variant-numeric: tabular-nums; }
-.nk-strip .seg .t { font-size: 17px; font-weight: 600; line-height: 1.25; }
+.nk-strip .seg { position: relative; flex: 1 1 0; min-width: 0; padding: 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+/* the seam: a full-height red rule between segs, the handover where premium leaks.
+   A drawn element (not a border) so it spans the strip and reads as real structure. */
+.nk-strip .seg:not(:last-child)::after { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--m-red) 0 5px, transparent 5px 11px); }
+.nk-strip .seg .i { font-family: var(--font-data); font-size: 14px; color: var(--color-signal); font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.nk-strip .seg .i .node { width: 11px; height: 11px; background: var(--color-signal); flex: 0 0 auto; }
+.nk-strip .seg:last-child .i .node { background: var(--m-red); }
+.nk-strip .seg .t { font-size: 17px; font-weight: 600; line-height: 1.3; flex: 0 0 auto; }
 .nk-frag-note { flex: 0 0 auto; display: flex; gap: 14px; align-items: center; font-size: 17px; color: var(--color-ink); }
 .nk-frag-note .seam { font-family: var(--font-data); font-size: 14px; color: var(--m-red); border: 1px dashed var(--m-red); padding: 4px 9px; flex: 0 0 auto; }
 
@@ -194,7 +202,8 @@
 .nk-focus .pil { padding: 0 34px; border-right: 1px solid var(--color-rule); }
 .nk-focus .pil:first-child { padding-left: 0; }
 .nk-focus .pil:last-child { border-right: none; padding-right: 0; }
-.nk-focus .pil .n { font-family: var(--font-header); font-weight: 700; font-size: 15px; color: var(--color-signal); margin-bottom: 24px; font-variant-numeric: tabular-nums; }
+.nk-focus .pil .n { font-family: var(--font-header); font-weight: 700; font-size: 15px; color: var(--color-signal); margin-bottom: 24px; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 12px; }
+.nk-focus .pil .n .bar { width: 40px; height: 8px; flex: 0 0 auto; background: linear-gradient(to right, var(--m-blue) 0 33.33%, var(--m-cyan) 33.33% 66.66%, var(--m-red) 66.66% 100%); }
 .nk-focus .pil h3 { font-family: var(--font-header); font-weight: 700; font-size: 30px; line-height: 1.05; margin-bottom: 8px; }
 .nk-focus .pil .role { font-family: var(--font-data); font-size: 14px; color: var(--m-cyan); margin-bottom: 22px; }
 .nk-focus .pil p { font-size: 17.5px; line-height: 1.6; color: var(--color-muted); margin: 0; }

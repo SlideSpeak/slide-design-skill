@@ -35,10 +35,10 @@
       <div class="nk-eyebrow">{{eyebrow}}</div>
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-exec flow-grid-fill">
-        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">01</div><h4>{{p1-title}}</h4><p>{{p1-body}}</p></div>
-        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">02</div><h4>{{p2-title}}</h4><p>{{p2-body}}</p></div>
-        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">03</div><h4>{{p3-title}}</h4><p>{{p3-body}}</p></div>
-        <div class="pt flow-fill flow-fill-body flow-center"><div class="n">04</div><h4>{{p4-title}}</h4><p>{{p4-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">01</div><h4>{{p1-title}}</h4><p>{{p1-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">02</div><h4>{{p2-title}}</h4><p>{{p2-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">03</div><h4>{{p3-title}}</h4><p>{{p3-body}}</p></div>
+        <div class="pt flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">04</div><h4>{{p4-title}}</h4><p>{{p4-body}}</p></div>
       </div>
       <div class="nk-conclude"><span class="lbl">Recommendation</span><p>{{conclusion}}</p></div>
     </div>
@@ -59,11 +59,11 @@
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-shift flow-grow">
         <div class="hdr"><div class="a">{{from-label}}</div><div></div><div class="b">{{to-label}}</div></div>
-        <div class="row"><div class="from">{{r1-from}}</div><div class="arr"><svg viewBox="0 0 30 14"><path d="M0 7h26M21 2l5 5-5 5" stroke="#0066B1" stroke-width="1.5" fill="none"/></svg></div><div class="to">{{r1-to}}</div></div>
-        <div class="row"><div class="from">{{r2-from}}</div><div class="arr"><svg viewBox="0 0 30 14"><path d="M0 7h26M21 2l5 5-5 5" stroke="#0066B1" stroke-width="1.5" fill="none"/></svg></div><div class="to">{{r2-to}}</div></div>
-        <div class="row"><div class="from">{{r3-from}}</div><div class="arr"><svg viewBox="0 0 30 14"><path d="M0 7h26M21 2l5 5-5 5" stroke="#0066B1" stroke-width="1.5" fill="none"/></svg></div><div class="to">{{r3-to}}</div></div>
-        <div class="row"><div class="from">{{r4-from}}</div><div class="arr"><svg viewBox="0 0 30 14"><path d="M0 7h26M21 2l5 5-5 5" stroke="#0066B1" stroke-width="1.5" fill="none"/></svg></div><div class="to">{{r4-to}}</div></div>
-        <div class="row"><div class="from">{{r5-from}}</div><div class="arr"><svg viewBox="0 0 30 14"><path d="M0 7h26M21 2l5 5-5 5" stroke="#0066B1" stroke-width="1.5" fill="none"/></svg></div><div class="to">{{r5-to}}</div></div>
+        <div class="row"><div class="from">{{r1-from}}</div><div class="meter" data-visual-event="meter"><span class="track"></span><span class="fill" style="width:42%"><span class="head"></span></span></div><div class="to">{{r1-to}}</div></div>
+        <div class="row"><div class="from">{{r2-from}}</div><div class="meter" data-visual-event="meter"><span class="track"></span><span class="fill" style="width:58%"><span class="head"></span></span></div><div class="to">{{r2-to}}</div></div>
+        <div class="row"><div class="from">{{r3-from}}</div><div class="meter" data-visual-event="meter"><span class="track"></span><span class="fill" style="width:70%"><span class="head"></span></span></div><div class="to">{{r3-to}}</div></div>
+        <div class="row"><div class="from">{{r4-from}}</div><div class="meter" data-visual-event="meter"><span class="track"></span><span class="fill" style="width:50%"><span class="head"></span></span></div><div class="to">{{r4-to}}</div></div>
+        <div class="row"><div class="from">{{r5-from}}</div><div class="meter" data-visual-event="meter"><span class="track"></span><span class="fill" style="width:64%"><span class="head"></span></span></div><div class="to">{{r5-to}}</div></div>
       </div>
     </div>
     <div class="nk-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
@@ -82,11 +82,11 @@
       <div class="nk-eyebrow">{{eyebrow}}</div>
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-dims flow-grid-fill">
-        <div class="nk-dim"><div class="cap"><span class="d"></span><h4>{{d1-title}}</h4></div>{{@list slot=d1-items}}</div>
-        <div class="nk-dim"><div class="cap"><span class="d"></span><h4>{{d2-title}}</h4></div>{{@list slot=d2-items}}</div>
-        <div class="nk-dim"><div class="cap"><span class="d"></span><h4>{{d3-title}}</h4></div>{{@list slot=d3-items}}</div>
-        <div class="nk-dim"><div class="cap"><span class="d"></span><h4>{{d4-title}}</h4></div>{{@list slot=d4-items}}</div>
-        <div class="nk-dim"><div class="cap"><span class="d"></span><h4>{{d5-title}}</h4></div>{{@list slot=d5-items}}</div>
+        <div class="nk-dim"><div class="cap"><span class="d" data-visual-event="item-marker"></span><h4>{{d1-title}}</h4></div>{{@list slot=d1-items}}</div>
+        <div class="nk-dim"><div class="cap"><span class="d" data-visual-event="item-marker"></span><h4>{{d2-title}}</h4></div>{{@list slot=d2-items}}</div>
+        <div class="nk-dim"><div class="cap"><span class="d" data-visual-event="item-marker"></span><h4>{{d3-title}}</h4></div>{{@list slot=d3-items}}</div>
+        <div class="nk-dim"><div class="cap"><span class="d" data-visual-event="item-marker"></span><h4>{{d4-title}}</h4></div>{{@list slot=d4-items}}</div>
+        <div class="nk-dim"><div class="cap"><span class="d" data-visual-event="item-marker"></span><h4>{{d5-title}}</h4></div>{{@list slot=d5-items}}</div>
       </div>
     </div>
     <div class="nk-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
@@ -106,17 +106,17 @@
       <h2 class="nk-title">{{action-title}}</h2>
       <p class="nk-frag-intro">{{intro}}</p>
       <div class="nk-strip flow-grow">
-        <div class="seg"><span class="i">01</span><span class="t">{{s1}}</span></div>
-        <div class="seg"><span class="i">02</span><span class="t">{{s2}}</span></div>
-        <div class="seg"><span class="i">03</span><span class="t">{{s3}}</span></div>
-        <div class="seg"><span class="i">04</span><span class="t">{{s4}}</span></div>
-        <div class="seg"><span class="i">05</span><span class="t">{{s5}}</span></div>
-        <div class="seg"><span class="i">06</span><span class="t">{{s6}}</span></div>
-        <div class="seg"><span class="i">07</span><span class="t">{{s7}}</span></div>
-        <div class="seg"><span class="i">08</span><span class="t">{{s8}}</span></div>
-        <div class="seg"><span class="i">09</span><span class="t">{{s9}}</span></div>
-        <div class="seg"><span class="i">10</span><span class="t">{{s10}}</span></div>
-        <div class="seg"><span class="i">11</span><span class="t">{{s11}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>01</span><span class="t">{{s1}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>02</span><span class="t">{{s2}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>03</span><span class="t">{{s3}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>04</span><span class="t">{{s4}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>05</span><span class="t">{{s5}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>06</span><span class="t">{{s6}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>07</span><span class="t">{{s7}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>08</span><span class="t">{{s8}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>09</span><span class="t">{{s9}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>10</span><span class="t">{{s10}}</span></div>
+        <div class="seg"><span class="i" data-visual-event="item-marker"><b class="node"></b>11</span><span class="t">{{s11}}</span></div>
       </div>
       <div class="nk-frag-note"><span class="seam">seam</span><span>{{note}}</span></div>
     </div>
@@ -136,12 +136,12 @@
       <div class="nk-eyebrow">{{eyebrow}}</div>
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-princ flow-grid-fill">
-        <div class="p flow-fill flow-fill-body flow-center"><div class="n">1</div><h4>{{p1-title}}</h4><p>{{p1-body}}</p></div>
-        <div class="p flow-fill flow-fill-body flow-center"><div class="n">2</div><h4>{{p2-title}}</h4><p>{{p2-body}}</p></div>
-        <div class="p flow-fill flow-fill-body flow-center"><div class="n">3</div><h4>{{p3-title}}</h4><p>{{p3-body}}</p></div>
-        <div class="p flow-fill flow-fill-body flow-center"><div class="n">4</div><h4>{{p4-title}}</h4><p>{{p4-body}}</p></div>
-        <div class="p flow-fill flow-fill-body flow-center"><div class="n">5</div><h4>{{p5-title}}</h4><p>{{p5-body}}</p></div>
-        <div class="p flow-fill flow-fill-body flow-center"><div class="n">6</div><h4>{{p6-title}}</h4><p>{{p6-body}}</p></div>
+        <div class="p flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">1</div><h4>{{p1-title}}</h4><p>{{p1-body}}</p></div>
+        <div class="p flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">2</div><h4>{{p2-title}}</h4><p>{{p2-body}}</p></div>
+        <div class="p flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">3</div><h4>{{p3-title}}</h4><p>{{p3-body}}</p></div>
+        <div class="p flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">4</div><h4>{{p4-title}}</h4><p>{{p4-body}}</p></div>
+        <div class="p flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">5</div><h4>{{p5-title}}</h4><p>{{p5-body}}</p></div>
+        <div class="p flow-fill flow-fill-body flow-center"><div class="n" data-visual-event="item-marker">6</div><h4>{{p6-title}}</h4><p>{{p6-body}}</p></div>
       </div>
     </div>
     <div class="nk-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>
@@ -160,17 +160,17 @@
       <div class="nk-eyebrow">{{eyebrow}}</div>
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-arch flow-grow">
-        <div class="nk-hub"><div class="k">{{hub-label}}</div><div class="v">{{hub-value}}</div></div>
+        <div class="nk-hub" data-visual-event="signature-mark"><div class="k">{{hub-label}}</div><div class="v">{{hub-value}}</div></div>
         <div class="nk-layers">
-          <div class="nk-layer"><span class="idx">01</span><span class="nm">{{l1}}</span></div>
-          <div class="nk-layer"><span class="idx">02</span><span class="nm">{{l2}}</span></div>
-          <div class="nk-layer"><span class="idx">03</span><span class="nm">{{l3}}</span></div>
-          <div class="nk-layer"><span class="idx">04</span><span class="nm">{{l4}}</span></div>
-          <div class="nk-layer"><span class="idx">05</span><span class="nm">{{l5}}</span></div>
-          <div class="nk-layer"><span class="idx">06</span><span class="nm">{{l6}}</span></div>
-          <div class="nk-layer"><span class="idx">07</span><span class="nm">{{l7}}</span></div>
-          <div class="nk-layer"><span class="idx">08</span><span class="nm">{{l8}}</span></div>
-          <div class="nk-layer"><span class="idx">09</span><span class="nm">{{l9}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">01</span><span class="nm">{{l1}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">02</span><span class="nm">{{l2}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">03</span><span class="nm">{{l3}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">04</span><span class="nm">{{l4}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">05</span><span class="nm">{{l5}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">06</span><span class="nm">{{l6}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">07</span><span class="nm">{{l7}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">08</span><span class="nm">{{l8}}</span></div>
+          <div class="nk-layer"><span class="idx" data-visual-event="item-marker">09</span><span class="nm">{{l9}}</span></div>
         </div>
       </div>
       <div class="nk-arch-note">{{note}}</div>
@@ -196,12 +196,12 @@
           <colgroup><col style="width:14%"><col style="width:22%"><col style="width:30%"><col style="width:34%"></colgroup>
           <thead><tr><th>{{col-1}}</th><th>{{col-2}}</th><th>{{col-3}}</th><th>{{col-4}}</th></tr></thead>
           <tbody>
-            <tr><td class="day">{{r1-day}}</td><td class="stage">{{r1-stage}}</td><td>{{r1-touch}}</td><td class="q">{{r1-q}}</td></tr>
-            <tr><td class="day">{{r2-day}}</td><td class="stage">{{r2-stage}}</td><td>{{r2-touch}}</td><td class="q">{{r2-q}}</td></tr>
-            <tr><td class="day">{{r3-day}}</td><td class="stage">{{r3-stage}}</td><td>{{r3-touch}}</td><td class="q">{{r3-q}}</td></tr>
-            <tr><td class="day">{{r4-day}}</td><td class="stage">{{r4-stage}}</td><td>{{r4-touch}}</td><td class="q">{{r4-q}}</td></tr>
-            <tr><td class="day">{{r5-day}}</td><td class="stage">{{r5-stage}}</td><td>{{r5-touch}}</td><td class="q">{{r5-q}}</td></tr>
-            <tr><td class="day">{{r6-day}}</td><td class="stage">{{r6-stage}}</td><td>{{r6-touch}}</td><td class="q">{{r6-q}}</td></tr>
+            <tr><td class="day"><span data-visual-event="item-marker">{{r1-day}}</span></td><td class="stage">{{r1-stage}}</td><td>{{r1-touch}}</td><td class="q">{{r1-q}}</td></tr>
+            <tr><td class="day"><span data-visual-event="item-marker">{{r2-day}}</span></td><td class="stage">{{r2-stage}}</td><td>{{r2-touch}}</td><td class="q">{{r2-q}}</td></tr>
+            <tr><td class="day"><span data-visual-event="item-marker">{{r3-day}}</span></td><td class="stage">{{r3-stage}}</td><td>{{r3-touch}}</td><td class="q">{{r3-q}}</td></tr>
+            <tr><td class="day"><span data-visual-event="item-marker">{{r4-day}}</span></td><td class="stage">{{r4-stage}}</td><td>{{r4-touch}}</td><td class="q">{{r4-q}}</td></tr>
+            <tr><td class="day"><span data-visual-event="item-marker">{{r5-day}}</span></td><td class="stage">{{r5-stage}}</td><td>{{r5-touch}}</td><td class="q">{{r5-q}}</td></tr>
+            <tr><td class="day"><span data-visual-event="item-marker">{{r6-day}}</span></td><td class="stage">{{r6-stage}}</td><td>{{r6-touch}}</td><td class="q">{{r6-q}}</td></tr>
           </tbody>
         </table>
       </div>
@@ -225,21 +225,21 @@
         <div class="col bad flow-fill">
           <div class="ch"><h4>{{bad-title}}</h4></div>
           <ul>
-            <li><span class="m">×</span><span>{{bad-1}}</span></li>
-            <li><span class="m">×</span><span>{{bad-2}}</span></li>
-            <li><span class="m">×</span><span>{{bad-3}}</span></li>
-            <li><span class="m">×</span><span>{{bad-4}}</span></li>
-            <li><span class="m">×</span><span>{{bad-5}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">×</span><span>{{bad-1}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">×</span><span>{{bad-2}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">×</span><span>{{bad-3}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">×</span><span>{{bad-4}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">×</span><span>{{bad-5}}</span></li>
           </ul>
         </div>
         <div class="col good flow-fill">
           <div class="ch"><span class="nk-mbar"><i></i><i></i><i></i></span><h4>{{good-title}}</h4></div>
           <ul>
-            <li><span class="m">→</span><span>{{good-1}}</span></li>
-            <li><span class="m">→</span><span>{{good-2}}</span></li>
-            <li><span class="m">→</span><span>{{good-3}}</span></li>
-            <li><span class="m">→</span><span>{{good-4}}</span></li>
-            <li><span class="m">→</span><span>{{good-5}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">→</span><span>{{good-1}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">→</span><span>{{good-2}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">→</span><span>{{good-3}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">→</span><span>{{good-4}}</span></li>
+            <li><span class="m" data-visual-event="item-marker">→</span><span>{{good-5}}</span></li>
           </ul>
         </div>
       </div>
@@ -263,14 +263,14 @@
         <div class="nk-spec-levels">
           <div style="font-family:var(--font-data);font-weight:600;font-size: 14px;color:var(--color-muted);margin-bottom:16px">{{levels-label}}</div>
           <div class="nk-levels flow-grow">
-            <div class="lv"><span class="i">01</span><span class="t">{{lv1}}</span></div>
-            <div class="lv"><span class="i">02</span><span class="t">{{lv2}}</span></div>
-            <div class="lv"><span class="i">03</span><span class="t">{{lv3}}</span></div>
-            <div class="lv"><span class="i">04</span><span class="t">{{lv4}}</span></div>
-            <div class="lv"><span class="i">05</span><span class="t">{{lv5}}</span></div>
-            <div class="lv"><span class="i">06</span><span class="t">{{lv6}}</span></div>
-            <div class="lv"><span class="i">07</span><span class="t">{{lv7}}</span></div>
-            <div class="lv"><span class="i">08</span><span class="t">{{lv8}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">01</span><span class="t">{{lv1}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">02</span><span class="t">{{lv2}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">03</span><span class="t">{{lv3}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">04</span><span class="t">{{lv4}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">05</span><span class="t">{{lv5}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">06</span><span class="t">{{lv6}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">07</span><span class="t">{{lv7}}</span></div>
+            <div class="lv"><span class="i" data-visual-event="item-marker">08</span><span class="t">{{lv8}}</span></div>
           </div>
         </div>
         <div class="nk-balance">
@@ -299,12 +299,12 @@
           <colgroup><col style="width:24%"><col style="width:40%"><col style="width:36%"></colgroup>
           <thead><tr><th>{{col-1}}</th><th class="cust">{{col-2}}</th><th>{{col-3}}</th></tr></thead>
           <tbody>
-            <tr><td class="lever">{{r1-lever}}</td><td>{{r1-cust}}</td><td class="biz">{{r1-biz}}</td></tr>
-            <tr><td class="lever">{{r2-lever}}</td><td>{{r2-cust}}</td><td class="biz">{{r2-biz}}</td></tr>
-            <tr><td class="lever">{{r3-lever}}</td><td>{{r3-cust}}</td><td class="biz">{{r3-biz}}</td></tr>
-            <tr><td class="lever">{{r4-lever}}</td><td>{{r4-cust}}</td><td class="biz">{{r4-biz}}</td></tr>
-            <tr><td class="lever">{{r5-lever}}</td><td>{{r5-cust}}</td><td class="biz">{{r5-biz}}</td></tr>
-            <tr><td class="lever">{{r6-lever}}</td><td>{{r6-cust}}</td><td class="biz">{{r6-biz}}</td></tr>
+            <tr><td class="lever"><span data-visual-event="item-marker">{{r1-lever}}</span></td><td>{{r1-cust}}</td><td class="biz">{{r1-biz}}</td></tr>
+            <tr><td class="lever"><span data-visual-event="item-marker">{{r2-lever}}</span></td><td>{{r2-cust}}</td><td class="biz">{{r2-biz}}</td></tr>
+            <tr><td class="lever"><span data-visual-event="item-marker">{{r3-lever}}</span></td><td>{{r3-cust}}</td><td class="biz">{{r3-biz}}</td></tr>
+            <tr><td class="lever"><span data-visual-event="item-marker">{{r4-lever}}</span></td><td>{{r4-cust}}</td><td class="biz">{{r4-biz}}</td></tr>
+            <tr><td class="lever"><span data-visual-event="item-marker">{{r5-lever}}</span></td><td>{{r5-cust}}</td><td class="biz">{{r5-biz}}</td></tr>
+            <tr><td class="lever"><span data-visual-event="item-marker">{{r6-lever}}</span></td><td>{{r6-cust}}</td><td class="biz">{{r6-biz}}</td></tr>
           </tbody>
         </table>
       </div>
@@ -349,9 +349,9 @@
       <div class="nk-eyebrow">{{eyebrow}}</div>
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-focus flow-grid-fill">
-        <div class="pil"><div class="n">Initiative 01</div><h3>{{i1-name}}</h3><div class="role">{{i1-role}}</div><p>{{i1-body}}</p></div>
-        <div class="pil"><div class="n">Initiative 02</div><h3>{{i2-name}}</h3><div class="role">{{i2-role}}</div><p>{{i2-body}}</p></div>
-        <div class="pil"><div class="n">Initiative 03</div><h3>{{i3-name}}</h3><div class="role">{{i3-role}}</div><p>{{i3-body}}</p></div>
+        <div class="pil"><div class="n" data-visual-event="item-marker"><b class="bar"></b>Initiative 01</div><h3>{{i1-name}}</h3><div class="role">{{i1-role}}</div><p>{{i1-body}}</p></div>
+        <div class="pil"><div class="n" data-visual-event="item-marker"><b class="bar"></b>Initiative 02</div><h3>{{i2-name}}</h3><div class="role">{{i2-role}}</div><p>{{i2-body}}</p></div>
+        <div class="pil"><div class="n" data-visual-event="item-marker"><b class="bar"></b>Initiative 03</div><h3>{{i3-name}}</h3><div class="role">{{i3-role}}</div><p>{{i3-body}}</p></div>
       </div>
       <div class="nk-reinforce"><span class="lbl">How they compound</span><span>{{reinforce}}</span></div>
     </div>
@@ -374,14 +374,14 @@
         <div class="contrib">
           <h4>{{contrib-label}}</h4>
           <div class="grid">
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f1}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f2}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f3}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f4}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f5}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f6}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f7}}</span></div>
-            <div class="cell flow-fill"><span class="d"></span><span class="nm">{{f8}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f1}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f2}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f3}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f4}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f5}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f6}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f7}}</span></div>
+            <div class="cell flow-fill"><span class="d" data-visual-event="item-marker"></span><span class="nm">{{f8}}</span></div>
           </div>
         </div>
         <div class="recos">
@@ -413,10 +413,10 @@
       <h2 class="nk-title">{{action-title}}</h2>
       <div class="nk-road flow-grid-fill">
         <div class="rail"></div>
-        <div class="ph"><div class="node"><span class="dot"></span><span class="ph-no">{{p1-no}}</span></div><h4>{{p1-title}}</h4><ul><li>{{p1-a}}</li><li>{{p1-b}}</li><li>{{p1-c}}</li><li>{{p1-d}}</li></ul></div>
-        <div class="ph"><div class="node"><span class="dot"></span><span class="ph-no">{{p2-no}}</span></div><h4>{{p2-title}}</h4><ul><li>{{p2-a}}</li><li>{{p2-b}}</li><li>{{p2-c}}</li><li>{{p2-d}}</li></ul></div>
-        <div class="ph"><div class="node"><span class="dot"></span><span class="ph-no">{{p3-no}}</span></div><h4>{{p3-title}}</h4><ul><li>{{p3-a}}</li><li>{{p3-b}}</li><li>{{p3-c}}</li><li>{{p3-d}}</li></ul></div>
-        <div class="ph"><div class="node"><span class="dot"></span><span class="ph-no">{{p4-no}}</span></div><h4>{{p4-title}}</h4><ul><li>{{p4-a}}</li><li>{{p4-b}}</li><li>{{p4-c}}</li><li>{{p4-d}}</li></ul></div>
+        <div class="ph"><div class="node"><span class="dot" data-visual-event="item-marker"></span><span class="ph-no">{{p1-no}}</span></div><h4>{{p1-title}}</h4><ul><li>{{p1-a}}</li><li>{{p1-b}}</li><li>{{p1-c}}</li><li>{{p1-d}}</li></ul></div>
+        <div class="ph"><div class="node"><span class="dot" data-visual-event="item-marker"></span><span class="ph-no">{{p2-no}}</span></div><h4>{{p2-title}}</h4><ul><li>{{p2-a}}</li><li>{{p2-b}}</li><li>{{p2-c}}</li><li>{{p2-d}}</li></ul></div>
+        <div class="ph"><div class="node"><span class="dot" data-visual-event="item-marker"></span><span class="ph-no">{{p3-no}}</span></div><h4>{{p3-title}}</h4><ul><li>{{p3-a}}</li><li>{{p3-b}}</li><li>{{p3-c}}</li><li>{{p3-d}}</li></ul></div>
+        <div class="ph"><div class="node"><span class="dot" data-visual-event="item-marker"></span><span class="ph-no">{{p4-no}}</span></div><h4>{{p4-title}}</h4><ul><li>{{p4-a}}</li><li>{{p4-b}}</li><li>{{p4-c}}</li><li>{{p4-d}}</li></ul></div>
       </div>
     </div>
     <div class="nk-foot flow-foot"><span class="src">{{source}}</span><span>{{section}}</span></div>

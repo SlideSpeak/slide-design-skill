@@ -175,6 +175,7 @@
 .ox-tiers { display: grid; grid-auto-rows: 1fr; gap: 14px; }
 .ox-tier { display: grid; grid-template-columns: 196px 1fr; gap: 18px; align-items: stretch; }
 .ox-tier .tl { align-self: center; font-family: var(--font-header); font-weight: 600; font-size: 17px; line-height: 1.18; color: var(--color-ink); }
+.ox-tier .tl .ti { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 22px; margin-right: 12px; vertical-align: 1px; font-family: var(--font-data); font-weight: 600; font-size: 14px; color: #fff; background: var(--color-signal); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 .ox-tier .tl small { display: block; font-family: var(--font-data); font-weight: 500; font-size: 14px; color: var(--color-muted); margin-top: 3px; }
 /* boxes centre as a compact band in their tier; a one-line box stays box-sized */
 .ox-tier .boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-self: center; }

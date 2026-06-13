@@ -29,6 +29,46 @@ function rulesOn(findings: LintFinding[], slideIndex: number): string[] {
   return findings.filter((f) => f.slideIndex === slideIndex).map((f) => f.rule);
 }
 
+// Diagnostic-only mirror of the image-subject-monotony score, used to PRINT the
+// similarity number in the ground-truth case. The pass/fail VERDICT comes from
+// the real lintSlideTree; this only reproduces the headline metrics for the log.
+// (Stoplist intentionally trimmed to the words these two ground-truth sets use.)
+const DIAG_STOPLIST = new Set<string>([
+  "chrome", "metal", "mercury", "aluminium", "liquid", "poured", "brushed",
+  "polished", "mirror", "near", "black", "void", "deep", "tight", "macro",
+  "close", "form", "ribbon", "sphere", "curve", "column", "folding", "folded",
+  "splitting", "rising", "curving", "climbing", "receding", "standing",
+  "sweeping", "ascending", "sculptural", "industrial", "single", "vast",
+  "the", "and", "into", "with", "out", "left", "right", "upper", "lower",
+  "corner", "like", "tall", "vertical", "detail", "edge", "blocks",
+]);
+function diagSubjectTokens(p: string): Set<string> {
+  const out = new Set<string>();
+  for (const raw of p.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/))
+    for (const atom of raw.split("-")) {
+      if (atom.length < 3 || DIAG_STOPLIST.has(atom)) continue;
+      out.add(atom);
+    }
+  return out;
+}
+function describeSubjectMonotony(prompts: string[]): string {
+  const sets = prompts.map(diagSubjectTokens);
+  let sum = 0, pairs = 0;
+  for (let i = 0; i < sets.length; i++)
+    for (let j = i + 1; j < sets.length; j++) {
+      const a = sets[i], b = sets[j];
+      let inter = 0;
+      for (const x of a) if (b.has(x)) inter++;
+      const uni = a.size + b.size - inter;
+      sum += uni === 0 ? (a.size === 0 ? 1 : 0) : inter / uni;
+      pairs++;
+    }
+  const avg = pairs ? sum / pairs : 0;
+  const all = new Set<string>();
+  for (const s of sets) for (const x of s) all.add(x);
+  return `avg Jaccard=${avg.toFixed(3)}, subject richness=${(all.size / prompts.length).toFixed(2)}/img`;
+}
+
 // 1. em-dash in visible text → error
 {
   const { findings } = lintSlideTree([slide("statement", { headline: "We build — and we ship." })]);
@@ -301,6 +341,79 @@ function rulesOn(findings: LintFinding[], slideIndex: number): string[] {
   ]);
   const flagged = findings.filter((f) => f.rule === "poetic-label");
   check("poetic labels flagged", flagged.length === 2 && !flagged.some((f) => f.slideIndex === 2), JSON.stringify(flagged));
+}
+
+// 26. image-subject-monotony: bgPrompts that rework one motif → warn
+{
+  const motif = [
+    slide("cover", { headline: "A" }, { bgPrompt: "A poured-mercury industrial arm folding into a chrome ribbon, brushed aluminium on a near-black void" }),
+    slide("bleed", { headline: "B" }, { bgPrompt: "A tight detail of a folded chrome ribbon and a brushed-aluminium edge, poured liquid metal" }),
+    slide("bleed", { headline: "C" }, { bgPrompt: "A poured-mercury sphere splitting into a rising chrome curve, brushed aluminium, near-black void" }),
+  ];
+  const { findings } = lintSlideTree(motif);
+  check("repeated-motif bgPrompts flagged", has(findings, "image-subject-monotony"));
+  check("image-subject-monotony is warn + deck-level", findings.some((f) => f.rule === "image-subject-monotony" && f.severity === "warn" && f.slideIndex === -1));
+}
+
+// 27. image-subject-monotony: distinct subjects, one language → pass
+{
+  const distinct = [
+    slide("cover", { headline: "A" }, { bgPrompt: "A sweeping liquid-chrome robotic arm curving down from the upper right corner" }),
+    slide("bleed", { headline: "B" }, { bgPrompt: "A single chrome industrial robot gripper hand in tight macro close-up" }),
+    slide("bleed", { headline: "C" }, { bgPrompt: "An ascending staircase of polished mirror-chrome blocks like a rising bar chart" }),
+    slide("bleed", { headline: "D" }, { bgPrompt: "A vast receding array of identical tall mirror-chrome monoliths standing in formation" }),
+  ];
+  const { findings } = lintSlideTree(distinct);
+  check("distinct-subject bgPrompts pass", !has(findings, "image-subject-monotony"));
+}
+
+// 28. image-subject-monotony: only one bgPrompt → never fires (nothing to compare)
+{
+  const { findings } = lintSlideTree([
+    slide("cover", { headline: "A" }, { bgPrompt: "A chrome robot arm on a near-black void" }),
+    slide("body", { body: "no background here" }),
+  ]);
+  check("single bgPrompt deck not flagged", !has(findings, "image-subject-monotony"));
+}
+
+// 29. image-subject-monotony: data:/url: bgPrompt values are skipped, not compared
+{
+  const { findings } = lintSlideTree([
+    slide("cover", { headline: "A" }, { bgPrompt: "data:image/png;base64,AAAA" }),
+    slide("bleed", { headline: "B" }, { bgPrompt: "url:https://example.com/a.png" }),
+    slide("bleed", { headline: "C" }, { bgPrompt: "A chrome ribbon on a near-black void" }),
+  ]);
+  // Only one real (non-data/url) prompt remains → nothing to compare → no finding.
+  check("data/url bgPrompts skipped", !has(findings, "image-subject-monotony"));
+}
+
+// 30. GROUND-TRUTH VALIDATION: the proof this attacks the cause. Run the rule
+// on the 4 ORIGINAL (samey) prompts and the 4 DISTINCT prompts, print the
+// similarity score + verdict for each, and assert OLD warns / NEW passes.
+{
+  const OLD_PROMPTS = [
+    "A single liquid-metal sculptural form, a poured-mercury industrial arm folding into a chrome ribbon, brushed aluminium and polished chrome on a deep near-black void",
+    "A tight detail of a folded chrome ribbon and a brushed-aluminium edge, poured liquid metal",
+    "A poured-mercury sphere splitting into a rising chrome curve, brushed aluminium, deep near-black void",
+    "A vertical column of liquid chrome rising out of a near-black void, brushed aluminium and mercury",
+  ];
+  const NEW_PROMPTS = [
+    "A sweeping liquid-chrome robotic arm curving down from the upper right corner",
+    "A single chrome industrial robot gripper hand in tight macro close-up",
+    "An ascending staircase of polished mirror-chrome blocks climbing left to right like a rising bar chart",
+    "A vast receding array of identical tall mirror-chrome monoliths standing in formation",
+  ];
+  const toDeck = (prompts: string[]) =>
+    prompts.map((p, i) => slide(i === 0 ? "cover" : "bleed", { headline: `S${i}` }, { bgPrompt: p }));
+
+  const oldFlagged = has(lintSlideTree(toDeck(OLD_PROMPTS)).findings, "image-subject-monotony");
+  const newFlagged = has(lintSlideTree(toDeck(NEW_PROMPTS)).findings, "image-subject-monotony");
+
+  console.log(`\n--- ground-truth: ${describeSubjectMonotony(OLD_PROMPTS)} -> ${oldFlagged ? "WARN" : "PASS"} (OLD, want WARN)`);
+  console.log(`--- ground-truth: ${describeSubjectMonotony(NEW_PROMPTS)} -> ${newFlagged ? "WARN" : "PASS"} (NEW, want PASS)\n`);
+
+  check("ground-truth OLD 4 (samey) warns", oldFlagged);
+  check("ground-truth NEW 4 (distinct) passes", !newFlagged);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

@@ -200,6 +200,37 @@ const skill = skillStub();
   check("DECK PLAN precedes SLIDE TYPES", planIdx >= 0 && typesIdx >= 0 && planIdx < typesIdx);
 }
 
+// 21. editorial genre signals: a photo-led impact/progress report reads editorial,
+// not report — the multi-word phrase outweighs the bare "report" hit
+{
+  const p = planDeck({ userPrompt: "Photo-led impact report 2025 for an ocean nonprofit", slideCount: 12, skill });
+  check("impact report reads editorial", p.read.presentationType === "editorial", p.read.presentationType);
+  const q = planDeck({ userPrompt: "Quarterly results: analysis of our Q3 findings", slideCount: 10, skill });
+  check("plain results brief still reads report", q.read.presentationType === "report", q.read.presentationType);
+}
+
+// 22. editorial decks get the editorial contract injected; others do not
+{
+  const ed = composeSystemPrompt(skill, {
+    userPrompt: "Photo-led impact report 2025 for an ocean nonprofit",
+    slideCount: 12,
+    language: "en",
+  });
+  check("editorial contract injected", /EDITORIAL CONTRACT/.test(ed));
+  check("editorial arc is the chapter loop", /chapter loop/i.test(ed));
+  check("contract carries the photo pacing law", /40% of slides carry a photograph/.test(ed));
+  const pitch = composeSystemPrompt(skill, {
+    userPrompt: "Investor pitch to raise a seed round",
+    slideCount: 8,
+    language: "en",
+  });
+  check("no editorial contract on a pitch", !/EDITORIAL CONTRACT/.test(pitch));
+  check("pitch contract injected", /PITCH CONTRACT/.test(pitch));
+  check("pitch contract carries the statement law", /THE HEADLINE IS THE WHOLE SLIDE/.test(pitch));
+  check("pitch contract spends the accent on the money", /spent on the money/i.test(pitch));
+  check("no pitch contract on an editorial deck", !/PITCH CONTRACT/.test(ed));
+}
+
 // variance dial: explicit signals win, then type beats audience, report defaults conservative
 {
   const exp = planDeck({ userPrompt: "A bold, playful launch keynote", slideCount: 10, skill });

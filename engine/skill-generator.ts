@@ -9,6 +9,7 @@ import {
   FAMILY_INTENT,
   DEFAULT_TRAP_FAMILY,
 } from "./composition-families.ts";
+import { inferPresentationType } from "./deck-plan.ts";
 
 /**
  * Codified version of the manual style-derivation workflow validated 2026-05-28.
@@ -41,6 +42,8 @@ export interface SkillReference {
   colorKit: string;
   typographyKit: string;
   slideTypeCount: number;
+  /** The slide-type names this skill defines, so a new generation can pick a divergent structure. */
+  slideTypes?: string[];
   exampleHeadline?: string;
 }
 
@@ -122,7 +125,7 @@ export function composeGeneratorPrompt(
   const refsBlock = references
     .map(
       (r) =>
-        `- "${r.name}": ${r.description}\n  colors: ${r.colorKit}\n  type: ${r.typographyKit}\n  ${r.slideTypeCount} slide types`,
+        `- "${r.name}": ${r.description}\n  colors: ${r.colorKit}\n  type: ${r.typographyKit}\n  structure (${r.slideTypeCount} slide types): ${r.slideTypes?.length ? r.slideTypes.join(", ") : "n/a"}`,
     )
     .join("\n");
 
@@ -130,14 +133,21 @@ export function composeGeneratorPrompt(
     (f) => `  - ${f} — ${FAMILY_INTENT[f]}`,
   ).join("\n");
 
+  const presentationType = inferPresentationType(describeBrief(brief).toLowerCase());
+  const editorialBlock =
+    presentationType === "editorial" ? editorialSkillRequirements() : "";
+  const pitchBlock = presentationType === "pitch" ? pitchSkillRequirements() : "";
+
   return `You are the skill-generator for SlideSpeak. Your job: produce a 6-file slide-design skill package for the engine. The engine renders any deck the LLM later generates using these files.
 
 BRIEF
 ${describeBrief(brief)}
 The generated skill must be named exactly "${slug}" (frontmatter \`name:\` must equal "${slug}", folder will be created with this name).
 
-REFERENCE SKILLS (existing, validated — your output should be in the same shape)
+REFERENCE SKILLS (existing, validated — match their FILE FORMAT, never their look or their structure)
 ${refsBlock}
+
+DIVERGE FROM THE REFERENCES, ESPECIALLY SAME-REGISTER ONES. The references above are NOT a menu to copy; they are shown so you can avoid what already exists. Your skill MUST NOT reuse the spine or the slide-type set of any reference. If a reference reads as the same register as this brief (another pitch, another editorial deck), pick a DIFFERENT spine family and a substantially different slide-type set and sequencing: two skills in one register sharing a skeleton is the single failure this instruction exists to prevent. Same 6-file format, different structure.
 
 THE 6 FILES YOU MUST PRODUCE
 
@@ -236,6 +246,7 @@ Equally, do NOT retreat into near-monochrome or all-dark out of caution. If the 
 - A line of the form: Prompt template: \`<one-line prompt fragment containing {subject}>\`
 - A line of the form: Negative prompt: <comma-separated list>
 - A line of the form: Search-query template: \`<fragment containing {subject}>\`
+- A stated DISTINCT-FIGURES principle: the image system must say, in its own words, that a deck holds ONE visual language (palette, material, lighting from this skill) but depicts a DISTINCT figure per slide tied to that slide's content; the style anchor / moodboard fixes the palette and material only and is NEVER an object cloned onto every slide.
 - Decision rules: at least one bullet per category (gradient, product, person, chart, building). Each bullet uses the form: - \`category\` → AI default | stock | ask
 - OPTIONALLY a line of the form: Treatment: \`<name>\` to apply a deliberate stylistic abstraction to EVERY AI image instead of literal photography. Pick one ONLY if it genuinely fits the brand's world. Choices: photographic (default, omit the line); painted/printed mediums — oil-painting, renaissance, watercolor, risograph, cyanotype, line-engraving; digital-graphic — pixel-art, halftone, ascii, blueprint. A heritage/cultural brand → renaissance or line-engraving; an artisanal brand → watercolor; a playful indie brand → risograph or halftone; a retro/gaming brand → pixel-art; a dev/technical brand → ascii or blueprint. Do NOT reach for the same treatment every time, and do NOT add one just to seem clever — most decks stay photographic.
 
@@ -258,7 +269,7 @@ Make these choices FROM THE BRIEF. A warm consumer brand, a brutalist editorial 
 Document the system in SKILL.md (a "## Graphic system" section: what the mark is, where each device appears, what it never does). Deployment is a budget, like the accent: the SAME devices in the SAME places on every slide — never a different trick per slide.
 BANNED as graphic assets (this would be the new slop): random blobs, squiggles, Memphis confetti, sprinkled geometric shapes, corner swooshes, "network node" meshes, generic dotted world maps, clip-art arrows, abstract circles orbiting a headline. If a shape is not derived from the brand's world and deployed with discipline, it does not belong.
 
-HARD RULES — these read as machine-made; they are non-negotiable across ALL files
+${editorialBlock}${pitchBlock}HARD RULES — these read as machine-made; they are non-negotiable across ALL files
 - NO uppercase-set labels. Never \`text-transform: uppercase\`, never letter-spaced all-caps eyebrows/kickers. Labels are sentence case at normal tracking. (The loader strips uppercase typography defensively, but emitting it is a failure.)
 - NO accent line / colored bar / colored border pinned to a card EDGE (no \`border-top: 3px solid <accent>\` on a card, no left-edge accent stripe). A colored rule on the lip of a card is the loudest AI tell there is. Carry accent through a number, an icon, a filled chip, or a single tinted surface instead — never the card's edge.
 - NO em-dashes (—) anywhere in copy, SKILL.md prose, or example text. Use a comma, a period, or "to" for ranges. Hyphens in compound words are fine.
@@ -292,6 +303,51 @@ Return one strict JSON object — no prose, no markdown fences. Shape:
 }
 
 NOW GENERATE THE SKILL for: ${describeBrief(brief)}`;
+}
+
+/**
+ * EDITORIAL SKILL REQUIREMENTS — the skill-side counterpart to the deck-time
+ * editorial contract (prompt-composer). Appended to the generator prompt when
+ * the brief reads as a photo-led editorial style. These laws are distilled from
+ * measured professional editorial references; the skill must implement the
+ * editorial SYSTEM, not just editorial colors.
+ */
+function editorialSkillRequirements(): string {
+  return `EDITORIAL SKILL REQUIREMENTS (this brief reads as a photo-led editorial style — the skill must implement the editorial system, not just editorial colors)
+- CHAPTER ENGINE. The slide-type set must cover a repeatable chapter loop: a chapter TOC or divider, a photo chapter opener, a lede/article page, at least one data plate, a proof beat (quote or human story), and a zero-or-low-text photo breather. These types recur verbatim per chapter; the deck's structure is the loop, not one-off slides.
+- PHOTO TEMPLATES. Photographs render as hard splits (photo column beside a paper panel, a side that can alternate left/right via a slot or data-attribute) or as full bleeds. Give photo templates an \`ink\` slot so display type flips dark/light into the photo's quiet zone. NEVER emit a scrim, gradient overlay, or darkening wash for legibility — the photograph is art-directed to carry a quiet zone instead.
+- SURFACE SEPARATION. Photos and data never share a template surface: charts, stats, and body copy live on flat paper or flat-color plates, never over an image.
+- CHROME IS NAVIGATION, AND ITS ABSENCE IS A REGISTER. Build the chrome once (a breadcrumb header or an index footer, identical on every content page) AND include at least 2 poster types (a giant stat, a full-screen quote, a full-bleed photo moment) that drop the chrome entirely. Roughly 80% chrome, 20% poster.
+- ACCENT WITH AN ENUMERATED JOB LIST. SKILL.md's color rules must list the accent's exact jobs (e.g. TOC highlight, table ground, quote ink, a highlighter band over key claims) and nothing else; data visualization stays greyscale or single-accent, and grounds are never tinted with the accent.
+- THE NUMBER IS THE CHART. The dominant data treatment is the giant numeral (same family as the text) plus caption and source, or a ruled hairline table. Axis charts are rare, direct-labelled, legend-free.
+- SIZE-DRIVEN HIERARCHY. Levels sit roughly 2.5x apart; regular weight dominates even at display sizes, bold is rationed. One grotesque, or one serif + one sans with a hard role contract (one face for narrative/display, the other for data/function, roles never blurred).
+- ONE OWN LAYOUT MOVE. Beyond this list, invent at least one signature layout move derived from the brief's world (a stat taking the entire screen, an oversized table of contents, a ghost numeral behind content, a vertical lede rail...). The editorial register rewards one bold ownable move repeated with discipline.
+- PHOTOGRAPHIC SYSTEM AS A LAYER. image-style.md must define the photography as a first-class system: documentary subjects from the brief's world, one or two named grading families, quiet-zone art direction inside the prompt template, and crop conventions. The deck does not exist without its photography.
+
+`;
+}
+
+/**
+ * PITCH SKILL REQUIREMENTS. The skill-side counterpart to the deck-time pitch
+ * contract (prompt-composer). Appended to the generator prompt when the brief
+ * reads as an investor or pitch deck. These laws are distilled from measured
+ * professional pitch references; the skill must implement the pitch SYSTEM
+ * (statement-as-slide, bimodal density, accent-on-money, light chrome,
+ * type-as-hero), not just pitch colors.
+ */
+function pitchSkillRequirements(): string {
+  return `PITCH SKILL REQUIREMENTS (this brief reads as an investor or pitch deck; the skill must implement the pitch SYSTEM, not just pitch colors)
+- INVENT THIS DECK'S OWN STRUCTURE, do not reach for a fixed pitch skeleton. The slide-type set, the sequencing beyond the bare arc, and the way each beat is realised must be derived from THIS brief. Do NOT default to the standard march (cover, thesis statement, problem statement, market metric, contrast, product, how-it-works, traction, model, money, ask): that is ONE skeleton among many, and reusing it makes every pitch a re-skin of the last. Pick and commit to ONE spine family that fits the brief and let it shape the structure: poster-statement (type-as-hero, corner-pinned declaratives, minimal chrome), branded-surface (the brand colour and full-bleed surfaces are the identity, one-word interstitial act-breaks, each beat a surface or card), or proof-stack (product and data renders carry it, show-don't-tell, callouts over imagery). Two pitch skills must not share a spine family or the same slide-type set. Beyond the graphic devices below, invent at least one signature STRUCTURAL move (a recurring rail, a one-word divider system, a stat band, a ghost-numeral spread, a living-dashboard panel) and repeat it with discipline.
+- THE HEADLINE IS THE SLIDE, never a bullet stack. Whatever the spine, a content slide carries one terse declarative idea (a corner-pinned statement, a one-word interstitial, a giant number, a single claim on a surface), not a title-plus-body-plus-bullets column. A bulleted body is the exception, never the default; reading the headlines in order tells the whole pitch.
+- BIMODAL, THEATRICAL DENSITY. The type set must support a real low end: 1 to 4 element posters (a statement, a full-bleed brand moment, a single giant numeral) that alternate with occasional data bursts, with almost nothing in the medium middle. A one-element statement is a finished slide; the breather is a poster, never a half-filled grid. The layout grammar must treat a single-statement slide as legitimate, not underfill.
+- ONE ACCENT, RESERVED FOR THE MONEY. SKILL.md's color rules must define exactly one accent and forbid tinting content grounds with it. The accent runs loudest on the proof, traction and financials slides and stays quiet everywhere else. A maximal brand may flood whole grounds as its identity, but only if the brief's brand is genuinely that saturated; the default is the reserved single accent.
+- CHROME IS LIGHT OR GONE. No persistent index footer or breadcrumb (that is the editorial register, wrong here). Pitch chrome is a one-word kicker, an oversized faded page numeral, or a branded hairline on the edge: poster, not navigation. Most content slides carry almost no chrome.
+- DATA IS CONVICTION, NOT ANALYSIS. The dominant data treatment is the giant inline numeral or a theatrical money moment (a real P&L or traction burst), not an analysis dashboard. Where an axis chart exists, exactly one series takes the accent and the rest recede to grey, values direct-labelled on the mark, axes and legends minimal. Data always carries a source line; unsourced or redacted placeholder numbers are a do-not-ship tell.
+- BRAND-ART IMAGERY, NOT EDITORIAL PHOTOGRAPHY. image-style.md must define the visual layer as brand art, 3D render, or product imagery used as a rationed accent, not a documentary photo spine. Imagery share varies widely by brand; the spine is the STATEMENT plus the color system, not a photo rhythm.
+- TYPE-AS-HERO. Display type runs huge (one family, size carries hierarchy, weight rationed even at display size), levels spaced wide. Sentence case, never tracked all-caps (house rule).
+- 2 TO 3 OWNED SIGNATURE DEVICES. Invent a small set of repeated, ownable devices from the brief's world (a corner-pinned giant statement, a ghost numeral behind content, a two-color headline highlight, an owned accent-on-money treatment) and repeat them with discipline. A pitch without signature devices is a template, not a system.
+
+`;
 }
 
 /**
@@ -451,12 +507,14 @@ export async function buildReferenceLibrary(
         "utf8",
       );
       const slideTypeCount = (grammarMd.match(/^\|\s*`?slide-/gm) || []).length;
+      const slideTypes = [...grammarMd.matchAll(/^\|\s*`([a-z][a-z0-9-]*)`/gm)].map((m) => m[1]);
       refs.push({
         name,
         description: typeof fm.description === "string" ? fm.description.slice(0, 280) : "",
         colorKit: typeof fm.color_kit === "string" ? fm.color_kit.slice(0, 200) : "",
         typographyKit: typeof fm.typography_kit === "string" ? fm.typography_kit.slice(0, 200) : "",
         slideTypeCount,
+        slideTypes,
       });
     } catch (e) {
       console.warn(`buildReferenceLibrary: skipping skill "${name}" (load failed: ${(e as Error).message})`);

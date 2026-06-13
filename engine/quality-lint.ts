@@ -242,7 +242,7 @@ export function lintSlideTree(
     const families = new Map<string, string[]>();
     for (const [slot, value] of visibleSlots(slide)) {
       if (!/\d/.test(slot)) continue;
-      if (/-(data|labels|cells|unit|unit-line|highlight|ref-line|ref-label)$/.test(slot)) continue;
+      if (/-(data|labels|cells|unit|unit-line|highlight|ref-line|ref-label|status|word)$/.test(slot)) continue;
       const stem = slot.replace(/\d+/g, "#");
       const list = families.get(stem) ?? [];
       list.push(value);
@@ -378,6 +378,26 @@ export function lintSlideTree(
     }
   }
 
+  // Deck-level: image-subject monotony. When ≥2 slides carry a bgPrompt (the
+  // per-slide hero/background art prompt), the deck should depict a DIFFERENT
+  // subject per slide under one shared visual language. The failure this catches
+  // is the model varying only the STYLE words (chrome, mercury, near-black) and
+  // the shape-primitive/motion vocabulary (ribbon, sphere, rising, folding) while
+  // redrawing the same motif. We strip that shared style register from each
+  // bgPrompt and inspect the residual SUBJECT vocabulary: if the residual sets
+  // overlap heavily (avg pairwise Jaccard >= threshold) OR the deck spends too few
+  // distinct subject tokens across its images (richness floor), it is one motif
+  // reworded. Advisory (warn), never blocks an existing deck's gate.
+  const monotony = detectImageSubjectMonotony(slides);
+  if (monotony) {
+    findings.push({
+      rule: "image-subject-monotony",
+      severity: "warn",
+      slideIndex: -1,
+      message: monotony,
+    });
+  }
+
   return { findings };
 }
 
@@ -414,4 +434,129 @@ function collectFakeNumbers(value: string, userPrompt: string): string[] {
     }
   }
   return flagged;
+}
+
+// ---------------------------------------------------------------------------
+// image-subject-monotony
+//
+// Shared STYLE register stripped from each bgPrompt before comparing subjects.
+// Three groups, all of which a deck legitimately holds CONSTANT under "one
+// visual language": (a) material/palette/finish/lighting/quality words; (b)
+// abstract shape-PRIMITIVE nouns (ribbon, sphere, curve, column), the
+// vocabulary of an abstract sculpture, not a concrete subject; (c) motion/pose
+// verbs (folding, rising, sweeping). What survives is the concrete subject a
+// slide actually depicts (robot, gripper, staircase, monolith, skyline). The
+// guiding principle (caps-strip lesson): prose alone never holds, only a
+// mechanical residual-vocabulary check separates "one motif reworded" from
+// "genuinely different figures, one language".
+const IMAGE_STYLE_STOPLIST = new Set<string>([
+  // material / palette / finish / lighting / quality
+  "chrome", "metal", "metallic", "mercury", "aluminium", "aluminum", "steel",
+  "silver", "liquid", "poured", "molten", "brushed", "polished", "mirror",
+  "near-black", "near", "black", "void", "ice-blue", "ice", "blue", "rim",
+  "light", "lighting", "studio", "specular", "reflection", "reflections",
+  "reflective", "premium", "luxury", "product", "render", "rendered", "realism",
+  "realistic", "photorealistic", "cold", "cinematic", "negative", "space",
+  "sharp", "deep", "dark", "darkness", "matte", "gloss", "glossy", "hardware",
+  "architectural", "edge", "edges", "surface", "finish", "abstract",
+  "sculptural", "industrial", "minimal", "minimalist", "clean", "smooth",
+  "soft", "hard", "high", "contrast", "detail", "tight", "macro", "close-up",
+  "closeup", "close", "wide", "shot", "composition", "background", "backdrop",
+  "field", "depth", "tone", "tones", "tonal", "gradient", "glow", "ambient",
+  "color", "colour", "palette", "muted", "saturated", "monochrome", "grayscale",
+  "greyscale", "texture", "grain", "atmosphere", "atmospheric", "mood", "moody",
+  "lit", "shadow", "shadows", "highlight", "highlights", "bright", "darkened",
+  // abstract shape-PRIMITIVE nouns (an abstract form, not a concrete subject)
+  "form", "shape", "ribbon", "sphere", "curve", "column", "blob", "swirl",
+  "wave", "arc", "loop", "coil", "spiral", "twist", "fold", "drape", "sheet",
+  "mass", "volume", "structure", "object", "shard", "splinter", "droplet",
+  "blobs", "ribbons", "spheres", "curves", "columns", "waves", "arcs",
+  // motion / process / pose verbs (present participle and past)
+  "folding", "folded", "splitting", "split", "rising", "risen", "curving",
+  "curved", "climbing", "climbed", "receding", "receded", "standing", "stood",
+  "sweeping", "swept", "ascending", "descending", "flowing", "pouring",
+  "dripping", "melting", "morphing", "twisting", "coiling", "unfurling",
+  "bending", "stretching", "floating", "hovering", "spinning", "rotating",
+  // generic glue / quantity / position words
+  "single", "vast", "empty", "the", "and", "into", "with", "for", "out", "off",
+  "over", "under", "across", "through", "between", "not", "text", "type",
+  "this", "that", "these", "those", "its", "are", "very", "more", "most",
+  "some", "any", "all", "one", "two", "three", "set", "scene", "image",
+  "picture", "photo", "photograph", "view", "frame", "left", "right", "upper",
+  "lower", "top", "bottom", "corner", "center", "centre", "side", "front",
+  "back", "behind", "around", "like", "made", "tall", "vertical", "horizontal",
+  "long", "short", "big", "small", "large",
+]);
+
+const IMAGE_SUBJECT_JACCARD_THRESHOLD = 0.5;
+const IMAGE_SUBJECT_RICHNESS_FLOOR = 1.5;
+
+/** Residual SUBJECT tokens of one bgPrompt: atoms ≥3 chars, minus style words. */
+function subjectTokens(prompt: string): Set<string> {
+  const out = new Set<string>();
+  for (const raw of prompt.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/)) {
+    if (!raw) continue;
+    // Split hyphenated compounds into atoms so "liquid-metal" and "near-black"
+    // are stoplisted by their parts, not preserved as fake-unique tokens.
+    for (const atom of raw.split("-")) {
+      if (atom.length < 3) continue;
+      if (IMAGE_STYLE_STOPLIST.has(atom)) continue;
+      out.add(atom);
+    }
+  }
+  return out;
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  if (a.size === 0 && b.size === 0) return 1;
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter++;
+  const union = a.size + b.size - inter;
+  return union === 0 ? 0 : inter / union;
+}
+
+/**
+ * Deck-level: are the per-slide hero/background subjects one motif reworded?
+ * Returns a warning message, or null when the images carry distinct subjects
+ * (or there are fewer than 2 bgPrompts to compare). Pure + defensive: skips
+ * empty / data: / url: bgPrompt values, exactly like the slot-skip patterns.
+ */
+function detectImageSubjectMonotony(slides: SlideTreeNode[]): string | null {
+  const prompts: string[] = [];
+  for (const s of slides) {
+    const bg = s.bgPrompt;
+    if (typeof bg !== "string") continue;
+    const v = bg.trim();
+    if (v.length === 0) continue;
+    if (v.startsWith("data:") || v.startsWith("url:")) continue;
+    prompts.push(v);
+  }
+  if (prompts.length < 2) return null;
+
+  const sets = prompts.map(subjectTokens);
+
+  // Average pairwise Jaccard of residual subject-token sets.
+  let sum = 0;
+  let pairs = 0;
+  for (let i = 0; i < sets.length; i++) {
+    for (let j = i + 1; j < sets.length; j++) {
+      sum += jaccard(sets[i], sets[j]);
+      pairs++;
+    }
+  }
+  const avgJaccard = pairs > 0 ? sum / pairs : 0;
+
+  // Subject-vocabulary richness: distinct residual atoms across the whole deck
+  // per image. The spec's "distinct subject head-nouns <= half the images" in its
+  // robust form: when the model only reworded one motif, the residual subject
+  // vocabulary is tiny (the OLD chrome-blob set collapses to ~0.25 atoms/image).
+  const allAtoms = new Set<string>();
+  for (const s of sets) for (const a of s) allAtoms.add(a);
+  const richness = allAtoms.size / prompts.length;
+
+  const tooSimilar = avgJaccard >= IMAGE_SUBJECT_JACCARD_THRESHOLD;
+  const tooPoor = richness <= IMAGE_SUBJECT_RICHNESS_FLOOR;
+  if (!tooSimilar && !tooPoor) return null;
+
+  return `Background image subjects are too similar across ${prompts.length} slides (one motif repeated). Vary the figure per slide; keep the palette/material language.`;
 }

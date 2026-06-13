@@ -131,6 +131,8 @@ export function flagModelGeneratedClaims(
     // bare URLs. Scanning a base64 image blob for "figures" produced thousands
     // of bogus claims; these slots never carry author-stated data anyway.
     if (/^\s*(data:|https?:\/\/)/i.test(value)) continue;
+    // Bare hex colors (ink/tint styling slots) are not figures either.
+    if (/^\s*#[0-9a-f]{3,8}\s*$/i.test(value)) continue;
     for (const m of value.match(FIGURE_TOKEN_RE) ?? []) {
       const tok = m.trim();
       if (!isSignificantFigure(tok)) continue;

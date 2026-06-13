@@ -405,6 +405,7 @@ function collectDirectiveSlots(tmpl: string): Set<string> {
     "title", "unit", "variant", "pins", "name", "note", "names",
     "callouts", "segLabels", "stripData", "stripLabel", "max", "bgSlot",
     "refLine", "refLabel", "divider", "dividerLabels", "primaryNote", "compareNote",
+    "outlineFrom", "outlineTo", "growthCallout", "growthLabel", "quadLabels",
   ]);
   let m: RegExpExecArray | null;
   while ((m = re.exec(tmpl)) !== null) {

@@ -29,12 +29,13 @@ export function composeSystemPrompt(skill: Skill, args: {
 
   const varietySection = composeVarietySection(grammar.slideTypes, args.slideCount);
 
-  const deckPlanSection = deckPlanPromptBlock(
-    planDeck({ userPrompt: args.userPrompt, slideCount: args.slideCount, skill }),
-  );
+  const plan = planDeck({ userPrompt: args.userPrompt, slideCount: args.slideCount, skill });
+  const deckPlanSection = deckPlanPromptBlock(plan);
+  const isEditorial = plan.read.presentationType === "editorial";
+  const isPitch = plan.read.presentationType === "pitch";
 
   const bgSection = bleedSlideTypes.length
-    ? backgroundArtDirection(skill, bleedSlideTypes)
+    ? backgroundArtDirection(skill, bleedSlideTypes, isEditorial)
     : "";
 
   const jsonShape = bleedSlideTypes.length
@@ -82,7 +83,7 @@ ${varietySection}
 ${densityPromptBlock()}
 ${fillFrameBlock()}
 ${contentContractBlock()}
-${bgSection}
+${isEditorial ? editorialContractBlock() : ""}${isPitch ? pitchContractBlock() : ""}${bgSection}
 GROUND-TRUTH FIDELITY (hard constraints)
 Before writing any value, decide whether it is INVENTED or GROUND-TRUTH.
 - INVENTED / abstract (layout, color, mood, a fictional brand's made-up demo numbers): compose freely; plausible is enough.
@@ -142,6 +143,47 @@ CONTENT CONTRACT (the words carry the deck)
 - BREAK PARALLEL MONOTONY. Three or more sibling items that share one grammatical skeleton ("Verb noun phrase" × 4, every item exactly one line) read as a generated checklist. Vary structure and length; let one item carry a number, another a name, another a consequence.
 - SPECIFICS OVER CATEGORIES. "Returns drop when sizing is guesswork" beats "Improved customer experience". If a line could appear in any company's deck, rewrite it with this deck's nouns.
 - THE CLOSE IS AN ASK. The closing slide names a concrete next action (verb + object + when): "Approve the pilot for Q3", not "Thank you" or "Let's talk".`;
+}
+
+/**
+ * EDITORIAL CONTRACT — the laws of the photo-led editorial register, distilled
+ * from measured professional references (photo-led progress/impact reports and
+ * magazine decks). Injected only when the deck plan reads the brief as
+ * editorial; where it conflicts with the generic guidance above, it wins.
+ * These are deck-AUTHORING laws (sequencing, pacing, copy, density); the
+ * skill-side counterpart lives in the generator prompt.
+ */
+function editorialContractBlock(): string {
+  return `
+EDITORIAL CONTRACT (photo-led editorial register — hard constraints, they override the generic guidance above where they conflict)
+- CHAPTER LOOP, not slide-by-slide variety. Run the SAME fixed chapter engine verbatim for every chapter: opener (photo, low density) → lede beat → dense support (data plates, tables) → proof beat (quote or human story) → breather. The repetition IS the system; sub-templates recur unchanged across chapters. Do not invent a new structure per chapter.
+- PHOTOGRAPHY IS THE SPINE, paced as rhythm. At least 40% of slides carry a photograph; a full-bleed photo moment lands every 2 to 3 content slides; photo sides alternate left/right between consecutive split slides. Photography supplies ALL saturated color — the UI layer stays restrained.
+- PHOTOS AND DATA NEVER SHARE A SURFACE. Data gets its own flat plate (paper or flat color) butted against the photo in a hard split. No chart, stat, or body copy ever overlays an image.
+- TEXT OVER PHOTOS: QUIET ZONES, NEVER SCRIMS. Only a display title plus chrome may sit on a photo, placed into a quiet zone the photo itself provides (sky, wall, water, shadow), ink flipped dark/light by the local luminance. No gradient overlays, no darkening washes. Body text lives on paper.
+- LEDE REPLACES LABEL. Content pages open with a multi-line statement that IS the headline; detail delegates to small-type columns. Pure label titles appear only on dividers and utility pages.
+- THE NUMBER IS THE CHART. Data is seasoning, not the spine: the dominant data form is the giant numeral plus a small caption and source, or the ruled hairline table. Axis charts at most ONE per chapter, with direct value labels, no legends, greyscale or single-accent series. Color never encodes data.
+- POSTER REGISTER, roughly 80/20. About 80% of slides wear the navigation chrome; poster moments (one stat, one quote, a full-bleed photo) DROP the furniture entirely. One idea, full screen, no header or footer — that absence encodes the slide's role.
+- SAW-TOOTH DENSITY with a real low end. Never more than 2 dense slides adjacent; 30 to 45% of the deck is deliberate breathers (photo bleeds, statements, poster stats, quotes) marked density editorial. Element budget per slide: median 7 to 10, max 16 (20 only on a utility board), and a zero-text photo breather is a legitimate slide. Emptiness is acceptable; squeezing is not.`;
+}
+
+/**
+ * PITCH CONTRACT. The laws of the investor / pitch register, distilled from
+ * measured professional pitch and investor decks (poster-statement systems:
+ * Panel, Superlist, Yuga, plus range-adders). Injected only when the deck plan
+ * reads the brief as a pitch; where it conflicts with the generic guidance
+ * above, it wins. These are deck-AUTHORING laws (statement-first structure,
+ * bimodal pacing, accent-on-money, light chrome); the skill-side counterpart
+ * lives in the generator prompt.
+ */
+function pitchContractBlock(): string {
+  return `
+PITCH CONTRACT (investor or pitch register; hard constraints, they override the generic guidance above where they conflict)
+- THE HEADLINE IS THE WHOLE SLIDE. Most content slides are ONE oversized declarative statement, not a title plus body plus bullets. Write the claim as a single sentence that stands alone on the page; support is a short caption or a few floating notes, not a bullet list. A bulleted body is the rare exception.
+- BIMODAL DENSITY, CONVICTION FRONT-LOADED. Never sit at medium. 30 to 45% of slides are 1 to 4 element posters (a statement, a one-word interstitial, a full-bleed brand moment, a single giant number) marked density editorial; the rest are deliberate data bursts. Never more than 2 dense slides adjacent. A one-element statement slide is correct and finished, not underfill.
+- ONE ACCENT, SPENT ON THE MONEY. Reserve a single accent and never tint content grounds with it. It runs loudest on the proof, traction and financials slides and stays quiet elsewhere; the deck's loudest color moment is the number that proves the business.
+- DATA IS A MONEY MOMENT, NOT A DASHBOARD. Lead with the giant numeral or a real P&L or traction burst. One series takes the accent and the rest go grey, values labelled directly on the mark, axes and legends minimal or gone. Every data slide carries its source; unsourced or placeholder numbers are not shippable.
+- LIGHT CHROME, POSTER NOT DOCUMENT. No index footer or breadcrumb. At most a one-word kicker or a faded page numeral. The deck reads as a sequence of posters, not a navigated report.
+- THE ARC CARRIES IT, NOT VOLUME. Coverage comes from the arc (problem, why-now, solution, proof, economics, ask all present and legible), never from a per-slide token count. Element budget: median 5 to 8, max 18 (20 only on a utility board), minimum 1 (a statement or interstitial). Sentence case, no tracked caps, no em-dashes.`;
 }
 
 /**
@@ -215,24 +257,31 @@ export function findBleedSlideTypes(componentsHtml: string): string[] {
 function backgroundArtDirection(
   skill: Skill,
   bleedSlideTypes: string[],
+  isEditorial = false,
 ): string {
   const styleNote = skill.imageStyle.aiPromptTemplate.replace(/\{subject\}\s*$/i, "").trim();
   const negatives = skill.imageStyle.aiNegativePrompt.filter(Boolean).join(", ");
   const palette = skill.frontmatter.color_kit ?? "";
+
+  // Editorial decks are carried by documentary photography (quiet zones, no
+  // scrims); everything else gets the painterly/gradient default.
+  const medium = isEditorial
+    ? `- Documentary photography, not illustration: a real place, material, or person at work in this deck's world. Compose a built-in QUIET ZONE (sky, wall, water, shadow) where display type can sit legibly; never rely on a darkening overlay for legibility.`
+    : `- Painterly / watercolor / soft-edge gradient — not photographic, not vector-flat, not neon.`;
 
   return `
 BACKGROUND ART DIRECTION (full-bleed slides only)
 Slides whose type is one of [${bleedSlideTypes.join(", ")}] MUST include a "bgPrompt" field at the slide-tree top level (sibling to "slots", not inside it). The engine renders this prompt through FAL.ai and inlines the resulting image as the slide background; never inline raw image URLs.
 
 Required bgPrompt qualities:
+- DISTINCT FIGURES, ONE LANGUAGE. Every background or hero image in a deck must depict a DIFFERENT subject, a different object, scene, or composition, never the same motif re-rendered with new words. Hold ONE visual language across all of them (the same palette, material, finish, lighting and mood, taken from the style/moodboard), but change the FIGURE every time. Tie each image's subject to that slide's own content (a "scale/fleet" slide can show many of something; a "growth/ramp" slide something rising; a "product" slide the product itself). The moodboard or style reference fixes the PALETTE and material only, it is NOT an object to clone onto every slide. If two images would share the same subject noun, change one.
 - Asymmetric composition. Off-center blooms, no horizontal banding, no symmetrical mirror layouts.
-- Painterly / watercolor / soft-edge gradient — not photographic, not vector-flat, not neon.
+${medium}
 - Color stays inside the skill palette (${palette}). ${styleNote ? `Style anchor: "${styleNote}".` : ""}
 - Concept-tied to the slide content (a launch, a question, a chapter shift) — not generic decoration.
 - 30–${MAX_BG_PROMPT_CHARS} characters, single paragraph, no quotes inside.
 ${negatives ? `- NEVER use: ${negatives}.` : ""}
 - No brand names, no logos, no copyrighted artworks, no proper-noun artists.
-- Vary across the deck: same preset should not yield the same gradient twice.
 
 For non-bleed slide types, omit bgPrompt entirely.
 `;

@@ -624,7 +624,19 @@ function renderBarChart(
   const F = (n: number) => Math.round(n * fScale * 2) / 2;
   const hOverride = Number(args.height ?? "");
   const hBase = Number.isFinite(hOverride) && hOverride >= 360 && hOverride <= 760 ? hOverride : 440;
-  const w = 920, h = hBase + (hasStrip ? 28 : 0);
+  // Fill-encodes time direction (opt-in): bars at index >= outlineFrom (or
+  // < outlineTo) render as outlines — forecast vs actual, prior vs current.
+  const outlineFromRaw = args.outlineFrom ? resolveSlotOrLiteral(args.outlineFrom, slots).trim() : "";
+  const outlineFrom = outlineFromRaw ? Number(outlineFromRaw) : NaN;
+  const outlineToRaw = args.outlineTo ? resolveSlotOrLiteral(args.outlineTo, slots).trim() : "";
+  const outlineTo = outlineToRaw ? Number(outlineToRaw) : NaN;
+  // growthCallout="i:j" draws a dotted leader lane between two bar tops and
+  // announces the delta as the biggest type on the chart; growthLabel=<slot>
+  // overrides the computed percentage.
+  const gcRaw = args.growthCallout ? resolveSlotOrLiteral(args.growthCallout, slots).trim() : "";
+  const gcMatch = /^(\d+)\s*:\s*(\d+)$/.exec(gcRaw);
+  const gcPad = gcMatch ? 64 : 0;
+  const w = 920, h = hBase + (hasStrip ? 28 : 0) + gcPad;
   const refRaw = args.refLine ? resolveSlotOrLiteral(args.refLine, slots).trim() : "";
   const refVal = refRaw ? Number(refRaw) : NaN;
   let max = Math.max(...data, 0);
@@ -645,7 +657,7 @@ function renderBarChart(
 
   const accent = args.accent ?? "#FF6A13";
   const base = args.base ?? "#1F3A5F";
-  const muted = "#B8C0CC";
+  const muted = args.muted ?? "#B8C0CC";
   const ink = args.ink ?? base;
 
   const unit = resolveSlotOrLiteral(args.unit, slots);
@@ -654,7 +666,7 @@ function renderBarChart(
   const padL = hasAxis
     ? Math.max(56, 16 + Math.max(0, ...tickStrs.map((s) => s.length)) * F(13) * 0.66)
     : 56;
-  const padR = 16, padT = 48, padB = 104 + (hasStrip ? 28 : 0);
+  const padR = 16, padT = 48 + gcPad, padB = 104 + (hasStrip ? 28 : 0);
   const chartW = w - padL - padR;
   const chartH = h - padT - padB;
   const barW = (chartW / data.length) * 0.62;
@@ -708,12 +720,43 @@ function renderBarChart(
     const barH = (Math.abs(v) / range) * chartH;
     const y = v >= 0 ? zeroY - barH : zeroY;
     const fill = i === highlight ? accent : base;
-    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${fill}"/>`;
+    const isOutline =
+      (Number.isFinite(outlineFrom) && i >= outlineFrom) ||
+      (Number.isFinite(outlineTo) && i < outlineTo);
+    if (isOutline) {
+      bars += `<rect x="${(x + 1).toFixed(1)}" y="${(y + 1).toFixed(1)}" width="${(barW - 2).toFixed(1)}" height="${Math.max(barH - 2, 1).toFixed(1)}" fill="none" stroke="${fill}" stroke-width="2"/>`;
+    } else {
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${fill}"/>`;
+    }
     bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 10).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${valueFs}" fill="${ink}" text-anchor="middle" font-weight="700">${escapeHtml(formatNum(v, unit, false, dec))}</text>`;
     if (labels[i] && (i % labelStep === 0 || i === data.length - 1)) {
       bars += renderWrappedLabel(labels[i], x + barW / 2, padT + chartH + 28, (barW + gap * 0.85) * labelStep, muted, labelFs);
     }
   });
+  let growthSvg = "";
+  if (gcMatch) {
+    const gi = Math.min(Number(gcMatch[1]), data.length - 1);
+    const gj = Math.min(Number(gcMatch[2]), data.length - 1);
+    const topY = (idx: number) => {
+      const v = data[idx];
+      const barH = (Math.abs(v) / range) * chartH;
+      return v >= 0 ? zeroY - barH : zeroY;
+    };
+    const xi = padL + gap / 2 + gi * (barW + gap) + barW / 2;
+    const xj = padL + gap / 2 + gj * (barW + gap) + barW / 2;
+    const yi = topY(gi) - valueFs - 18;
+    const yj = topY(gj) - valueFs - 18;
+    const laneY = Math.min(yi, yj) - 26;
+    growthSvg += `<polyline points="${xi.toFixed(1)},${yi.toFixed(1)} ${xi.toFixed(1)},${laneY.toFixed(1)} ${xj.toFixed(1)},${laneY.toFixed(1)} ${xj.toFixed(1)},${yj.toFixed(1)}" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="2 5"/>`;
+    const gLabel = args.growthLabel ? resolveSlotOrLiteral(args.growthLabel, slots) : "";
+    const a = data[gi], b = data[gj];
+    const text =
+      gLabel ||
+      (a !== 0 ? `${b >= a ? "+" : ""}${Math.round(((b - a) / Math.abs(a)) * 100)}%` : "");
+    if (text) {
+      growthSvg += `<text x="${((xi + xj) / 2).toFixed(1)}" y="${(laneY - 12).toFixed(1)}" text-anchor="middle" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="${F(38)}" fill="${accent}" font-weight="600" letter-spacing="-0.01em">${escapeHtml(text)}</text>`;
+    }
+  }
 
   // zero baseline carries the chart — strong, not a hairline
   const axis = `<line x1="${padL}" x2="${w - padR}" y1="${zeroY}" y2="${zeroY}" stroke="${ink}" stroke-width="2"/>`;
@@ -735,7 +778,7 @@ function renderBarChart(
   }
   const note = renderChartNote(args, slots, w - padR, 24, accent);
 
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${axisSvg}${dividerSvg}${axis}${bars}${refSvg}${strip}${note}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;">${axisSvg}${dividerSvg}${axis}${bars}${growthSvg}${refSvg}${strip}${note}</svg>`;
 }
 
 /**
@@ -772,7 +815,7 @@ function renderHBarChart(
   const max = Math.max(...data, 0);
   const accent = args.accent ?? "#FF6A13";
   const base = args.base ?? "#1F3A5F";
-  const muted = "#B8C0CC";
+  const muted = args.muted ?? "#B8C0CC";
   const ink = args.ink ?? base;
 
   let rows = "";
@@ -829,7 +872,7 @@ function renderWaterfallChart(
   const accent = args.accent ?? "#FF6A13";
   const pos = args.posColor ?? "#1F5AC7";
   const neg = args.negColor ?? "#C8102E";
-  const muted = "#B8C0CC";
+  const muted = args.muted ?? "#B8C0CC";
   const ink = "#1A1A1A";
   const unit = resolveSlotOrLiteral(args.unit, slots);
   const dec = maxDecimals(slots[args.data] ?? "");
@@ -992,7 +1035,7 @@ function renderLineChart(
 
   const accent = args.accent ?? "#FF6A13";
   const base = args.base ?? "#1F3A5F";
-  const muted = "#B8C0CC";
+  const muted = args.muted ?? "#B8C0CC";
   const ink = args.ink ?? base;
 
   const points = data.map((v, i) => {
@@ -1184,7 +1227,7 @@ function renderDots2x2(
   const chartH = h - padT - padB;
   const accent = args.accent ?? "#FF6A13";
   const base = args.base ?? "#1F3A5F";
-  const muted = "#B8C0CC";
+  const muted = args.muted ?? "#B8C0CC";
   const ink = args.ink ?? base;
   // axes assume 0..100 normalized
   let svg = "";
@@ -1194,6 +1237,23 @@ function renderDots2x2(
   // axis labels
   svg += `<text x="${padL + chartW / 2}" y="${h - 16}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="12" fill="${muted}" text-anchor="middle" letter-spacing="0.04em">${escapeHtml(xLabel)}</text>`;
   svg += `<text transform="rotate(-90 24 ${padT + chartH / 2})" x="24" y="${padT + chartH / 2}" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="12" fill="${muted}" text-anchor="middle" letter-spacing="0.04em">${escapeHtml(yLabel)}</text>`;
+  // Opt-in quadrant anchors: quadLabels="TL|TR|BL|BR" names the four fields
+  // in the corners so the matrix reads without decoding the axes first.
+  const quadRaw = args.quadLabels ? resolveSlotOrLiteral(args.quadLabels, slots) : "";
+  if (quadRaw) {
+    const q = quadRaw.split("|").map((s) => s.trim());
+    const qPos: Array<[number, number, string]> = [
+      [padL + 14, padT + 24, "start"],
+      [padL + chartW - 14, padT + 24, "end"],
+      [padL + 14, padT + chartH - 14, "start"],
+      [padL + chartW - 14, padT + chartH - 14, "end"],
+    ];
+    q.slice(0, 4).forEach((label, i) => {
+      if (!label) return;
+      const [qx, qy, anchor] = qPos[i];
+      svg += `<text x="${qx}" y="${qy}" text-anchor="${anchor}" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="13" fill="${muted}" font-weight="600">${escapeHtml(label)}</text>`;
+    });
+  }
   for (const p of points) {
     const cx = padL + (p.x / 100) * chartW;
     const cy = padT + ((100 - p.y) / 100) * chartH;

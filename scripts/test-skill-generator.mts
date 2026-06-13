@@ -49,8 +49,25 @@ const checks: Array<[string, boolean]> = [
   ["names tokens.json shape", prompt.includes('"page": { "ratio": "16:9"')],
   ["names 6 files in RESPONSE FORMAT", prompt.includes("SKILL.md") && prompt.includes("components.html") && prompt.includes("image-style.md") && prompt.includes("chrome.css")],
   ["names validator constraints", prompt.includes("VALIDATOR CONSTRAINTS")],
+  ["exposes reference structure (slide types)", /structure \(\d+ slide types\):/.test(prompt)],
+  ["instructs divergence from references", prompt.includes("DIVERGE FROM THE REFERENCES")],
 ];
 for (const [name, ok] of checks) console.log(ok ? "✓" : "✗", name);
+
+// 2b. Register-specific skill-requirement blocks are injected by brief inference
+const pitchBrief: StyleBrief = { kind: "inspiration", value: "an investor pitch deck to raise a Series B" };
+const pitchPrompt = composeGeneratorPrompt(pitchBrief, refs, slugForBrief(pitchBrief));
+const edBrief: StyleBrief = { kind: "inspiration", value: "a photo-led impact report for an ocean nonprofit" };
+const edPrompt = composeGeneratorPrompt(edBrief, refs, slugForBrief(edBrief));
+const regChecks: Array<[string, boolean]> = [
+  ["pitch brief injects PITCH SKILL REQUIREMENTS", /PITCH SKILL REQUIREMENTS/.test(pitchPrompt)],
+  ["pitch block forbids a fixed skeleton and names spine families", /spine family/.test(pitchPrompt) && /do not reach for a fixed pitch skeleton/i.test(pitchPrompt)],
+  ["pitch brief omits the editorial block", !/EDITORIAL SKILL REQUIREMENTS/.test(pitchPrompt)],
+  ["editorial brief injects EDITORIAL SKILL REQUIREMENTS", /EDITORIAL SKILL REQUIREMENTS/.test(edPrompt)],
+  ["editorial brief omits the pitch block", !/PITCH SKILL REQUIREMENTS/.test(edPrompt)],
+  ["neutral brief omits both register blocks", !/PITCH SKILL REQUIREMENTS/.test(prompt) && !/EDITORIAL SKILL REQUIREMENTS/.test(prompt)],
+];
+for (const [name, ok] of regChecks) console.log(ok ? "✓" : "✗", name);
 
 // ─────────────────────────────────────────────────────────────────────────
 // 3. End-to-end with a "frozen LLM" — replays the apple-headspace files we

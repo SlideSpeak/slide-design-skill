@@ -55,7 +55,7 @@ const TYPE_SIGNALS: Record<Exclude<PresentationType, "general">, string[]> = {
   pitch: ["pitch", "raise", "investor", "fundrais", "seed round", "series a", "series b", "vc", "venture", "cap table", "valuation"],
   report: ["report", "results", "findings", "analysis", "quarterly", "annual review", "earnings", "kpi", "metrics review", "audit", "study"],
   teaching: ["training", "workshop", "onboarding", "lesson", "course", "tutorial", "curriculum", "teach", "lecture", "how to"],
-  editorial: ["story", "essay", "editorial", "magazine", "manifesto", "narrative", "brand story", "feature piece"],
+  editorial: ["story", "essay", "editorial", "magazine", "manifesto", "narrative", "brand story", "feature piece", "impact report", "progress report", "photo-led", "photo-driven", "photo essay", "documentary", "lookbook"],
   keynote: ["keynote", "launch", "announce", "unveil", "vision", "reveal", "product launch"],
 };
 
@@ -70,7 +70,10 @@ function hits(haystack: string, needles: string[]): number {
   let n = 0;
   for (const needle of needles) {
     const re = new RegExp(`(?:^|[^a-z0-9])${escapeRe(needle.toLowerCase())}(?:[^a-z0-9]|$)`, "i");
-    if (re.test(haystack)) n++;
+    // A multi-word phrase is a more specific signal than a single word, and it
+    // often CONTAINS a competing single-word signal ("impact report" carries
+    // "report") — weight phrases double so the specific reading wins the tie.
+    if (re.test(haystack)) n += needle.includes(" ") ? 2 : 1;
   }
   return n;
 }
@@ -79,7 +82,7 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function inferPresentationType(text: string): PresentationType {
+export function inferPresentationType(text: string): PresentationType {
   let best: PresentationType = "general";
   let bestScore = 0;
   for (const [type, signals] of Object.entries(TYPE_SIGNALS) as [Exclude<PresentationType, "general">, string[]][]) {
@@ -207,7 +210,7 @@ const ARC_GUIDANCE: Record<PresentationType, string> = {
   pitch: "problem → why now → solution → proof it works → business/economics → the ask",
   report: "answer first (the conclusion up front) → evidence → implications → recommended next steps",
   teaching: "why this matters → core concept → worked example → practice/application → recap",
-  editorial: "hook → tension → development → the turn → resolution",
+  editorial: "front matter (cover → opening statement → chapter TOC) → then ONE fixed chapter loop repeated verbatim per chapter (photo opener → lede beat → dense support plates → proof beat: quote or human story → breather) → notes/closing. The loop's repetition IS the system; never invent a new structure per chapter",
   keynote: "status quo → the shift underway → vision → what we built → proof → call to action",
   general: "opening claim → why it matters now → the core idea → support → action",
 };

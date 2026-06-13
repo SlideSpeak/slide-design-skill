@@ -48,6 +48,48 @@ An approved board outranks the banned-default-palette rule (the client chose it)
 A concrete image to translate produces visibly more coherent styles than
 adjectives (veta A/B, 2026-06).
 
+**The moodboard conditions PALETTE / material / lighting only, it is NOT an
+object to clone onto every slide.** Hero / background images are generated fresh
+PER SLIDE as DISTINCT subjects (one visual language, a different figure each
+time, tied to that slide's content). Reserve single-reference nano-banana
+anchoring (`FAL_REF_IMAGE`) for reproducing an actual brand/product reference
+image, NOT for a deck's varied hero imagery: feeding one reference image as the
+anchor collapses every generated image to that one object (the "all the images
+look the same" failure). The `image-subject-monotony` quality-lint rule
+(engine/quality-lint.ts) is the mechanical backstop that catches a deck whose
+bgPrompts redraw one motif.
+
+## Rendered decks go to two Desktop homes — versioned, never scattered
+
+Do NOT create new date-named or one-off folders on the Desktop. Every render lands in
+one of two homes, by what it is:
+
+- **`~/Desktop/Main Templates/<Direction>/`** — anything tied to one of the 5 flagship
+  directions (`1 Dense Data`, `2 Editorial`, `3 Pitch`, `4 Teaching`, `5 Keynote`).
+  ALL of a direction's work lives inside its own folder: every deck AND every
+  reference. NEVER split a direction's decks or references out into Test Output.
+- **`~/Desktop/Test Output/`** — ONLY decks that belong to no direction: genuine
+  one-off experiments and proofs (Kanagi, Graphic-Layer, Niels-Wave, …).
+
+A direction can hold MORE THAN ONE deck (Pitch holds Kelvin and Vitala), so decks are
+named subfolders, not loose `Vn/`. Shape:
+
+    <Direction>/
+      _reference/          shared direction research: measurements/, the spec,
+                           anchor-pick/, moodboards/<deck-or-set>/, decks/ (JSON records)
+      <DeckName>/          one folder per deck (Kelvin, Vitala, …)
+        V1/  V2/  V3.1/    each iteration a new Vn/, rendered output only
+
+- **Each iteration is a new `Vn/` folder**: `V1`, `V2`, `V3` for full passes,
+  `V3.1`/`V3.2` for small patches. Never overwrite an old version.
+- A second look for a direction is a NEW deck subfolder (`<Direction>/<NewDeck>/V1/`),
+  never a Test Output dump. Two decks in one direction MUST diverge in STRUCTURE
+  (spine family + slide-type set + a signature structural move), not just skin — a
+  re-skin of the same skeleton is the failure this convention exists to prevent.
+- Inputs (briefs, moodboards, source PDFs, deck JSON) go under the direction's
+  `_reference/`, never loose in a `Vn/`.
+- Before rendering, check existing `Vn/` and write the next number.
+
 ## Engine notes (internal only — never recited to the user)
 
 - Style intake: `resolveStyleInput` (engine/style-intake.ts) → StyleBrief. Default

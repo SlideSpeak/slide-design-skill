@@ -53,7 +53,7 @@ export interface DeckPlan {
 // Keyword signals per presentation type. Word-boundary, case-insensitive.
 const TYPE_SIGNALS: Record<Exclude<PresentationType, "general">, string[]> = {
   pitch: ["pitch", "raise", "investor", "fundrais", "seed round", "series a", "series b", "vc", "venture", "cap table", "valuation"],
-  report: ["report", "results", "findings", "analysis", "quarterly", "annual review", "earnings", "kpi", "metrics review", "audit", "study"],
+  report: ["report", "results", "findings", "analysis", "quarterly", "annual review", "earnings", "kpi", "metrics review", "audit", "study", "consulting", "strategy", "due diligence", "business case", "market entry", "market sizing", "cost reduction", "operating model", "deep dive", "diagnostic", "benchmark", "data-dense", "dense data"],
   teaching: ["training", "workshop", "onboarding", "lesson", "course", "tutorial", "curriculum", "teach", "lecture", "how to"],
   editorial: ["story", "essay", "editorial", "magazine", "manifesto", "narrative", "brand story", "feature piece", "impact report", "progress report", "photo-led", "photo-driven", "photo essay", "documentary", "lookbook"],
   keynote: ["keynote", "launch", "announce", "unveil", "vision", "reveal", "product launch", "ted talk", "mainstage", "main stage", "stage talk", "commencement address", "on stage"],

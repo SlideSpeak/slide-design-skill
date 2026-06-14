@@ -139,6 +139,7 @@ export function composeGeneratorPrompt(
   const pitchBlock = presentationType === "pitch" ? pitchSkillRequirements() : "";
   const teachingBlock = presentationType === "teaching" ? teachingSkillRequirements() : "";
   const keynoteBlock = presentationType === "keynote" ? keynoteSkillRequirements() : "";
+  const reportBlock = presentationType === "report" ? reportSkillRequirements() : "";
 
   return `You are the skill-generator for SlideSpeak. Your job: produce a 6-file slide-design skill package for the engine. The engine renders any deck the LLM later generates using these files.
 
@@ -272,7 +273,7 @@ Make these choices FROM THE BRIEF. A warm consumer brand, a brutalist editorial 
 Document the system in SKILL.md (a "## Graphic system" section: what the mark is, where each device appears, what it never does). Deployment is a budget, like the accent: the SAME devices in the SAME places on every slide — never a different trick per slide.
 BANNED as graphic assets (this would be the new slop): random blobs, squiggles, Memphis confetti, sprinkled geometric shapes, corner swooshes, "network node" meshes, generic dotted world maps, clip-art arrows, abstract circles orbiting a headline. If a shape is not derived from the brand's world and deployed with discipline, it does not belong.
 
-${editorialBlock}${pitchBlock}${teachingBlock}${keynoteBlock}HARD RULES — these read as machine-made; they are non-negotiable across ALL files
+${editorialBlock}${pitchBlock}${teachingBlock}${keynoteBlock}${reportBlock}HARD RULES — these read as machine-made; they are non-negotiable across ALL files
 - NO uppercase-set labels. Never \`text-transform: uppercase\`, never letter-spaced all-caps eyebrows/kickers. Labels are sentence case at normal tracking. (The loader strips uppercase typography defensively, but emitting it is a failure.)
 - NO accent line / colored bar / colored border pinned to a card EDGE (no \`border-top: 3px solid <accent>\` on a card, no left-edge accent stripe). A colored rule on the lip of a card is the loudest AI tell there is. Carry accent through a number, an icon, a filled chip, or a single tinted surface instead — never the card's edge.
 - NO em-dashes (—) anywhere in copy, SKILL.md prose, or example text. Use a comma, a period, or "to" for ranges. Hyphens in compound words are fine.
@@ -412,6 +413,32 @@ function keynoteSkillRequirements(): string {
 - BAKE THE LOCKED GRADE INTO EVERY BGPROMPT, not just the prose. image-style.md must define the grade as a fixed suffix clause (one light direction, one colour grade, one lens/mood) that is appended to EVERY slide's bgPrompt, so no body slide silently drops it and renders cold/off-palette. State the suffix verbatim and instruct that every bgPrompt ends with it.
 - LOCK A HERO PRODUCT/SUBJECT ACROSS ITS SLIDES (launch especially). If the deck has a recurring hero object (a product), its bgPrompt must carry an IDENTICAL, specific description of that object on the cover, the reveal and every feature beat, so the image model renders the SAME object every time (only the scene/light around it varies). Product-identity drift — the cover showing a different machine than the reveal — destroys a launch, because the reveal IS the payoff.
 - VARY THE COMPOSITION; CAP TEMPLATE REUSE. A signature device should repeat, but not as three identical frames. No single composition (a split-panel doc, a number poster, a contrast pair) may appear more than ~twice per deck, and never two paragraph-dense "support" slides back to back; vary scale/crop within a repeated family so the deck builds an energy gradient toward the peak instead of flattening into plateaus.
+
+`;
+}
+
+/**
+ * REPORT SKILL REQUIREMENTS. The skill-side counterpart to the deck-time report
+ * contract (prompt-composer). Appended to the generator prompt when the brief
+ * reads as a dense-data / consulting / analytical report. Distilled from
+ * measured professional references (a McKinsey engagement deck, IBM's light
+ * report system, Palantir's two-value monochrome financial system, Freitag's
+ * technical-worksheet system); the skill must implement the data SYSTEM (boxed
+ * exhibits, labelled data, repeated chrome, scheduled breathers, semantic
+ * single-colour, ledger prose, numeric consistency), not just a corporate palette.
+ */
+function reportSkillRequirements(): string {
+  return `REPORT SKILL REQUIREMENTS (this brief reads as a dense-data / consulting / analytical report; the skill must implement the data SYSTEM, not just a corporate palette)
+- COMMIT TO ONE DATA SPINE FAMILY and let it shape the slide-type set. Pick ONE and build its structure: light analytical report (one emphasis colour on near-white, boxed exhibits with header bands, the two-panel exhibit+drivers default, numbered footnotes plus a SOURCE bar, a contents tracker, inline-emphasis ledgers), dark two-value monochrome financial (a near-black / charcoal ground with one light value, an outline-past / filled-present bar encoding, oversized plus-minus-percent callouts on dotted leaders, banded divider cards, ZERO data accent — fill-vs-outline and size do all the work), or technical-worksheet (a rulered blueprint world, a fixed series-colour order where palette position IS the legend, a visible styled grid with designed empty cells, mono for ALL numbers with slashed zeros). Two report skills must NOT share a spine family or slide-type set; no mashup, at most one borrowed device.
+- THE BOXED EXHIBIT IS A FIRST-CLASS TYPE. Provide an exhibit type with a header band (title plus a unit line) over the chart, and a two-panel variant pairing the exhibit (~60-65%) with a boxed drivers / implications side panel that shares the header treatment. Support causal annotation callouts (a white box with a leader pointing at the data). The chart never floats naked — that boxed framing is the register's signature surface.
+- LABELLED-DATA CHART DISCIPLINE, WITH REAL SCAFFOLDING. {{@chart}} usage must direct-label values on the mark, suppress legends and gridlines, and declare units once in the band or caption. Provide the dense chart types this register needs (a stacked bar with inside-segment values and a forecast / actual divider, a waterfall with bridge connectors and labelled deltas, a 2x2 with quadrant labels and axis-endpoint anchors). A chart whose scaffolding is missing fails the gate; a chart that needs gridlines has too many marks. NEVER fabricate a series to manufacture an exhibit.
+- BUILD THE CHROME ONCE, AS A DECK-WIDE SYSTEM. A running section kicker, a single contents / tracker type (a vertical colour band with the current section highlighted), numbered footnotes, a full-width SOURCE band, and a page numeral are identical on every content type and survive ground swaps. This persistent navigation IS the register (the inverse of a pitch's deleted chrome); design it once and never let it bend on a dark slide.
+- A LEDGER TYPE FOR QUALITATIVE PROSE. Provide a two-column ledger (numbered circle badges per row, dashed row separators, a small functional chip or icon per row, and inline emphasis colouring only the load-bearing phrase). This is how the register carries prose without becoming a text wall — reach for it instead of a bullet column.
+- NUMBERS-AS-EVENT BREATHERS, SCHEDULED. Provide a big-stat breather type (one display numeral at 5 to 10x body, plus a caption and a prior-year / trend / source context line) used to open topics and pace the deck. Breathers carry content, never a repeated tracker; the grammar must treat a no-more-than-7-element breather as a finished slide, and support a 9-13-element dense exhibit page whose furniture is internalised (no half-empty driver panels — panels top-align and fill).
+- ONE COLOUR FAMILY, SEMANTIC, NO MOOD. tokens.json plus SKILL.md colour rules state one family doing title / emphasis / data / surface OR a fixed series order that is itself the legend; accents never tint grounds or whole text blocks; emphasis may run inline on the load-bearing phrase. No gradients on data surfaces, no decorative tints, no stock-photo moods.
+- ROW ANATOMY BY ROLE. A finding row, a decision row and a commitment row must each have their own anatomy and read differently at a glance — never the same number-plus-sentence row reused for all three. The exec summary, the ledger and the action page are distinct constructs.
+- DATA IS THE SPINE; IMAGERY IS RARE AND FUNCTIONAL. This is the least image-led register. Do not build a photo rhythm; reserve imagery for a small functional row anchor or a single sober section image, and let the charts, the numerals and the drawn analytical devices carry the deck. The signature graphics are drawn line-art / diagram / chart-encoding / divider anatomy derived from the analytical world and deployed with discipline — never blobs, icon parades, or decorative shapes. No rounded-corner card parade, no shadow-and-gradient decoration: this register earns its authority from labelled density and a calm, repeated skeleton.
+- ELEMENT BUDGET IS BIMODAL. Median 7-10, max 15-18 on a dense exhibit board, minimum 4 on a breather. Sentence case, square or en-dash bullets, no tracked caps, no em-dashes.
 
 `;
 }

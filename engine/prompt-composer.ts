@@ -35,6 +35,7 @@ export function composeSystemPrompt(skill: Skill, args: {
   const isPitch = plan.read.presentationType === "pitch";
   const isTeaching = plan.read.presentationType === "teaching";
   const isKeynote = plan.read.presentationType === "keynote";
+  const isReport = plan.read.presentationType === "report";
 
   const bgSection = bleedSlideTypes.length
     ? backgroundArtDirection(skill, bleedSlideTypes, isEditorial)
@@ -85,7 +86,7 @@ ${varietySection}
 ${densityPromptBlock()}
 ${fillFrameBlock()}
 ${contentContractBlock()}
-${isEditorial ? editorialContractBlock() : ""}${isPitch ? pitchContractBlock() : ""}${isTeaching ? teachingContractBlock() : ""}${isKeynote ? keynoteContractBlock() : ""}${bgSection}
+${isEditorial ? editorialContractBlock() : ""}${isPitch ? pitchContractBlock() : ""}${isTeaching ? teachingContractBlock() : ""}${isKeynote ? keynoteContractBlock() : ""}${isReport ? reportContractBlock() : ""}${bgSection}
 GROUND-TRUTH FIDELITY (hard constraints)
 Before writing any value, decide whether it is INVENTED or GROUND-TRUTH.
 - INVENTED / abstract (layout, color, mood, a fictional brand's made-up demo numbers): compose freely; plausible is enough.
@@ -244,6 +245,37 @@ KEYNOTE CONTRACT (big-stage spoken talk — product launch / vision mainstage / 
 - THE PEAK MUST ACTUALLY PEAK (crescendo is measurable, not asserted). The reveal / the STAR number / the turn is the single LOUDEST slide of the deck, and it must out-shout the cover, the act-break interstitials, the price and the CTA — those set up or pay off the peak, they never out-shout it. But loudness has TWO forms, and you must pick the right one: a TYPE-LED peak (a STAR number, a turn line, a manifesto statement) carries its loudness in the type — make it the single largest display token, fit-to-frame so even a long string dominates the setup. An IMAGE-LED peak (a product reveal, a hero unveiling) carries its loudness in the IMAGE — the product is the brightest, highest-contrast, full-frame hero of the whole deck, and the name is a confident LABEL, never frame-filling text. Do NOT bury the product under a giant headline: on a product reveal the machine is the payoff and must be the thing the eye lands on; a name so large it covers the hero is the over-correction failure (just as a hero that dissolves into the dark is the under-lit failure). The peak slide must read, at a glance, as the most dramatic moment — by type if type-led, by the lit hero if image-led.
 - THE BUILD IS PROGRESSIVE DISCLOSURE, NEVER A LIST OR A TABLE. A build discloses ONE element at a time across 2 to 3 CONSECUTIVE slides on one held frame (the live element lit, prior ones dimmed or absent) — it is NOT a single slide stacking three rows. And the whole register forbids the document families outright: no ranked spec table (numbered rows with right-aligned values), no bulleted/dotted list, no multi-column roadmap, no two-column prose comparison. A spec or an availability fact is ONE staged line per beat, not a sidebar of value/label rows; a contrast is two beats (what-is, then what-could-be) or one line with an accent word, not two paragraphs side by side. If a slide reads as a datasheet, a bullet list, or a two-column doc, it has left the register.
 - COMPOSE THE SILENCE, FOR REAL — no corner-parking, no dead bands, no mark colliding with type. A single word, a giant number or a statement must be the optical anchor of the FIELD: centred, or scaled to fill, or anchored by a deliberate counter-element. Never left-park a word with the opposite 60% of the frame an empty void, and never float a number at the bottom under a dead empty band — that is the "ran out of content" tell, not staged silence. A decorative signature mark (a rule, a dot, a tick) must live in a guaranteed clear zone; it must NEVER land between or over the lines of monumental type, where it reads as a stray glyph or a typo.`;
+}
+
+/**
+ * REPORT CONTRACT. The laws of the dense-data / consulting / analytical-report
+ * register, distilled from measured professional references (a McKinsey
+ * engagement deck, IBM's light blue-accent report system, Palantir's two-value
+ * monochrome financial system, Freitag's technical-worksheet system). Injected
+ * only when the deck plan reads the brief as a report; where it conflicts with
+ * the generic guidance above, it wins. These are deck-AUTHORING laws (action
+ * titles, boxed exhibits, labelled data, repeated chrome, scheduled breathers,
+ * semantic single-colour, numeric consistency, decision close); the skill-side
+ * counterpart lives in the generator prompt. Its nearest neighbours are pitch
+ * (also number-forward) and editorial (also chaptered), but the divergence is
+ * deliberate: a report PROVES with labelled density and a calm repeated
+ * skeleton, it does not perform (keynote) or pitch conviction — the authority
+ * comes from the exhibit and the source line, not from scale and silence.
+ */
+function reportContractBlock(): string {
+  return `
+REPORT CONTRACT (dense-data / consulting / analytical-report register; hard constraints, they override the generic guidance above where they conflict)
+- THE ACTION TITLE IS THE STORYLINE. Every content page's title is a full-sentence claim with a verb ("Heat-pump demand outpaces supply through 2027"), never a topic label ("Market overview"). Reading the titles in sequence must reproduce the whole argument without opening a single exhibit. A title may continue onto the next page with a literal trailing ellipsis. This is the consulting deck's defining contract.
+- THE EXHIBIT CARRIES THE DENSITY; THE PAGE STAYS CALM. Data lives in a BOXED exhibit with a header band (exhibit title plus a unit line, e.g. "$ billions") — the chart never floats naked on the page. The default content page is two-panel: exhibit on roughly 60-65%, a boxed side panel (drivers / implications / comments) on the rest, same header treatment. A single exhibit may carry 60 labels at readable size while the page skeleton (kicker, title, source, page number) stays perfectly calm. Density belongs INSIDE the exhibit, never in added boxes around it.
+- LABEL THE DATA, DELETE THE SCAFFOLDING. Every bar, segment and point carries its own value (white numerals inside stacked segments, bold totals above bars, labels at line endpoints). Axes shrink to a few gray ticks or vanish; there are no gridline forests — if a chart needs gridlines to be read, it has too many marks. Units are declared ONCE, in the header band or caption, never repeated on the axis. Causal annotations sit ON the chart in white callout boxes with a leader pointing at the data ("No rate increase 2003-2006").
+- BUILD THE CHROME ONCE, REPEAT IT VERBATIM. A fixed grid, a hang line, a header device (a running section kicker), numbered footnotes, a full-width SOURCE band, and a page numeral appear identically on every content page — and they SURVIVE GROUND SWAPS: the furniture does not move, drop, or recolour on a dark or spotlight slide. Density varies page to page; the furniture never does.
+- SCHEDULE THE BREATHERS, AND MAKE THEM CARRY CONTENT. Density is bimodal: a topic opens with a one-stat breather (no more than 7 elements) before its one-to-three dense pages (9-13 elements), with a divider or exhale every five to six slides; almost nothing sits at comfortably-medium. But a breather carries ONE real number plus signature art, not a repeated table of contents — keep a SINGLE contents/tracker page and replace mid-deck tracker repeats with a slim progress device, so navigation never eats more than a few percent of the deck.
+- ONE COLOUR FAMILY, USED SEMANTICALLY. A single colour family does everything (ink for titles, a mid tone for emphasis and the hero data series, a light tint for surfaces and header bands), OR a fixed series order where the palette order itself IS the legend (series #1 is always the same colour). The accent never tints content grounds or whole text blocks; emphasis may run INLINE, colouring only the load-bearing phrase in a sentence while the rest stays ink. Colour is meaning, never mood — no gradients, no decorative tints.
+- THE NUMBER IS A TYPOGRAPHIC EVENT, NEVER BARE. A display statistic runs 5 to 10x body size, and it ALWAYS ships with context: a caption, a prior-year value, a trend marker, or a figure number. A giant number floating with no caption, source or comparison is incomplete. Every page that presents a figure as real carries a SOURCE line; soft data is stamped "Illustrative" or "Preliminary"; forecast and actual are shown together; scenarios and cuts are labelled with a corner context chip.
+- NUMERIC CONSISTENCY IS A GATE, NOT A NICETY. No empty cells in a table whose so-what argues from those very rows; columns are sanity-checked against each other (no value an order of magnitude off scale); the titles-only read is self-consistent end to end (if the contents promises four routes, the deck shows four, not six). A figure named in the takeaway must actually appear on the slide. A plausible-but-wrong number is the worst failure of this register.
+- FILL THE PANEL INTERIOR, NOT JUST THE PAGE. A driver / implications / commentary panel TOP-ALIGNS and fills its box; never vertically-centre a few bullets under the header bar and leave 30-45% of the panel dead (the CELL-UNDERFILL tell). A dense page is really dense (furniture internalised), a breather is really a breather (no more than 7 elements) — nothing is a crowded skeleton wrapped around hollow cells.
+- 2 TO 3 OWNED SIGNATURE DEVICES, AND ROW ANATOMY BY ROLE. The deck owns a small set of repeated analytical devices (a line-art / diagram language for breathers, a specific chart encoding, a divider anatomy, a numbered-badge ledger). A deck without them is a template, not a system. And a finding, a decision and a commitment must each read DIFFERENTLY at a glance — do not render every list row as the same number-plus-sentence.
+- THE CLOSE STATES DECISIONS AND ASKS, NOT "THANK YOU". The closing page names the recommendation and the concrete decisions or requirements it asks for (approve, fund, commit, by when), the way a real engagement deck closes. Element budget: median 7-10, max 15-18 (a dense exhibit board), minimum 4 (a one-stat breather). Sentence case, square or en-dash bullets, no tracked caps, no em-dashes.`;
 }
 
 /**

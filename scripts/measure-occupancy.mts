@@ -218,7 +218,8 @@ window.addEventListener('load', function () {
 });
 </script>`;
 
-const tmp = resolve(repoRoot, "scripts", ".occ-measure.html");
+// Process-unique temp so parallel measure runs (one per deck) never collide.
+const tmp = resolve(repoRoot, "scripts", `.occ-measure-${process.pid}.html`);
 await writeFile(tmp, html.replace("</body>", measurer + "\n</body>"));
 
 const { stdout } = await execFileP(BRAVE, [

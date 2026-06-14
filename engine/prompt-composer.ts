@@ -33,6 +33,8 @@ export function composeSystemPrompt(skill: Skill, args: {
   const deckPlanSection = deckPlanPromptBlock(plan);
   const isEditorial = plan.read.presentationType === "editorial";
   const isPitch = plan.read.presentationType === "pitch";
+  const isTeaching = plan.read.presentationType === "teaching";
+  const isKeynote = plan.read.presentationType === "keynote";
 
   const bgSection = bleedSlideTypes.length
     ? backgroundArtDirection(skill, bleedSlideTypes, isEditorial)
@@ -83,7 +85,7 @@ ${varietySection}
 ${densityPromptBlock()}
 ${fillFrameBlock()}
 ${contentContractBlock()}
-${isEditorial ? editorialContractBlock() : ""}${isPitch ? pitchContractBlock() : ""}${bgSection}
+${isEditorial ? editorialContractBlock() : ""}${isPitch ? pitchContractBlock() : ""}${isTeaching ? teachingContractBlock() : ""}${isKeynote ? keynoteContractBlock() : ""}${bgSection}
 GROUND-TRUTH FIDELITY (hard constraints)
 Before writing any value, decide whether it is INVENTED or GROUND-TRUTH.
 - INVENTED / abstract (layout, color, mood, a fictional brand's made-up demo numbers): compose freely; plausible is enough.
@@ -184,6 +186,64 @@ PITCH CONTRACT (investor or pitch register; hard constraints, they override the 
 - DATA IS A MONEY MOMENT, NOT A DASHBOARD. Lead with the giant numeral or a real P&L or traction burst. One series takes the accent and the rest go grey, values labelled directly on the mark, axes and legends minimal or gone. Every data slide carries its source; unsourced or placeholder numbers are not shippable.
 - LIGHT CHROME, POSTER NOT DOCUMENT. No index footer or breadcrumb. At most a one-word kicker or a faded page numeral. The deck reads as a sequence of posters, not a navigated report.
 - THE ARC CARRIES IT, NOT VOLUME. Coverage comes from the arc (problem, why-now, solution, proof, economics, ask all present and legible), never from a per-slide token count. Element budget: median 5 to 8, max 18 (20 only on a utility board), minimum 1 (a statement or interstitial). Sentence case, no tracked caps, no em-dashes.`;
+}
+
+/**
+ * TEACHING CONTRACT. The laws of the training / workshop / onboarding / academic
+ * register, distilled from measured professional instructional decks (systematic
+ * brand guidelines, an employee handbook, a hands-on workshop: split-frame
+ * manuals, mode-switching workshops, chaptered handbooks). Injected only when the
+ * deck plan reads the brief as teaching; where it conflicts with the generic
+ * guidance above, it wins. These are deck-AUTHORING laws (rule-with-proof,
+ * chapter gating, semantic grounds, do/don't, wayfinding, calm density); the
+ * skill-side counterpart lives in the generator prompt.
+ */
+function teachingContractBlock(): string {
+  return `
+TEACHING CONTRACT (training / workshop / onboarding / academic register; hard constraints, they override the generic guidance above where they conflict)
+- RULE AND PROOF CO-PRESENT — the split is the teaching engine. Most content slides put the explanation on one side and its specimen / worked example / labelled diagram on the other, on the SAME slide, so the learner never connects a rule to its evidence across a page turn. This replaces the title-over-bullets layout: the lead text is a real explanatory sentence (the instruction itself), not a headline and not a caption.
+- GATE THE DECK INTO CHAPTERS WITH COMPOSED DIVIDERS. The deck is a sequence of named chapters; between concepts sits a section divider (density editorial) carrying the deck's pacing. A divider is a COMPOSED breath, not an empty page: a large chapter number/letter or mark that fills the frame as a deliberate element, PLUS the chapter title and one short line of what the chapter covers. A tiny title stranded in a vast void reads as broken, not calm — give the divider real presence. Cadence: roughly ONE divider per 4 to 6 content slides; do not divide every other slide (that over-gates the deck and starves it of content).
+- THE GROUND COLOUR MARKS THE MODE. Unlike the other registers, teaching MAY tint whole grounds: a chapter, or a mode (concept / activity / example / recap), owns a ground colour the learner comes to read as meaning. Keep the mapping consistent so the colour itself becomes wayfinding. (This inverts the pitch rule — here a tinted ground is an instrument, not a violation.)
+- ONE CONCEPT PER SLIDE, EXPLAINED THEN SHOWN. Teach one idea at a time, in patient explanatory prose at a real reading size, then demonstrate it with a REAL IMAGE (a photograph of the actual subject wherever it photographs well — food, nature, a place, a tool, a material), a worked example, or — only where a photo cannot show it — a precise labelled diagram. The words do the teaching; the image proves it. Reach for a photograph before a hand-drawn sketch. Never stack five concepts on one slide.
+- IMAGES CARRY THE MOOD, AND PLACEMENT VARIES. Most content slides carry a real image somewhere (a photographic hero, a specimen photo, a full-bleed photo under a quiet zone) — that is what keeps a teaching deck from reading dry. Do NOT put the text on the same side every slide: alternate image-left and image-right, use a full-bleed photo moment with the words in a quiet zone, and the occasional centered single-idea slide. Size the copy to a comfortable reading scale and the layout to the content — never cram text into a sliver beside an empty half, and never let copy overflow its card.
+- THE DO / DON'T (CORRECT vs INCORRECT) PAIR IS A FIRST-CLASS SLIDE. Show the correct and incorrect case TOGETHER (the wrong one struck through or marked), or a small grid of "do not…" cards — never split correct and incorrect across separate slides. This contrast is the most memorable teaching unit; use it wherever a rule has a common mistake.
+- ALWAYS SAY WHERE THE LEARNER IS. Carry gentle, consistent wayfinding on content slides — a chapter number, a running section tab, or a step counter. This is the opposite of the pitch register's deleted chrome: calm orientation, not a report footer. Dividers may drop it; content slides keep it.
+- THE ARC IS CONCEPT → RULE → WORKED EXAMPLE → APPLICATION → RECAP. Open with what the learner will be able to do; each chapter explains a concept, states its rules, shows a worked example, then an "in the wild" application; close chapters or the deck with a recap or summary.
+- CALM, STEADY, GENEROUS DENSITY — patient, never theatrical. Hold a comfortable low-to-medium throughout; the chapter dividers and principle statements supply the lows. Specimens breathe. Element budget per content slide: median 6 to 10, max 16 (a dense spec grid), minimum 1 to 2 (a divider or principle statement is a finished slide). No bimodal conviction-pulse, no packed report grids. Sentence case, no tracked caps, no em-dashes.
+- TEACH ONLY WHAT IS TRUE — a teaching deck's first duty is correctness. Facts, named methods, mnemonics, acronyms, figures and thresholds you present as established must be REAL and correct: use the actual domain acronym (never invent a tidy one and frame it as canon with a "memorise this" watermark), and use the right number (a plausible-but-wrong figure on a how-to or safety slide is the worst failure here, worse than a dull slide). If you are not sure of a specific, stay qualitative or omit it — never manufacture authority around invented content. Do not contradict yourself across a slide (the steps you name in the prose must be the steps on the cards).
+- COMPOSE THE NEGATIVE SPACE — a calm slide is not a sparse one. A statement, a big-number or a divider slide must OWN its empty space: center the line, or scale the type up to fill the frame, or anchor it with one deliberate element. Never park a small text block in one corner and leave 70%+ of the frame as untouched fill — that void reads as "the generator ran out of content," not as designed silence. Breathing room is composed, not abandoned.`;
+}
+
+/**
+ * KEYNOTE CONTRACT. The laws of the big-stage spoken-talk register (a product
+ * launch, a vision/mission mainstage, a TED-style narrative talk), distilled from
+ * the canonical keynote archetypes (Jobs/Apple cinematic launch, Duarte/Reynolds
+ * presentation-zen vision talk, the TED narrative arc). Injected only when the deck
+ * plan reads the brief as a keynote; where it conflicts with the generic guidance
+ * above, it wins. These are deck-AUTHORING laws (slide-as-backdrop, cinematic
+ * imagery, monumental type, crescendo pacing, the reveal, build sequences); the
+ * skill-side counterpart lives in the generator prompt. Its nearest neighbour is
+ * pitch — the divergence is deliberate: a keynote is a PERFORMANCE to a large room,
+ * not an ARGUMENT to a small one; the slide is a backdrop, not a leave-behind; the
+ * loudest moment is the reveal/the vision, not the financials.
+ */
+function keynoteContractBlock(): string {
+  return `
+KEYNOTE CONTRACT (big-stage spoken talk — product launch / vision mainstage / narrative talk; hard constraints, they override the generic guidance above where they conflict)
+- THE SLIDE IS A STAGE BACKDROP, NOT A DOCUMENT. A keynote slide is projected huge behind a live speaker who carries the argument; the slide carries ONE thing — one image, one phrase, one number, one word. Radically minimal text: a content slide is a single line or a short fragment, NEVER a title-plus-body-plus-bullets column. If a slide could be read as a handout that stands on its own, it is wrong for this register. (The leave-behind self-sufficiency of a pitch or report is explicitly NOT the goal here.)
+- CINEMATIC IMAGERY OWNS THE FRAME. This is the most image-led register: most content slides are a full-bleed photograph or render with the words set into it, or a pure field (dark, or one bold colour) carrying a single line. Imagery is the emotional engine — large, confident, edge-to-edge — never a small inset beside a column of text.
+- MONUMENTAL TYPE, THE LARGEST IN ANY REGISTER. One display line owns the whole frame at maximum scale; a single word or a 3-to-6-word phrase is a complete slide. Centre it or anchor it deliberately. Hierarchy comes from scale and silence, not from stacked weights. Sentence case, no tracked caps, no em-dashes.
+- THEATRICAL CRESCENDO PACING, NOT AN EVEN MARCH. A keynote builds tension and releases it. Punctuate with PAUSE slides — a single word, a black or colour field, a held image with no text — that give the spoken beat room to breathe. Cluster the energy toward a peak. Never sit at a steady medium; the rhythm IS the performance.
+- THE REVEAL IS THE PEAK. The deck builds toward ONE staged moment (the product, the vision line, the number that reframes everything). Stage it for maximum drama: the slides before it set up, the reveal lands full-frame and alone as the deck's loudest moment, the slides after it pay off. Every keynote has a "here it is."
+- BUILD SEQUENCES — PROGRESSIVE DISCLOSURE. Let one idea unfold across 2 to 3 consecutive slides on the SAME frame, adding a single element each step (the spoken "and then… and then…" made visual). This is a signature keynote move; use it at least once, for the central idea.
+- EMOTIONAL, VISIONARY VOICE. Present and future tense, declarative belief. You are not analysing (report), not asking for money (pitch), not instructing (teaching) — you are showing a room the future and what you believe. Aspirational, concrete, human; never a feature spec list read aloud.
+- THE FLOOR IS ONE ELEMENT, AND THAT IS THE SIGNATURE — NOT UNDERFILL. A one-word slide, a single number, a wordless full-bleed image is the register's hallmark and a finished slide; the layout grammar must treat it as correct and complete. This is the strongest minimum-density exemption of any register — do not "fill" a pause slide.
+- COMPOSE THE SILENCE — OWN THE DARK OR THE FIELD. A single word on black, or one line on a colour field, must be COMPOSED to own the frame: centred, scaled up, or anchored by one deliberate element. Never strand a small phrase in a corner with 80% of the frame as untouched void — on a keynote slide that void must read as staged drama, not as a generator that ran out of content. Negative space is the most powerful instrument here and must be deliberate, never abandoned.
+- CLAIM ONLY WHAT IS TRUE. Keynotes love the big number and the bold superlative, so the bar for truth is highest here: any figure, date, ranking, named fact or "first / only / most" you present as real must BE real and supplied by the user. Never manufacture a precise statistic or a world-first claim for drama. If you do not have the number, make the line qualitative. A fabricated headline number on a stage is the worst failure of this register.
+- ONE WORLD, ONE GRADE; TEXT ON A GUARANTEED BACKING. Every image reads as one film — one light, one grade, one lens feel; a keynote that mixes a moody hero with a bright stock plate breaks the spell. And because each image is generated and non-deterministic, never bet a projected line's legibility on a "quiet zone" staying quiet: set text on a real scrim, plate, or engineered dark gradient so a re-roll cannot bury the words.
+- THE PEAK MUST ACTUALLY PEAK (crescendo is measurable, not asserted). The reveal / the STAR number / the turn is the single LOUDEST slide of the deck, and it must out-shout the cover, the act-break interstitials, the price and the CTA — those set up or pay off the peak, they never out-shout it. But loudness has TWO forms, and you must pick the right one: a TYPE-LED peak (a STAR number, a turn line, a manifesto statement) carries its loudness in the type — make it the single largest display token, fit-to-frame so even a long string dominates the setup. An IMAGE-LED peak (a product reveal, a hero unveiling) carries its loudness in the IMAGE — the product is the brightest, highest-contrast, full-frame hero of the whole deck, and the name is a confident LABEL, never frame-filling text. Do NOT bury the product under a giant headline: on a product reveal the machine is the payoff and must be the thing the eye lands on; a name so large it covers the hero is the over-correction failure (just as a hero that dissolves into the dark is the under-lit failure). The peak slide must read, at a glance, as the most dramatic moment — by type if type-led, by the lit hero if image-led.
+- THE BUILD IS PROGRESSIVE DISCLOSURE, NEVER A LIST OR A TABLE. A build discloses ONE element at a time across 2 to 3 CONSECUTIVE slides on one held frame (the live element lit, prior ones dimmed or absent) — it is NOT a single slide stacking three rows. And the whole register forbids the document families outright: no ranked spec table (numbered rows with right-aligned values), no bulleted/dotted list, no multi-column roadmap, no two-column prose comparison. A spec or an availability fact is ONE staged line per beat, not a sidebar of value/label rows; a contrast is two beats (what-is, then what-could-be) or one line with an accent word, not two paragraphs side by side. If a slide reads as a datasheet, a bullet list, or a two-column doc, it has left the register.
+- COMPOSE THE SILENCE, FOR REAL — no corner-parking, no dead bands, no mark colliding with type. A single word, a giant number or a statement must be the optical anchor of the FIELD: centred, or scaled to fill, or anchored by a deliberate counter-element. Never left-park a word with the opposite 60% of the frame an empty void, and never float a number at the bottom under a dead empty band — that is the "ran out of content" tell, not staged silence. A decorative signature mark (a rule, a dot, a tick) must live in a guaranteed clear zone; it must NEVER land between or over the lines of monumental type, where it reads as a stray glyph or a typo.`;
 }
 
 /**

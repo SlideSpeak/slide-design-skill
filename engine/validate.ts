@@ -275,12 +275,21 @@ function validateSlide(
   // Pass through optional bgPrompt — used by the engine pre-resolution step
   // to call BackgroundGenerator before rendering. Length-bounded so a hostile
   // LLM can't blow up the FAL call.
+  const rawBgPrompt = (raw as Record<string, unknown>).bgPrompt;
   const bgPrompt =
-    typeof (raw as Record<string, unknown>).bgPrompt === "string" &&
-    ((raw as Record<string, unknown>).bgPrompt as string).length > 0 &&
-    ((raw as Record<string, unknown>).bgPrompt as string).length <= 600
-      ? ((raw as Record<string, unknown>).bgPrompt as string)
+    typeof rawBgPrompt === "string" &&
+    rawBgPrompt.length > 0 &&
+    rawBgPrompt.length <= 600
+      ? rawBgPrompt
       : undefined;
+  // A bgPrompt over the cap is SILENTLY dropped, so the slide falls back to the
+  // procedural gradient instead of a real photo — a confusing, hard-to-spot
+  // failure. Surface it as a warning so it never hides again.
+  if (typeof rawBgPrompt === "string" && rawBgPrompt.length > 600) {
+    warnings.push(
+      `bgPrompt is ${rawBgPrompt.length} chars (limit 600) — DROPPED; this slide will render the fallback gradient, not a photo. Shorten the bgPrompt.`,
+    );
+  }
 
   // Per-slide density tier — coerced to a valid tier, dropped if unrecognized.
   const density = normalizeDensity((raw as Record<string, unknown>).density);

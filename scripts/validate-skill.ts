@@ -7,7 +7,10 @@ import { COMPOSITION_FAMILIES, BOXED_FAMILIES, UNBOXED_FAMILIES, DATA_BEARING_FA
 import type { Skill } from "../engine/types.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const skillsRoot = resolve(__dirname, "../skills");
+// Optional argv: [skillsRoot] [onlySlug] — lets a dev seed under _dev-skills be
+// validated directly without copying it into skills/. Defaults to skills/, all.
+const [rootArg, onlySlug] = process.argv.slice(2);
+const skillsRoot = resolve(__dirname, "..", rootArg ?? "skills");
 
 /**
  * Composition-family contract for GENERATED skills. Opt-in by design: legacy
@@ -205,7 +208,12 @@ function gridSignature(body: string): string {
 }
 
 async function main() {
-  const skills = await listSkills(skillsRoot);
+  const all = await listSkills(skillsRoot);
+  const skills = onlySlug ? all.filter((s) => s === onlySlug) : all;
+  if (onlySlug && skills.length === 0) {
+    console.error(`Skill "${onlySlug}" not found under ${skillsRoot}`);
+    process.exit(1);
+  }
   console.log(`Found ${skills.length} skills: ${skills.join(", ")}\n`);
 
   let failed = 0;
@@ -257,6 +265,24 @@ async function main() {
       if (cardEdge) {
         failures.push(
           `card-edge accent line(s) detected (${cardEdge.length}) — never pin an accent border to a card edge; carry accent via number/icon/chip/fill`,
+        );
+      }
+      // Leaked slug/token labels — a hardcoded `white_gills` rendered as visible
+      // label text (e.g. inside an <svg><text>) is an un-humanised slug string, a
+      // rendering tell. Scan visible text nodes only (strip style/script), flag
+      // lowercase snake_case tokens. Slot placeholders use hyphens, so {{a-b}}
+      // never trips this. Warning, not failure (a tech deck may legitimately show
+      // a code identifier — surface it, do not block).
+      const visibleText = rawComponents
+        .replace(/<style[\s\S]*?<\/style>/gi, "")
+        .replace(/<script[\s\S]*?<\/script>/gi, "")
+        .replace(/<[^>]+>/g, ""); // drop tags+attributes, keep text nodes
+      const slugLabels = [
+        ...new Set((visibleText.match(/\b[a-z]{2,}_[a-z][a-z_]*\b/g) ?? [])),
+      ];
+      if (slugLabels.length) {
+        warnings.push(
+          `leaked slug-case label text (humanise these — a reader sees the words): ${slugLabels.slice(0, 8).join(", ")}`,
         );
       }
       // Em-dashes in RENDERED copy read as machine-made. Strip comments first —

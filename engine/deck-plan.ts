@@ -56,7 +56,7 @@ const TYPE_SIGNALS: Record<Exclude<PresentationType, "general">, string[]> = {
   report: ["report", "results", "findings", "analysis", "quarterly", "annual review", "earnings", "kpi", "metrics review", "audit", "study"],
   teaching: ["training", "workshop", "onboarding", "lesson", "course", "tutorial", "curriculum", "teach", "lecture", "how to"],
   editorial: ["story", "essay", "editorial", "magazine", "manifesto", "narrative", "brand story", "feature piece", "impact report", "progress report", "photo-led", "photo-driven", "photo essay", "documentary", "lookbook"],
-  keynote: ["keynote", "launch", "announce", "unveil", "vision", "reveal", "product launch"],
+  keynote: ["keynote", "launch", "announce", "unveil", "vision", "reveal", "product launch", "ted talk", "mainstage", "main stage", "stage talk", "commencement address", "on stage"],
 };
 
 const AUDIENCE_SIGNALS: Record<Exclude<Audience, "general">, string[]> = {
@@ -136,9 +136,11 @@ function deriveVariance(text: string, type: PresentationType, audience: Audience
 function deriveAppetite(type: PresentationType, skill: Skill): AssetAppetite {
   if (type === "editorial" || type === "keynote") return "image-led";
   if (type === "report") return "data-led";
-  // teaching leans on diagrams/data; a non-photographic skill treatment also
-  // signals the deck is not carried by photography.
-  if (type === "teaching") return "data-led";
+  // teaching is data-LIGHT: it teaches with labelled diagrams, specimens and
+  // worked examples, not chart density. Balanced (visuals share the layout with
+  // structured content) fits the measured register far better than data-led,
+  // which would push charts/tables and suppress the explanatory diagram layer.
+  if (type === "teaching") return "balanced";
   const treatment = (skill.imageStyle.treatment ?? "").toLowerCase();
   if (treatment && treatment !== "photographic") return "balanced";
   return "balanced";

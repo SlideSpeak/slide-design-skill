@@ -100,20 +100,27 @@ export async function resolveStyleInput(
     };
   }
 
-  // 2 — No artifacts. Read the prompt for a style cue.
-  const presets = await listSkills(deps.skillsRoot);
-
-  const preset = matchPreset(input.prompt, presets);
-  if (preset) {
-    return {
-      status: "resolved",
-      brief: { kind: "preset", name: preset },
-      rationale: `Matched the built-in "${preset}" skill from the request.`,
-    };
-  }
-
+  // 2 — No artifacts. Read the prompt for an explicit STYLE CUE. A cue is a
+  // style signal ("in the style of X", "X-style", "like X") — a bare topic word
+  // ("a pitch deck", "an internal training session") is NOT a cue.
+  //
+  // CONTRACT ("NO selectable styles, ever"): a built-in skill match is consulted
+  // ONLY against the extracted cue, never the whole brief. Seed folder names are
+  // common deck-topic words (pitch, training, consulting, academic, opex), so
+  // matching the whole prompt silently loaded a canned template for ordinary
+  // topic briefs — the exact "all decks look the same" failure. The preset path
+  // now fires only when the user literally names a seed AS the style cue.
   const cue = extractStyleCue(input.prompt);
   if (cue) {
+    const presets = await listSkills(deps.skillsRoot);
+    const preset = presetFromCue(cue, presets);
+    if (preset) {
+      return {
+        status: "resolved",
+        brief: { kind: "preset", name: preset },
+        rationale: `Matched the built-in "${preset}" skill from the style cue.`,
+      };
+    }
     const mix = splitMix(cue);
     if (mix) {
       return {
@@ -151,6 +158,31 @@ function labelFor(r: StyleReference): string {
  * Match a built-in skill named in the prompt. Handles hyphenated names
  * ("launch-warm" also matches "launch warm"). Whole-word, case-insensitive.
  */
+/**
+ * Resolve a preset from a STYLE CUE only when the cue literally names a seed AS
+ * the style ("in the style of consulting" → consulting). Rejects:
+ *  - reference phrases ("like our last training", "our previous pitch") — those
+ *    point at a prior artifact, not a style name (the possessive/temporal marker
+ *    is the tell), and
+ *  - topic phrases that merely CONTAIN a seed word ("a consulting readout") — the
+ *    normalized cue must EQUAL a seed name, not contain it.
+ * This upholds the "NO selectable styles, ever" contract on the cue path too.
+ */
+export function presetFromCue(cue: string, presets: string[]): string | null {
+  const lower = cue.toLowerCase();
+  if (/\b(our|your|my|their|its|last|previous|prior|existing)\b/.test(lower)) return null;
+  const norm = lower
+    .replace(/\b(a|an|the|style|styled)\b/gi, " ")
+    .replace(/[^a-z0-9 -]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  for (const name of [...presets].sort((a, b) => b.length - a.length)) {
+    const n = name.toLowerCase();
+    if (norm === n || norm === n.replace(/-/g, " ")) return name;
+  }
+  return null;
+}
+
 export function matchPreset(prompt: string, presets: string[]): string | null {
   const hay = ` ${prompt.toLowerCase()} `;
   // Prefer the longest preset name so "product-marketing" wins over a stray "product".

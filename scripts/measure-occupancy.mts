@@ -11,7 +11,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { scoreOccupancy, scoreCellOccupancy } from "../engine/occupancy.ts";
+import { scoreOccupancy, scoreCellOccupancy, scoreLegibility } from "../engine/occupancy.ts";
 import { scoreDeckRichness } from "../engine/richness.ts";
 
 const execFileP = promisify(execFile);
@@ -153,7 +153,10 @@ window.addEventListener('load', function () {
     // Sources: directive output stamped data-visual-event (chart/icon/table/...),
     // skill opt-in marks (meter/signature-mark/...), plus heuristic credit so skills
     // that do not opt in still register their charts/images/tables/giant numerals.
-    var SYSK = { chart: 1, table: 1, placeholder: 1, 'visual-plate': 1 };
+    // NOTE: 'placeholder' is deliberately NOT a richness-satisfying system event.
+    // An empty "Your image here" frame must not let a data-bearing slide pass the
+    // richness floor (it is counted + surfaced separately below).
+    var SYSK = { chart: 1, table: 1, 'visual-plate': 1 };
     var sys = 0, mk = 0;
     slide.querySelectorAll('[data-visual-event]').forEach(function (el) {
       var r = el.getBoundingClientRect();
@@ -196,6 +199,71 @@ window.addEventListener('load', function () {
       }
     });
 
+    // --- Legibility geometry: text boxes with colour + background luminance, ---
+    // scrim detection, plus broken-image and visible-placeholder counts. Feeds
+    // the legibility scorer (overflow / collision / contrast) and the
+    // broken-image / placeholder gates.
+    function lum(c) {
+      if (!c) return null;
+      function f(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+      return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+    }
+    var scrims = [];
+    slide.querySelectorAll('*').forEach(function (el) {
+      var s = getComputedStyle(el);
+      if (s.position !== 'absolute' && s.position !== 'fixed') return;
+      var grad = s.backgroundImage && s.backgroundImage.indexOf('gradient') !== -1;
+      var bc = rgb(s.backgroundColor); var semi = bc && bc.a > 0.1 && bc.a < 0.99;
+      if (!grad && !semi) return;
+      var sR = el.getBoundingClientRect();
+      scrims.push([sR.left - sr.left, sR.top - stop, sR.right - sr.left, sR.bottom - stop]);
+    });
+    var elIds = new Map(); var elSeq = 0;
+    var textBoxes = [];
+    var tw2 = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT, null), tn2;
+    var tr2 = document.createRange();
+    while ((tn2 = tw2.nextNode())) {
+      if (!tn2.textContent.trim()) continue;
+      var pe2 = tn2.parentElement; if (!pe2) continue;
+      tr2.selectNodeContents(tn2);
+      var rl2 = tr2.getClientRects(); if (!rl2.length) continue;
+      if (!elIds.has(pe2)) elIds.set(pe2, elSeq++);
+      var elId = elIds.get(pe2);
+      var pcs = getComputedStyle(pe2);
+      var tlum = lum(rgb(pcs.color));
+      var fs = parseFloat(pcs.fontSize) || 0;
+      var bgl = null, overImg = false, anc = pe2;
+      while (anc && anc !== slide.parentElement) {
+        var acs = getComputedStyle(anc);
+        if (acs.backgroundImage && acs.backgroundImage !== 'none' && acs.backgroundImage.indexOf('gradient') === -1) { overImg = true; break; }
+        var abg = rgb(acs.backgroundColor);
+        if (abg && abg.a > 0.5) { bgl = lum(abg); break; }
+        anc = anc.parentElement;
+      }
+      if (bgl === null && !overImg) bgl = lum(page);
+      for (var jj = 0; jj < rl2.length; jj++) {
+        var rr2 = rl2[jj]; if (rr2.height <= 0.5) continue;
+        var bx = { x0: Math.round(rr2.left - sr.left), y0: Math.round(rr2.top - stop), x1: Math.round(rr2.right - sr.left), y1: Math.round(rr2.bottom - stop), el: elId, lum: tlum, bgLum: overImg ? null : bgl, overImage: overImg, hasScrim: false, fontSize: Math.round(fs) };
+        if (overImg) {
+          for (var ks = 0; ks < scrims.length; ks++) {
+            var sc = scrims[ks];
+            if (bx.x0 >= sc[0] - 2 && bx.y0 >= sc[1] - 2 && bx.x1 <= sc[2] + 2 && bx.y1 <= sc[3] + 2) { bx.hasScrim = true; break; }
+          }
+        }
+        textBoxes.push(bx);
+      }
+    }
+    var brokenImgs = 0;
+    slide.querySelectorAll('img').forEach(function (im) {
+      var isrc = im.getAttribute('src') || '';
+      if (isrc.indexOf('data:') === 0 && im.naturalWidth === 0 && im.naturalHeight === 0) brokenImgs++;
+    });
+    var placeholders = 0;
+    slide.querySelectorAll('[data-visual-event="placeholder"]').forEach(function (el) {
+      var pr = el.getBoundingClientRect();
+      if (pr.width * pr.height >= 8000) placeholders++;
+    });
+
     out.push({
       i: i,
       type: slide.getAttribute('data-slide-type') || slide.className.replace('slide ', '').split(' ')[0] || '',
@@ -209,6 +277,10 @@ window.addEventListener('load', function () {
       mark: mk,
       chroma: Math.round(chroma),
       area: Math.round(sr.width * sr.height),
+      slideWidth: Math.round(sr.width),
+      textBoxes: textBoxes,
+      brokenImgs: brokenImgs,
+      placeholders: placeholders,
     });
   });
   var pre = document.createElement('pre');
@@ -236,12 +308,21 @@ const slides = JSON.parse(
 );
 
 let failures = 0;
+let placeholderTotal = 0;
 console.log("slide                         density      maxGap  at       verdict");
 for (const s of slides) {
   const res = scoreOccupancy({ rects: s.rects, slideHeight: s.slideHeight, safe: s.safe, density: s.density });
   const cellRes = scoreCellOccupancy({ cells: s.cells ?? [], density: s.density });
-  if (!res.filled || !cellRes.filled) failures++;
-  const verdict = !res.filled ? "UNDERFILL" : !cellRes.filled ? "CELL-UNDERFILL" : "ok";
+  const leg = scoreLegibility({ boxes: s.textBoxes ?? [], slideW: s.slideWidth ?? s.slideHeight, slideH: s.slideHeight });
+  const broken = s.brokenImgs ?? 0;
+  placeholderTotal += s.placeholders ?? 0;
+  const slideFail = !res.filled || !cellRes.filled || !leg.ok || broken > 0;
+  if (slideFail) failures++;
+  const verdict = !res.filled ? "UNDERFILL"
+    : !cellRes.filled ? "CELL-UNDERFILL"
+    : !leg.ok ? "ILLEGIBLE"
+    : broken > 0 ? "BROKEN-IMG"
+    : "ok";
   console.log(
     `${(s.type + " #" + s.i).padEnd(28)} ${(s.density || "-").padEnd(11)} ` +
     `${String(res.maxGapPx).padStart(6)}  ${(res.gapAt || "-").padEnd(7)} ${verdict}`,
@@ -249,8 +330,20 @@ for (const s of slides) {
   for (const f of cellRes.failures) {
     console.log(`  └ cell ${f.index}: ${f.kind} — ${f.detail}`);
   }
+  for (const f of leg.failures) {
+    console.log(`  └ legibility: ${f.kind} — ${f.detail}`);
+  }
+  if (broken > 0) {
+    console.log(`  └ broken-image: ${broken} inlined image(s) decoded to 0×0 (corrupt/blank bytes) — re-render or replace.`);
+  }
+  for (const w of leg.warnings) {
+    console.log(`  ⚠ ${w.kind}: ${w.detail}`);
+  }
 }
-console.log(`\n${slides.length - failures}/${slides.length} slides fill the frame.`);
+console.log(`\n${slides.length - failures}/${slides.length} slides pass occupancy + legibility.`);
+if (placeholderTotal > 0) {
+  console.log(`⚠ ${placeholderTotal} visible image placeholder frame(s) across the deck — confirm each is an intentional customer-asset slot, not an unfilled/broken image.`);
+}
 
 // Richness gate — does each slide REALIZE visual weight, or is it text-only?
 // Density-agnostic and opt-in: only enforced when the skill declares families.

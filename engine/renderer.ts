@@ -70,8 +70,14 @@ export function renderSlide(
     html = renderFallback(node, ctx);
   }
 
-  // Stamp the density tier onto the slide root so the density CSS custom props
-  // cascade into the template's inline styles (which reference var(--d-*)).
+  // Stamp the density tier onto the slide root as data-density. NOTE: this is a
+  // HOOK, not a guaranteed cascade — neither baseSlideCss nor tokensToCss define
+  // any [data-density] rules or --d-* props, so the attribute does nothing unless
+  // a per-skill chrome.css authors [data-density] rules itself. Density is realized
+  // by the generator choosing a denser/airier LAYOUT per the deck-plan rhythm; the
+  // attribute just lets a skill that wants to also tune spacing off it. (Generated
+  // skills that vary density are asked for [data-density] chrome in the generator
+  // prompt and warned by validate-skill when missing.)
   if (node.density) html = injectDensityAttr(html, node.density);
   html = injectTypeAttr(html, node.type);
   // Stamp the composition family so the richness gate can apply a per-family
@@ -179,7 +185,10 @@ function interpolate(
       const imgKey = key.slice(6);
       const resolved = ctx.resolvedImages.get(imgKey);
       if (!resolved) return "";
-      const safe = safeImageUrl(resolved.url);
+      // safeBgImageSrc (not safeImageUrl) so an inline image may be a big base64
+      // data-URI (durable/offline export) as well as a remote https URL — both
+      // validated against attribute breakout.
+      const safe = safeBgImageSrc(resolved.url);
       if (!safe) return "";
       return `<img src="${escapeHtmlAttr(safe)}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
     }
@@ -198,12 +207,18 @@ function emphasize(escaped: string): string {
   return escaped.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
 }
 
-function parseDirectiveArgs(s: string): Record<string, string> {
+export function parseDirectiveArgs(s: string): Record<string, string> {
   const args: Record<string, string> = {};
   const re = /([a-zA-Z][\w-]*)=([^\s]+)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(s)) !== null) {
-    args[m[1]] = m[2];
+    const key = m[1];
+    const val = m[2];
+    // Color args drop raw into SVG/CSS attributes; reject breakout/CSS payloads
+    // so a generated (LLM-authored) template cannot smuggle an injection here.
+    // An unsafe color arg is simply omitted, falling back to the chart default.
+    if (COLOR_ARG_KEYS.has(key) && !safeColorArg(val)) continue;
+    args[key] = val;
   }
   return args;
 }
@@ -430,6 +445,38 @@ export function escapeHtmlAttr(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+// Validate an inline <img src> for a background slot before it reaches the DOM.
+// The trusted path injects a full FAL/baked `data:image;base64,…` (often >100KB,
+// so safeImageUrl's 4096-char cap would reject it), but the same slot is
+// LLM-authorable when no bgPrompt overwrites it, so the value still crosses a
+// trust boundary. A bare `.startsWith("data:image/")` check let
+// `data:image/png,"><img src=x onerror=…>` break out of the src attribute.
+// Accept ONLY: an https URL with no breakout chars, OR a base64 data:image whose
+// payload is strictly the base64 alphabet (quotes/brackets cannot survive).
+export function safeBgImageSrc(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  if (s.length === 0 || s.length > 8_000_000) return null;
+  if (/^https:\/\//i.test(s)) return hasUnsafeChars(s) ? null : s;
+  if (/^data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,[A-Za-z0-9+/=\s]+$/i.test(s)) return s;
+  return null;
+}
+
+// Color args (accent/ink/fill/base/…) interpolate raw into SVG/CSS attributes.
+// In hand-authored skill templates this is trusted, but GENERATED skill
+// templates are LLM output, so reject any value that could break out of the
+// attribute or smuggle a CSS payload. Keeps hex, named colors, var(--…),
+// rgb()/hsl(), and slot-name tokens; drops anything with quotes/brackets/url().
+const COLOR_ARG_KEYS = new Set([
+  "accent", "ink", "color", "fill", "base", "low", "high", "muted", "neg", "stroke",
+]);
+function safeColorArg(v: string): boolean {
+  if (v.length > 64) return false;
+  if (/[<>"'`;]/.test(v)) return false;
+  if (/url\(|expression\(|\/\*|@import|javascript:/i.test(v)) return false;
+  return true;
+}
+
 // ─── Chart directive ────────────────────────────────────────────────────────
 // Renders an inline SVG chart from numeric data in slot values. Supported
 // chart types: bar, hbar, waterfall, line, dots-2x2.
@@ -441,6 +488,31 @@ function renderChartDirective(
   args: Record<string, string>,
   slots: Record<string, string>,
 ): string {
+  // Degenerate-data guard for series charts: parseNums is maximally tolerant, so
+  // `data="40 garbage 80"` silently became a 2-bar chart and `data="40"` a 1-bar
+  // chart — both were credited as a realized chart by the richness gate. A
+  // 1-point series is not a chart, and a chart built from FEWER numbers than the
+  // author wrote is silently wrong. Emit a (distinct) empty marker so the gate fails.
+  const SERIES_TYPES = new Set(["bar", "hbar", "line", "waterfall", "stacked-bar"]);
+  const ctype = (args.type || "").toLowerCase();
+  if (args.data && SERIES_TYPES.has(ctype)) {
+    const rawData = slots[args.data] ?? "";
+    const rawTokens = rawData.split(/[\s,|]+/).map((t) => t.trim()).filter((t) => t.length > 0);
+    const nums = parseNums(rawData);
+    const safeType = ctype.replace(/[^a-z0-9-]/g, "");
+    if (nums.length < 2) return `<!--chart-empty:degenerate-${safeType}-->`;
+    if (nums.length < rawTokens.length) return `<!--chart-empty:dropped-tokens-${safeType}-->`;
+    // Axis labels must match the series length. The canonical {{@chart}} gotcha
+    // is comma-separated labels in a pipe-delimited slot (Clinic: 3 bars, the two
+    // labels comma-joined into one) so most bars render unlabelled — unreadable.
+    if (args.labels) {
+      const labelCount = parseLabels(slots[args.labels] ?? "").length;
+      if (labelCount > 0 && labelCount !== nums.length) {
+        return `<!--chart-empty:label-mismatch-${safeType}-->`;
+      }
+    }
+  }
+
   const out = dispatchChart(args, slots);
   if (out === "") {
     // A chart was requested but produced nothing: bad/empty data slot, or an
@@ -591,9 +663,12 @@ function parseNums(s: string): number[] {
 
 // Max number of fractional digits across the source tokens, so a value like
 // "6.10" renders as "6.10" not "6.1" (JS drops the trailing zero on parse).
-function maxDecimals(s: string): number {
+export function maxDecimals(s: string): number {
   let max = 0;
-  for (const tok of s.split(/[\s,]+/)) {
+  // Use the SAME delimiter set as parseNums (whitespace, comma AND pipe). A
+  // pipe-separated data slot like "1.25|2.50|3.75" parses fine but, split here
+  // on whitespace/comma only, yielded dec=0 and rounded labels to 1/3/4.
+  for (const tok of s.split(/[\s,|]+/)) {
     const t = tok.trim();
     const dot = t.indexOf(".");
     if (dot >= 0 && /^-?\d*\.\d+$/.test(t)) max = Math.max(max, t.length - dot - 1);
@@ -875,7 +950,12 @@ function renderHBarChart(
   const h = data.length * rowH + 32;
   const padL = 260, padR = 100, padT = 8;
   const chartW = w - padL - padR;
-  const max = Math.max(...data, 0);
+  // Scale by the largest MAGNITUDE so a series with negative or all-negative
+  // values (deltas, declines, losses) renders valid widths. The old
+  // `Math.max(...data, 0)` produced max=0 for all-negative data → barW=-Infinity
+  // and malformed SVG that no gate caught. maxAbs<=0 (all zeros) is an empty chart.
+  const maxAbs = Math.max(...data.map((v) => Math.abs(v)), 0);
+  if (maxAbs <= 0) return "";
   const accent = args.accent ?? "#FF6A13";
   const base = args.base ?? "#1F3A5F";
   const muted = args.muted ?? "#B8C0CC";
@@ -884,8 +964,8 @@ function renderHBarChart(
   let rows = "";
   data.forEach((v, i) => {
     const y = padT + i * rowH;
-    const barW = (v / max) * chartW;
-    const fill = i === highlight ? accent : base;
+    const barW = (Math.abs(v) / maxAbs) * chartW;
+    const fill = v < 0 ? (args.neg ?? muted) : i === highlight ? accent : base;
     if (labels[i]) {
       rows += `<text x="${padL - 18}" y="${(y + rowH / 2 + 6).toFixed(1)}" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="${ink}" text-anchor="end">${escapeHtml(labels[i])}</text>`;
     }
@@ -1899,8 +1979,19 @@ function renderScrimDirective(
   return `<div class="slide-scrim" style="position:absolute;inset:0;background:${bg};z-index:${z};pointer-events:none;"></div>`;
 }
 
-function formatNum(n: number, unit?: string, signed = false, decimals?: number): string {
-  const u = unit ?? "";
+export function formatNum(n: number, unit?: string, signed = false, decimals?: number): string {
+  let u = unit ?? "";
+  // A unit token for an inline number label is short and compound at most
+  // ("EUR", "%", "$M", "$M ARR", "EUR bn", "kg CO2e", "USD/ton"). A descriptive
+  // unit-LINE ("EUR per parcel, share of the EUR 0.78 gap") belongs in the
+  // exhibit caption band, not on every bar — appending it overprints the chart.
+  // Only drop values that READ as a descriptive phrase, never a legitimate
+  // compound unit: more than three words, a descriptive connector word, or
+  // absurd length. (The old guard dropped ANY unit with a space or >6 chars,
+  // which shredded "$M ARR"/"EUR bn"/"USD/ton" off the pitch/data decks.)
+  const uTokens = u.trim().split(/\s+/).filter(Boolean);
+  const DESCRIPTIVE_WORD = /^(per|share|of|gap|vs|versus|from|to|the|a|an|each|by|in|on|over|under)$/i;
+  if (uTokens.length > 3 || u.length > 16 || uTokens.some((t) => DESCRIPTIVE_WORD.test(t))) u = "";
   const sign = signed && n > 0 ? "+" : n < 0 ? "−" : "";
   const abs = Math.abs(n);
   let s: string;
@@ -1930,16 +2021,16 @@ function renderGradientBgDirective(
   // BackgroundGenerator before render and injects the resulting data-URI
   // into slots["bg-image"] (or whichever slot bgSlot points at).
   if (useFal && args.bgSlot) {
-    const slotVal = slots[args.bgSlot];
-    if (typeof slotVal === "string" && slotVal.startsWith("data:image/")) {
-      return `<img src="${slotVal}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">`;
+    const safe = safeBgImageSrc(slots[args.bgSlot]);
+    if (safe) {
+      return `<img src="${escapeHtmlAttr(safe)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">`;
     }
   }
 
   // Priority 2: skill-level baked cache (shared across decks).
-  const cached = ctx.skill.cachedGradients?.[presetName];
-  if (useFal && cached) {
-    return `<img src="${cached}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">`;
+  const safeCached = safeBgImageSrc(ctx.skill.cachedGradients?.[presetName]);
+  if (useFal && safeCached) {
+    return `<img src="${escapeHtmlAttr(safeCached)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">`;
   }
   // Deterministic id (no Math.random): keeps HTML snapshots/PPTX diffs stable.
   // The blur filter is preset-independent, so same-preset duplicates are harmless.
@@ -2069,6 +2160,19 @@ const GRADIENT_PRESETS: Record<string, GradientPreset> = {
       { cx: 0.35, cy: 0.7, r: 0.28, color: "#3A2A18" },
       { cx: 0.82, cy: 0.78, r: 0.18, color: "#C6A875" },
       { cx: 0.45, cy: 0.4, r: 0.18, color: "#11192A" },
+    ],
+  },
+  // Sunlit workshop morning — a bright daylit bone-and-oak field with a soft
+  // window-light wash and warm brass/oak pockets. On-brand fallback for warm
+  // daylit product-launch bleed decks when no FAL photograph is supplied.
+  workshop: {
+    base: "#EFE7DB",
+    blobs: [
+      { cx: 0.2, cy: 0.18, r: 0.34, color: "#FBF6EE" },
+      { cx: 0.82, cy: 0.3, r: 0.26, color: "#E2D2B6" },
+      { cx: 0.7, cy: 0.82, r: 0.3, color: "#C9A368" },
+      { cx: 0.18, cy: 0.8, r: 0.24, color: "#D8C6AA" },
+      { cx: 0.5, cy: 0.5, r: 0.16, color: "#FFFDF8" },
     ],
   },
 };

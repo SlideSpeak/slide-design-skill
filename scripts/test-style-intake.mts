@@ -9,14 +9,33 @@ function check(name: string, cond: boolean, detail?: string) {
   else { fail++; console.error(`  ✗ ${name}${detail ? ` — ${detail}` : ""}`); }
 }
 
-// 1 — style cue naming a built-in skill → preset, no question
+// 1 — an explicit STYLE CUE that names a real built-in skill → preset.
+//     (The preset path fires only via the cue, never from a bare topic word.)
 {
   const r = await resolveStyleInput(
-    { prompt: "a deck about our Q3 results, in McKinsey style" },
+    { prompt: "a deck about our Q3 results, in the style of consulting" },
     { skillsRoot },
   );
-  check("named preset → resolved preset(mckinsey)",
-    r.status === "resolved" && r.brief.kind === "preset" && r.brief.name === "mckinsey",
+  check("style cue naming a seed → resolved preset(consulting)",
+    r.status === "resolved" && r.brief.kind === "preset" && r.brief.name === "consulting",
+    JSON.stringify(r));
+}
+
+// 1b — CONTRACT: ordinary TOPIC words that collide with seed folder names must
+//      NOT silently select a preset ("NO selectable styles, ever"). Includes the
+//      "like <reference>" / "like a <topic>" residuals the round-2 review caught.
+for (const topic of [
+  "Make a pitch deck for our seed round",
+  "an internal training deck for new hires",
+  "a consulting engagement readout for the client",
+  "an academic talk on protein folding",
+  "a deck like our last training",
+  "I'd like a consulting readout for the client",
+  "make it like our previous pitch",
+]) {
+  const r = await resolveStyleInput({ prompt: topic }, { skillsRoot });
+  check(`topic brief is not a preset: "${topic.slice(0, 30)}…"`,
+    !(r.status === "resolved" && r.brief.kind === "preset"),
     JSON.stringify(r));
 }
 

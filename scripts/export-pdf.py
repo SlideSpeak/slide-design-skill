@@ -4,7 +4,7 @@ Usage: export-pdf.py <html-basename> <slide-count> <OutName>
 Screenshot->crop->img2pdf (keeps scrims/gradients). Output:
   ~/Desktop/SlideSpeak-Decks-2026-06-08/<OutName>.pdf
 """
-import subprocess, sys
+import os, subprocess, sys
 from pathlib import Path
 from PIL import Image
 import img2pdf
@@ -17,6 +17,16 @@ OUT_DIR = Path.home() / "Desktop" / "SlideSpeak-Decks-2026-06-08"
 SLIDES_DIR = OUT_DIR / f"{outname}-slides"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 SLIDES_DIR.mkdir(parents=True, exist_ok=True)
+
+# Gate before export so a deck cannot reach a shipped PDF ungated (occupancy +
+# legibility + richness + chart-empty/broken-image). Set GATE=0 to export anyway.
+if os.environ.get("GATE") != "0":
+    rel = f"scripts/{name}.html"
+    g = subprocess.run(["npx", "tsx", str(REPO / "scripts" / "measure-occupancy.mts"), rel], cwd=str(REPO))
+    if g.returncode != 0:
+        print("GATE FAILED — occupancy/legibility/richness flagged the deck (output above). "
+              "Fix the slides and re-render, or set GATE=0 to export anyway.", file=sys.stderr)
+        sys.exit(1)
 
 SLIDE_W, SLIDE_H, STRIDE = 1920, 1080, 1104
 FULL_H = n * STRIDE

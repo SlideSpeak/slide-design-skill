@@ -3,7 +3,7 @@
 // fills its frame or leaves a void (the underfill failure the layout-fit harness
 // never caught). Editorial density is exempt; bleed/full-cover content passes.
 
-import { scoreOccupancy, scoreCellOccupancy, type CellInput } from "../engine/occupancy.ts";
+import { scoreOccupancy, scoreCellOccupancy, scoreLegibility, type CellInput, type TextBox } from "../engine/occupancy.ts";
 
 let pass = 0, fail = 0;
 function check(label: string, cond: boolean, detail?: string) {
@@ -186,6 +186,66 @@ function cell(over: Partial<CellInput>): CellInput {
   const card = () => cell({ height: 170, area: 600 * 170, rects: [[60, 84]], textArea: 1_300, bg: "42,42,51" });
   const res = scoreCellOccupancy({ cells: [card(), card(), card(), card()], density: "balanced" });
   check("uniform tinted cards still flagged", res.filled === false, JSON.stringify(res));
+}
+
+// --- Legibility scorer (overflow / collision / contrast) ---
+const tbox = (o: Partial<TextBox>): TextBox => ({
+  x0: 100, y0: 100, x1: 300, y1: 140, el: 0, lum: 0, bgLum: 1, overImage: false, hasScrim: false, fontSize: 24, ...o,
+});
+
+// 22. clean slide: dark text on light bg, no overlap, in-frame → ok
+{
+  const r = scoreLegibility({
+    boxes: [tbox({ el: 0, y0: 100, y1: 140 }), tbox({ el: 1, y0: 300, y1: 340 })],
+    slideW: 1920, slideH: 1080,
+  });
+  check("legible slide passes", r.ok === true, JSON.stringify(r));
+}
+// 23. headline clipped off the top edge → overflow fail
+{
+  const r = scoreLegibility({ boxes: [tbox({ el: 0, y0: -40, y1: 30 })], slideW: 1920, slideH: 1080 });
+  check("overflow off top flagged", r.failures.some((f) => f.kind === "overflow"), JSON.stringify(r));
+}
+// 23b. a huge display/watermark numeral bleeding off-edge is NOT an overflow fail
+{
+  const r = scoreLegibility({ boxes: [tbox({ el: 0, y0: -120, y1: 640, fontSize: 760 })], slideW: 1920, slideH: 1080 });
+  check("display-bleed numeral exempt from overflow", !r.failures.some((f) => f.kind === "overflow"), JSON.stringify(r));
+}
+// 24. footer clipped off the bottom → overflow fail
+{
+  const r = scoreLegibility({ boxes: [tbox({ el: 0, y0: 1040, y1: 1110 })], slideW: 1920, slideH: 1080 });
+  check("overflow off bottom flagged", r.failures.some((f) => f.kind === "overflow"), JSON.stringify(r));
+}
+// 25. two different elements overprinting → collision fail
+{
+  const r = scoreLegibility({
+    boxes: [tbox({ el: 0, x0: 100, y0: 100, x1: 400, y1: 200 }), tbox({ el: 1, x0: 120, y0: 110, x1: 420, y1: 210 })],
+    slideW: 1920, slideH: 1080,
+  });
+  check("text overprint flagged", r.failures.some((f) => f.kind === "collision"), JSON.stringify(r));
+}
+// 26. wrapped lines of the SAME element do not count as collision
+{
+  const r = scoreLegibility({
+    boxes: [tbox({ el: 0, x0: 100, y0: 100, x1: 400, y1: 140 }), tbox({ el: 0, x0: 100, y0: 138, x1: 400, y1: 178 })],
+    slideW: 1920, slideH: 1080,
+  });
+  check("same-element lines not a collision", !r.failures.some((f) => f.kind === "collision"), JSON.stringify(r));
+}
+// 27. white text on a light background → contrast fail
+{
+  const r = scoreLegibility({ boxes: [tbox({ lum: 0.95, bgLum: 0.85 })], slideW: 1920, slideH: 1080 });
+  check("low contrast flagged", r.failures.some((f) => f.kind === "contrast"), JSON.stringify(r));
+}
+// 28. text on a background image with no scrim → warning, not failure
+{
+  const r = scoreLegibility({ boxes: [tbox({ lum: 1, bgLum: null, overImage: true, hasScrim: false })], slideW: 1920, slideH: 1080 });
+  check("text-on-image is a warning not a fail", r.ok === true && r.warnings.length === 1, JSON.stringify(r));
+}
+// 29. text on image WITH a scrim → clean
+{
+  const r = scoreLegibility({ boxes: [tbox({ lum: 1, bgLum: null, overImage: true, hasScrim: true })], slideW: 1920, slideH: 1080 });
+  check("scrimmed text-on-image is clean", r.ok === true && r.warnings.length === 0, JSON.stringify(r));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

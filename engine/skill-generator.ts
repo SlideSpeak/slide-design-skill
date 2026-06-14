@@ -9,7 +9,8 @@ import {
   FAMILY_INTENT,
   DEFAULT_TRAP_FAMILY,
 } from "./composition-families.ts";
-import { inferPresentationType } from "./deck-plan.ts";
+import { inferPresentationType, type PresentationType } from "./deck-plan.ts";
+import { typeSetOverlap } from "./divergence.ts";
 
 /**
  * Codified version of the manual style-derivation workflow validated 2026-05-28.
@@ -121,6 +122,7 @@ export function composeGeneratorPrompt(
   brief: StyleBrief,
   references: SkillReference[],
   slug: string,
+  opts?: { userPrompt?: string; presentationType?: PresentationType },
 ): string {
   const refsBlock = references
     .map(
@@ -133,7 +135,16 @@ export function composeGeneratorPrompt(
     (f) => `  - ${f} — ${FAMILY_INTENT[f]}`,
   ).join("\n");
 
-  const presentationType = inferPresentationType(describeBrief(brief).toLowerCase());
+  // Infer the register from the DECK REQUEST when the caller supplies it — the
+  // topic that actually determines pitch/report/teaching/keynote — not from the
+  // style cue alone. describeBrief(brief) is only the style inspiration ("like
+  // McKinsey") with the topic stripped, which routed brand briefs to `general`
+  // and omitted the register's SKILL REQUIREMENTS block, while deck-time injected
+  // the correct one — the two inferences disagreed. A caller may also pass the
+  // resolved presentationType so skill-gen and deck-time share ONE inference.
+  const presentationType: PresentationType =
+    opts?.presentationType ??
+    inferPresentationType((opts?.userPrompt ?? describeBrief(brief)).toLowerCase());
   const editorialBlock =
     presentationType === "editorial" ? editorialSkillRequirements() : "";
   const pitchBlock = presentationType === "pitch" ? pitchSkillRequirements() : "";
@@ -474,14 +485,39 @@ export function parseGeneratedSkill(response: string): GeneratedSkillFiles {
       throw new Error(`Generator response missing or non-string key: "${key}".`);
     }
   }
+  // The generated chrome.css and components.html are LLM output that crosses a
+  // trust boundary and is later rendered VERBATIM (chrome inside <style>, the
+  // template bodies interpolated into the DOM). Neutralize the injection vectors
+  // here so a stray (or brief-nudged) <script>/handler/javascript: cannot ship.
+  // Structural tags the architecture relies on (<template>, <style>, inline
+  // style=, and font @import/url) are deliberately preserved.
   return {
     "SKILL.md": obj["SKILL.md"] as string,
     "tokens.json": obj["tokens.json"] as string,
     "layout-grammar.md": obj["layout-grammar.md"] as string,
-    "components.html": obj["components.html"] as string,
+    "components.html": scrubGeneratedHtml(obj["components.html"] as string),
     "image-style.md": obj["image-style.md"] as string,
-    "chrome.css": obj["chrome.css"] as string,
+    "chrome.css": scrubGeneratedCss(obj["chrome.css"] as string),
   };
+}
+
+// Remove active-content vectors from generated HTML without touching the
+// structural tags the renderer depends on (<template>, <style>, inline style=).
+export function scrubGeneratedHtml(html: string): string {
+  return html
+    .replace(/<\s*script\b[\s\S]*?<\s*\/\s*script\s*>/gi, "")
+    .replace(/<\s*\/?\s*script\b[^>]*>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(href|src)\s*=\s*("\s*(?:java|vb)script:[^"]*"|'\s*(?:java|vb)script:[^']*'|(?:java|vb)script:[^\s>]+)/gi, '$1="#"');
+}
+
+// Remove active-content vectors from generated CSS. Leaves @import/url (legit for
+// web fonts) but kills tag-breakout, IE expression(), and script-scheme URLs.
+export function scrubGeneratedCss(css: string): string {
+  return css
+    .replace(/<\s*\/?\s*(script|style)\b[^>]*>/gi, "")
+    .replace(/expression\s*\(/gi, "expr_blocked(")
+    .replace(/(java|vb)script\s*:/gi, "blocked:");
 }
 
 /**
@@ -547,10 +583,18 @@ export async function generateSkill(
     llm: GeneratorLLM;
     references: SkillReference[];
     baseDir?: string;
+    /** The deck request (topic). Used so the register is inferred from the deck
+     *  intent, not the style cue. */
+    userPrompt?: string;
+    /** Pre-resolved presentation type — share ONE inference with deck-time. */
+    presentationType?: PresentationType;
   },
 ): Promise<{ skill: Skill; dir: string; cleanup: () => Promise<void> }> {
   const slug = slugForBrief(brief);
-  const prompt = composeGeneratorPrompt(brief, deps.references, slug);
+  const prompt = composeGeneratorPrompt(brief, deps.references, slug, {
+    userPrompt: deps.userPrompt,
+    presentationType: deps.presentationType,
+  });
 
   const maxAttempts = 3;
   let lastError: unknown;
@@ -572,7 +616,33 @@ export async function generateSkill(
       `generateSkill: LLM call failed after ${maxAttempts} attempts. Last error: ${(lastError as Error)?.message ?? String(lastError)}`,
     );
   }
-  return materializeSkill(files, slug, { baseDir: deps.baseDir });
+  const out = await materializeSkill(files, slug, { baseDir: deps.baseDir });
+
+  // Divergence guard (engine-stage, additive): warn if the freshly generated
+  // skill's slide-type set re-skins a SAME-REGISTER reference (>= 70% overlap).
+  // The clean-room flow drives generation via print-generator-prompt + the
+  // standalone divergence-check harness; this covers the in-engine generateSkill
+  // path too so a re-skin does not pass silently. Non-fatal.
+  try {
+    const newTypes = (out.skill.grammar?.slideTypes ?? []).map((t) => t.name);
+    if (newTypes.length) {
+      const reg = deps.presentationType ??
+        inferPresentationType((deps.userPrompt ?? describeBrief(brief)).toLowerCase());
+      for (const r of deps.references) {
+        if (!r.slideTypes?.length) continue;
+        if (inferPresentationType((r.description ?? "").toLowerCase()) !== reg) continue;
+        const overlap = typeSetOverlap(newTypes, r.slideTypes);
+        if (overlap >= 0.7) {
+          console.warn(
+            `generateSkill: "${slug}" slide-type set is ${(overlap * 100).toFixed(0)}% identical to same-register reference "${r.name}" — likely a re-skin; pick a distinct spine.`,
+          );
+        }
+      }
+    }
+  } catch {
+    // divergence check is advisory; never block materialization on it.
+  }
+  return out;
 }
 
 /**
@@ -599,8 +669,17 @@ export async function buildReferenceLibrary(
         join(skillsRoot, name, "layout-grammar.md"),
         "utf8",
       );
-      const slideTypeCount = (grammarMd.match(/^\|\s*`?slide-/gm) || []).length;
-      const slideTypes = [...grammarMd.matchAll(/^\|\s*`([a-z][a-z0-9-]*)`/gm)].map((m) => m[1]);
+      // First table cell of each row is the slide-type name. Match backtick-OR-
+      // bare (several generated grammars drop the backticks), and drop the header
+      // row by name. The old count regex matched only the `slide-type` header row,
+      // so every skill reported slideTypeCount=1; the old types regex required
+      // backticks, so bare-name grammars yielded []. Both starved the divergence
+      // signal shown to the generator.
+      const HEADER_CELLS = ["slide-type", "type", "slide", "name"];
+      const slideTypes = [...grammarMd.matchAll(/^\|\s*`?([a-z][a-z0-9-]*)`?\s*\|/gm)]
+        .map((m) => m[1])
+        .filter((t) => !HEADER_CELLS.includes(t));
+      const slideTypeCount = slideTypes.length;
       refs.push({
         name,
         description: typeof fm.description === "string" ? fm.description.slice(0, 280) : "",

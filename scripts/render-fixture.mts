@@ -1,6 +1,7 @@
 // Render a fixture deck to standalone HTML with NO image providers (deterministic,
 // no FAL). Usage: npx tsx scripts/render-fixture.mts <skillName> <fixtureRelPath> <outRelPath>
 import { readFile, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { generateDeck, loadSkill, wrapAsStandaloneHtml, type LLMClient, type ImageResolver } from "../engine/index.ts";
@@ -29,4 +30,14 @@ console.log("wrote", outArg, "slides:", result.slides.length);
 if (emptyCharts.length) {
   console.error(`ERROR: ${emptyCharts.length} {{@chart}} directive(s) rendered EMPTY [${emptyCharts.join(", ")}]. Usually a bad data slot (numbers must be comma/space/pipe separated) or an unknown chart type. A blank chart must never ship.`);
   process.exit(1);
+}
+
+// Wire the DOM gate (occupancy + legibility + richness) into the render step so a
+// deck cannot reach the next stage ungated. Set GATE=0 to skip during iteration.
+if (process.env.GATE !== "0") {
+  const g = spawnSync("npx", ["tsx", resolve(__dirname, "measure-occupancy.mts"), outArg], { stdio: "inherit" });
+  if (g.status !== 0) {
+    console.error("GATE FAILED — occupancy/legibility/richness flagged the deck (output above). Fix the slides and re-render, or set GATE=0 to render anyway during iteration.");
+    process.exit(1);
+  }
 }

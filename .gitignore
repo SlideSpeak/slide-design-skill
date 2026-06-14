@@ -33,3 +33,13 @@ scripts/**/scenarios/
 render-output/
 artifacts/
 tmp/
+
+# scratch deck fixtures + working brief/content material (generated per run, not source)
+scripts/*-deck.json
+scripts/*.html
+scripts/.brief-*
+scripts/.content-*
+
+# review + workflow scratch (regenerated; may contain client brief material)
+output/
+.workflows/

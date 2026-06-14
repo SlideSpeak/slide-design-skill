@@ -21,6 +21,12 @@ interface CapturedCall {
 }
 const calls: CapturedCall[] = [];
 
+// A real (tiny, varied) PNG so the background provider's blank/pixel validation
+// (inspectImageBytes) sees a decodable, non-uniform frame and accepts it.
+const VALID_PNG_B64 =
+  "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAADG0lEQVR4nAEQA+/8AKVNyhglMLsdbRMs3tYjey7ZHj9yH8sZcRdElNZJPJ1cNGC+MSAeaf7aoO7ouZl/XAB8KZn9r+WTJTzWVK9N+tcUJ6Cus/7pIy+K8iEfnuSRxbEL7LVWO/web5NCfsvI/ikAVeXNjkbcjtS3wnZNKlpNdncG+F2GkAJK1r2jQBvpyMvMyTX2zR9hImrhUziuGjQAAE0zug0kasBMgbG68j47+e71958rSTSvh/VSC2m5Sw2YLoW7VbZyqHJjes10Zvy2DgAOj/GEY7DksropcDR08GSsaPcA9bArPcZm9FveqizK7c0rUVdBDk3uSvKzT0MKBzQBR95jJTAdAIf7Ou9bnZvfp7iNYzKfEPlr+0am5de0uhd3iCtwltFa+e77mEarQY7xAIRn5UbVPsjioSV72yVsmz5Pu0mBRu9wMMv5U3JS3M6t12S2oy+7Ca3q4QnEqZcgOQF1NSsSVunV/y58+o10edjhkXYwSwgsLwj8IkSdXc3Gfm/thJVB8fY8DOEK4YZAAvUA5FuKsQmAEgcJYfN95Dbd/cmdbnWvZUfPsRtCBySC3FMcK8OQfJYX615QieQBhrqoAKV9EZ5vtl0Aq8Mq845mfwIuhy1JzBXJC5mbdytPx6b9TJFKFttHCHUrDxVEuDXA5wAZCX36hwHpIy8h8oEmh3hpduv8wyf1kxdlJ0upgptEBvYf+Ikyb/qUku3u7jxmnysC2f8X8KDloKM8SjStIv9A2hlOvrPXAzb17NqwPU3/BM+6oam0d5GsGTlQdhhYGx/2AcnHJ+8UZWC0qAIDGGX2kyLZ4DqtDY0bTWq9LcAS069f2JNYn8TT9Tf4FShPo16J6QBq/nDnqubaR2J8LlmvLqN6vIRnCtPE02vAiq0f/464QG4vin/EzOTdnwtBENny+gABJcjvwLdIjdAWxZve3RYVYxNbym1E+LJFYDCi7BA6gCjriQeRZdcCG1ofDjnG48zGAl6s6tj1xZ9eioLgOu+V4vLqy17jl7U/Y/7VN9oA+NCCXzt68RnQVgxMwa3bPTpRKwXbhTUxk+NAAAAAAElFTkSuQmCC";
+const VALID_PNG = Uint8Array.from(atob(VALID_PNG_B64), (ch) => ch.charCodeAt(0));
+
 const realFetch = globalThis.fetch;
 globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input);
@@ -32,7 +38,7 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     });
   }
   if (url === "https://img.example/x.jpg") {
-    return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
+    return new Response(VALID_PNG, { status: 200 });
   }
   return new Response("not found", { status: 404 });
 }) as typeof fetch;

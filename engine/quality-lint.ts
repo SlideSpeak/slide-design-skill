@@ -145,6 +145,30 @@ export function lintSlideTree(
         });
       }
 
+      // Orphan single character — almost always a shredded table cell, e.g.
+      // "n/a" split into a lone "n" and "a" across two columns (Kelvin slide 13).
+      if (!EYEBROW_SLOTS.has(slot) && /^[a-zA-Z]$/.test(value.trim())) {
+        findings.push({
+          rule: "orphan-char",
+          severity: "warn",
+          slideIndex,
+          slot,
+          message: `Slot "${slot}" is the single character "${value.trim()}" — likely a split cell (e.g. "n/a"). Provide the full value verbatim.`,
+        });
+      }
+
+      // A fictional titled expert at a named institution manufactures false
+      // authority (unlike obviously-illustrative role-only attribution).
+      if (/\b(?:Dr|Prof|Professor)\.?\s+[A-Z][a-z]+/.test(value)) {
+        findings.push({
+          rule: "named-expert",
+          severity: "warn",
+          slideIndex,
+          slot,
+          message: `Titled named expert in "${slot}" ("${value.trim().slice(0, 60)}"). If illustrative, use role-only attribution ("a marine ecologist") or footer-label the slide illustrative.`,
+        });
+      }
+
       // AI filler phrases.
       const hits = AI_PHRASES.filter((_, i) => AI_PHRASE_RES[i].test(value));
       if (hits.length > 0) {
@@ -346,11 +370,21 @@ export function lintSlideTree(
   slides.forEach((s, i) => {
     if (s.density !== "data-dense") return;
     let tokens = 0;
+    let exhibitNumerals = 0;
     for (const [k, v] of Object.entries(s.slots ?? {})) {
       if (NON_TEXT_SLOT_RE.test(k)) continue;
       if (typeof v !== "string" || v.startsWith("data:")) continue;
       tokens += v.split(/[\s|/]+/).filter(Boolean).length;
+      // A realized exhibit carries its volume in chart/table DATA, not prose.
+      // Count numerals in data-bearing slots toward the floor so a slide whose
+      // density lives in a long series/full table is not false-flagged as thin.
+      if (/(^|[-_])(data|cells|labels|values|series|rows|cols)$/i.test(k) || /chart|table|matrix|grid/i.test(k)) {
+        exhibitNumerals += (v.match(/-?\d[\d.,]*/g) || []).length;
+      }
     }
+    // An exhibit-bearing data-dense slide (>= 8 data numerals) realizes its
+    // volume visually; the prose token floor does not apply.
+    if (exhibitNumerals >= 8) return;
     // Floor derived from the counted reference decks (anatomy spec): a median
     // reference content page renders ~100 tokens, of which ~25-40 are chart
     // numerals the renderer adds — so authored content below ~70 tokens cannot
@@ -396,6 +430,41 @@ export function lintSlideTree(
       slideIndex: -1,
       message: monotony,
     });
+  }
+
+  // Deck-level: mixed currency glyphs. A lone "£40" in an otherwise-EUR deck
+  // (Nordwind) reads as a rendering error. Flag a rare currency when another
+  // clearly dominates. (A deck deliberately comparing currencies will trip this;
+  // it is a warning, not a hard fail.)
+  const CURRENCIES: { key: string; re: RegExp }[] = [
+    { key: "EUR", re: /€|\bEUR\b/g },
+    { key: "USD", re: /\$|\bUSD\b/g },
+    { key: "GBP", re: /£|\bGBP\b/g },
+    { key: "JPY", re: /¥|\bJPY\b/g },
+    { key: "INR", re: /₹|\bINR\b/g },
+  ];
+  const curCounts: Record<string, number> = {};
+  for (const s of slides) {
+    for (const [, v] of visibleSlots(s)) {
+      for (const { key, re } of CURRENCIES) {
+        const n = (v.match(re) ?? []).length;
+        if (n) curCounts[key] = (curCounts[key] ?? 0) + n;
+      }
+    }
+  }
+  const curEntries = Object.entries(curCounts);
+  if (curEntries.length >= 2) {
+    const dominant = curEntries.reduce((a, b) => (b[1] > a[1] ? b : a));
+    for (const [g, c] of curEntries) {
+      if (g !== dominant[0] && c <= 2 && dominant[1] >= 4) {
+        findings.push({
+          rule: "mixed-currency",
+          severity: "warn",
+          slideIndex: -1,
+          message: `Currency "${g}" appears ${c}× while "${dominant[0]}" dominates (${dominant[1]}×). A stray currency glyph reads as an error — normalize to one currency.`,
+        });
+      }
+    }
   }
 
   return { findings };

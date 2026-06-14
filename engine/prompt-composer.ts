@@ -1,6 +1,6 @@
 import type { Skill } from "./types.ts";
 import { densityPromptBlock } from "./density.ts";
-import { planDeck, deckPlanPromptBlock } from "./deck-plan.ts";
+import { planDeck, deckPlanPromptBlock, type DeckPlan } from "./deck-plan.ts";
 import { BOXED_FAMILIES, UNBOXED_FAMILIES, VISUAL_FAMILIES, DATA_BEARING_FAMILIES } from "./composition-families.ts";
 
 const MAX_BG_PROMPT_CHARS = 600;
@@ -9,6 +9,10 @@ export function composeSystemPrompt(skill: Skill, args: {
   userPrompt: string;
   slideCount: number;
   language: string;
+  /** The DeckPlan derived by the caller. Passed in so the plan that shaped the
+   *  deck is observable/testable by generateDeck instead of computed-and-discarded
+   *  here. Falls back to computing it if a caller does not supply one. */
+  plan?: DeckPlan;
 }): string {
   const { frontmatter, systemPromptBody, grammar } = skill;
 
@@ -29,7 +33,7 @@ export function composeSystemPrompt(skill: Skill, args: {
 
   const varietySection = composeVarietySection(grammar.slideTypes, args.slideCount);
 
-  const plan = planDeck({ userPrompt: args.userPrompt, slideCount: args.slideCount, skill });
+  const plan = args.plan ?? planDeck({ userPrompt: args.userPrompt, slideCount: args.slideCount, skill });
   const deckPlanSection = deckPlanPromptBlock(plan);
   const isEditorial = plan.read.presentationType === "editorial";
   const isPitch = plan.read.presentationType === "pitch";

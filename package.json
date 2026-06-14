@@ -14,12 +14,15 @@
     "test:richness": "tsx scripts/richness-smoke.ts",
     "test:moodboard": "tsx scripts/moodboard-smoke.ts",
     "test:logo-wall": "tsx scripts/logo-wall-smoke.ts",
-    "test": "npm run validate && npm run test:image && npm run test:security && npm run test:quality && npm run test:deck-plan && npm run test:occupancy && npm run test:richness && npm run test:moodboard && npm run test:logo-wall && npm run test:reference",
+    "test": "npm run validate && npm run test:image && npm run test:security && npm run test:quality && npm run test:deck-plan && npm run test:occupancy && npm run test:richness && npm run test:moodboard && npm run test:logo-wall && npm run test:reference && npm run test:renderer-fix && npm run test:style-intake && npm run test:divergence",
     "measure:occupancy": "tsx scripts/measure-occupancy.mts",
     "new-skill": "tsx scripts/new-skill.ts",
     "bake:dotmap": "tsx scripts/bake-dotmap.ts",
     "bake:fidelity": "tsx scripts/bake-fidelity.ts",
-    "test:reference": "tsx scripts/reference-image-smoke.ts"
+    "test:reference": "tsx scripts/reference-image-smoke.ts",
+    "test:renderer-fix": "tsx scripts/renderer-fix-smoke.ts",
+    "test:style-intake": "tsx scripts/test-style-intake.mts",
+    "test:divergence": "tsx scripts/divergence-smoke.ts"
   },
   "engines": {
     "node": ">=20"

@@ -1,6 +1,7 @@
 import { resolve, relative, isAbsolute } from "node:path";
 import { loadSkill, listSkills } from "./skill-loader.ts";
 import { composeSystemPrompt } from "./prompt-composer.ts";
+import { planDeck } from "./deck-plan.ts";
 import { renderDeckShell, renderSlide } from "./renderer.ts";
 import { guardImagePrompt, guardSlotContent, flagModelGeneratedClaims } from "./brand-guard.ts";
 import { GLOBAL_IMAGE_NEGATIVES } from "./image-providers.ts";
@@ -59,6 +60,7 @@ export {
   UnsplashProvider,
   PexelsProvider,
   FederatedImageResolver,
+  inspectImageBytes,
 } from "./image-providers.ts";
 export type { ProviderConfig, FederatedImageResolverDeps } from "./image-providers.ts";
 
@@ -115,16 +117,23 @@ export async function generateDeck(
   const skillDir = await resolveSkillDir(deps.skillsRoot, args.skillName);
   const skill = await loadSkill(skillDir);
 
+  // Derive the design plan ONCE here so it is observable (it shapes the deck and
+  // is returned in the result), then pass it into the prompt composer instead of
+  // letting the composer compute-and-discard it.
+  const plan = planDeck({ userPrompt: args.userPrompt, slideCount: args.slideCount, skill });
+
   const systemPrompt = composeSystemPrompt(skill, {
     userPrompt: args.userPrompt,
     slideCount: args.slideCount,
     language: args.language ?? "en",
+    plan,
   });
 
   const raw = await deps.llm.generateSlideTree(systemPrompt);
   const validation = validateSlideTree(raw, skill, args.slideCount, {
     userPrompt: args.userPrompt,
     illustrative: args.illustrative,
+    strict: args.strict,
   });
   warnings.push(...validation.warnings);
 
@@ -142,9 +151,29 @@ export async function generateDeck(
       if (!g.allowed) {
         warnings.push(`Slot dropped: ${g.reason}`);
         slide.slots[k] = "";
-      } else if (g.warning) {
-        warnings.push(g.warning);
+      } else {
+        // Write back the guard's sanitized value (not the raw input) so any
+        // future tightening of guardSlotContent actually takes effect at render.
+        slide.slots[k] = g.sanitized ?? v;
+        if (g.warning) warnings.push(g.warning);
       }
+    }
+  }
+
+  // Reconcile the planned per-position density rhythm with the density the LLM
+  // actually emitted per slide. The rhythm is advisory, but a wholesale mismatch
+  // means the deck ignored the designed variation — surface it rather than let it
+  // pass silently (the occupancy/richness gates key off the LLM density, not the plan).
+  if (plan.densityRhythm.length === validatedSlides.length) {
+    let deviations = 0;
+    validatedSlides.forEach((slide, i) => {
+      const got = (slide as { density?: string }).density;
+      if (got && got !== plan.densityRhythm[i]) deviations += 1;
+    });
+    if (validatedSlides.length >= 4 && deviations > validatedSlides.length * 0.6) {
+      warnings.push(
+        `Density rhythm: ${deviations}/${validatedSlides.length} slides diverge from the planned rhythm — the deck may not realize the intended density variation.`,
+      );
     }
   }
 
@@ -240,7 +269,14 @@ export async function generateDeck(
     html: renderSlide(slide, ctx, { index, total }),
   }));
 
-  return { slides, imagesUsed, warnings };
+  return {
+    slides,
+    imagesUsed,
+    warnings,
+    read: plan.read,
+    planRationale: plan.rationale,
+    domGatesRun: false,
+  };
 }
 
 function isResolvedImage(v: unknown): v is ResolvedImage {

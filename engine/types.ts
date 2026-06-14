@@ -139,10 +139,24 @@ export interface GenerateDeckArgs {
   language?: string;
   /** Deck is explicitly sample/illustrative content — skips the fake-precise-number lint. */
   illustrative?: boolean;
+  /** Strict production mode: validation warnings (lint errors, missing slots, composition) become fatal. */
+  strict?: boolean;
 }
 
 export interface GenerateDeckResult {
   slides: { type: string; html: string }[];
   imagesUsed: number;
   warnings: string[];
+  /** The design read the engine derived for this brief (presentation type, audience, register, …). */
+  read?: import("./deck-plan.ts").DesignRead;
+  /** Human-readable rationale for the derived plan. */
+  planRationale?: string;
+  /**
+   * Whether the DOM-level legibility/occupancy/richness gates ran inside this call.
+   * Always false: those gates operate on rendered HTML and live in the render/export
+   * scripts (render-fixture / render-fal-runtime via measure-occupancy). A caller that
+   * only sees `validation ok` must NOT assume the deck is legible/full — wire the
+   * render+measure step (or use the export scripts) for that guarantee.
+   */
+  domGatesRun: boolean;
 }

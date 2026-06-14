@@ -87,6 +87,21 @@ const skill = skillStub();
   check("editorial type inferred", p.read.presentationType === "editorial", p.read.presentationType);
 }
 
+// 4b. colliding briefs: a type-defining head noun must beat an incidental
+// report-flavored word (the old broad `report` list flipped these to report).
+{
+  const cases: [string, string][] = [
+    ["a keynote launching our quarterly results", "keynote"],
+    ["a teaching workshop on our consulting methodology", "teaching"],
+    ["vision keynote and a strategy deep dive", "keynote"],
+    ["an investor pitch with our quarterly results", "pitch"],
+  ];
+  for (const [prompt, want] of cases) {
+    const p = planDeck({ userPrompt: prompt, slideCount: 10, skill });
+    check(`collide: "${prompt.slice(0, 30)}…" → ${want}`, p.read.presentationType === want, p.read.presentationType);
+  }
+}
+
 // 5. no signal → general
 {
   const p = planDeck({ userPrompt: "Slides about our project", slideCount: 8, skill: skillStub({

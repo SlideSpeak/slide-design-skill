@@ -53,10 +53,26 @@ export interface DeckPlan {
 // Keyword signals per presentation type. Word-boundary, case-insensitive.
 const TYPE_SIGNALS: Record<Exclude<PresentationType, "general">, string[]> = {
   pitch: ["pitch", "raise", "investor", "fundrais", "seed round", "series a", "series b", "vc", "venture", "cap table", "valuation"],
-  report: ["report", "results", "findings", "analysis", "quarterly", "annual review", "earnings", "kpi", "metrics review", "audit", "study", "consulting", "strategy", "due diligence", "business case", "market entry", "market sizing", "cost reduction", "operating model", "deep dive", "diagnostic", "benchmark", "data-dense", "dense data"],
+  // Trimmed: the generic cross-register over-attractors (strategy, analysis, study,
+  // consulting, deep dive, diagnostic, benchmark) were removed — they appear in
+  // pitch/keynote/teaching briefs too and flipped them to report. Kept terms are
+  // genuinely report/consulting-deliverable specific.
+  report: ["report", "results", "findings", "quarterly", "annual review", "earnings", "kpi", "metrics review", "audit", "due diligence", "business case", "market entry", "market sizing", "cost reduction", "operating model", "data-dense", "dense data"],
   teaching: ["training", "workshop", "onboarding", "lesson", "course", "tutorial", "curriculum", "teach", "lecture", "how to"],
   editorial: ["story", "essay", "editorial", "magazine", "manifesto", "narrative", "brand story", "feature piece", "impact report", "progress report", "photo-led", "photo-driven", "photo essay", "documentary", "lookbook"],
   keynote: ["keynote", "launch", "announce", "unveil", "vision", "reveal", "product launch", "ted talk", "mainstage", "main stage", "stage talk", "commencement address", "on stage"],
+};
+
+// Type-DEFINING head nouns. A brief that literally says "keynote" or "workshop"
+// names its type; weight those above incidental modifiers so a stray "results"
+// or "strategy" can't outvote the head noun. (Scored as +2 on top of the base
+// signal hit, so a head noun is worth 3.)
+const HEAD_NOUNS: Record<Exclude<PresentationType, "general">, string[]> = {
+  pitch: ["pitch"],
+  report: ["report", "earnings"],
+  teaching: ["workshop", "course", "lesson", "tutorial", "curriculum", "lecture"],
+  editorial: ["editorial", "essay", "magazine", "manifesto"],
+  keynote: ["keynote"],
 };
 
 const AUDIENCE_SIGNALS: Record<Exclude<Audience, "general">, string[]> = {
@@ -82,16 +98,32 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function inferPresentationType(text: string): PresentationType {
+export function inferPresentationType(text: string, meta?: string): PresentationType {
+  // The DECK REQUEST (`text`) drives the type: its signals count double and its
+  // head nouns get a further bonus. The skill's style frontmatter (`meta`,
+  // optional) is a weak hint counted at single weight with NO head-noun bonus, so
+  // an incidental "swiss editorial" inspiration can't outvote an explicit
+  // "quarterly results" request.
   let best: PresentationType = "general";
   let bestScore = 0;
+  let runnerUp = 0;
   for (const [type, signals] of Object.entries(TYPE_SIGNALS) as [Exclude<PresentationType, "general">, string[]][]) {
-    const score = hits(text, signals);
+    const score =
+      hits(text, signals) +
+      2 * hits(text, HEAD_NOUNS[type]) +
+      (meta ? hits(meta, signals) : 0);
     if (score > bestScore) {
+      runnerUp = bestScore;
       bestScore = score;
       best = type;
+    } else if (score > runnerUp) {
+      runnerUp = score;
     }
   }
+  // Require a clear winner: no signal at all, or a tie with the runner-up, is too
+  // ambiguous to commit a register block — fall back to general rather than
+  // mis-route (a single incidental keyword used to flip the whole read).
+  if (bestScore === 0 || bestScore === runnerUp) return "general";
   return best;
 }
 
@@ -172,9 +204,13 @@ export function planDeck(args: {
 }): DeckPlan {
   const { userPrompt, slideCount, skill } = args;
   const fm = skill.frontmatter;
-  const text = ` ${userPrompt} ${fm.name} ${fm.description} ${fm.inspiration} `.toLowerCase();
+  const promptText = ` ${userPrompt} `.toLowerCase();
+  const metaText = ` ${fm.name} ${fm.description} ${fm.inspiration} `.toLowerCase();
+  const text = promptText + metaText;
 
-  const presentationType = inferPresentationType(text);
+  // Type is driven by the deck request; the skill's style frontmatter is only a
+  // weak hint (passed as meta). Audience/variance still read the blended text.
+  const presentationType = inferPresentationType(promptText, metaText);
   const audience = inferAudience(text);
   const register = deriveRegister(presentationType, audience);
   const assetAppetite = deriveAppetite(presentationType, skill);

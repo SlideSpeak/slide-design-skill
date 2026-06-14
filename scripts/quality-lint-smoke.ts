@@ -416,5 +416,40 @@ function describeSubjectMonotony(prompts: string[]): string {
   check("ground-truth NEW 4 (distinct) passes", !newFlagged);
 }
 
+// 31. orphan-char: a single-letter cell (split "n/a") flagged; "n/a" passes
+{
+  const f = lintSlideTree([slide("table", { "col-today": "n", "col-scale": "a", headline: "Unit economics" })]).findings;
+  check("orphan-char flags split cell", has(f, "orphan-char"), JSON.stringify(rulesOn(f, 0)));
+  const ok = lintSlideTree([slide("table", { "col-today": "n/a", "col-scale": "12mo" })]).findings;
+  check("orphan-char no false positive on n/a", !has(ok, "orphan-char"));
+}
+
+// 32. named-expert: titled fictional expert flagged; role-only passes
+{
+  const f = lintSlideTree([slide("quote", { body: "Dr. Ines Kollberg, Coastal Research Station" })]).findings;
+  check("named-expert flags Dr. Name", has(f, "named-expert"));
+  const ok = lintSlideTree([slide("quote", { body: "A marine ecologist who studies the coast" })]).findings;
+  check("named-expert no false positive on role-only", !has(ok, "named-expert"));
+}
+
+// 33. mixed-currency: a stray £ in a EUR deck flagged; single currency passes
+{
+  const deck = [
+    slide("stat", { headline: "EUR 210m revenue", body: "up from EUR 80m and EUR 140m" }),
+    slide("chart", { caption: "EUR 40 per unit", note: "the 2024 forecast is £40" }),
+  ];
+  check("mixed-currency flags the stray glyph", has(lintSlideTree(deck).findings, "mixed-currency"));
+  const ok = lintSlideTree([slide("stat", { a: "EUR 10", b: "EUR 20", c: "EUR 30", d: "EUR 40" })]).findings;
+  check("mixed-currency no false positive single currency", !has(ok, "mixed-currency"));
+}
+
+// 34. A25: chart/table-driven dense slide not thin; prose-thin dense still flagged
+{
+  const exhibit = lintSlideTree([slide("chart", { "ex1-data": "40|55|62|71|80|88|96|104|119|130", "ex1-labels": "a|b|c|d|e|f|g|h|i|j", headline: "Growth" }, { density: "data-dense" })]).findings;
+  check("A25: chart-driven dense slide not flagged thin", !has(exhibit, "thin-dense-slide"), JSON.stringify(exhibit));
+  const thin = lintSlideTree([slide("statement", { headline: "Big idea", body: "Three words only" }, { density: "data-dense" })]).findings;
+  check("A25: prose-thin dense slide still flagged", has(thin, "thin-dense-slide"));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exit(1);

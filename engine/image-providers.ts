@@ -1,6 +1,68 @@
+import { execFile } from "node:child_process";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { guardImagePrompt, guardAssembledImagePrompt } from "./brand-guard.ts";
 import { applyTreatment } from "./image-treatments.ts";
 import type { ImageRequest, ImageStyle, ResolvedImage } from "./types.ts";
+
+const execFileP = promisify(execFile);
+const __imgDir = dirname(fileURLToPath(import.meta.url));
+const BLANK_STATS_SCRIPT = resolve(__imgDir, "..", "scripts", "image-blank-stats.py");
+
+// A generated image whose channel stddev is this low is near-uniform — the
+// flux/dev degenerate-frame failure (a near-solid, usually black frame returned
+// for some close-up-on-body bgPrompts). Both gates are conservative to avoid
+// rejecting a legitimately dark-but-detailed photo.
+const BLANK_STDDEV = 8;
+const BLANK_MIN_BYTES = 15_000;
+
+/**
+ * Inspect generated image bytes and decide whether the frame is blank/degenerate.
+ * Decodes via PIL (already a proven repo dependency) for the stddev signal, with a
+ * raw byte-size floor as a no-decode fallback. The check is best-effort: if PIL is
+ * unavailable it falls back to size only and never blocks on its own failure (an
+ * image is an enhancement, not a hard requirement).
+ */
+export async function inspectImageBytes(
+  buf: Buffer,
+): Promise<{ blank: boolean; reason: string }> {
+  // Prefer the real signal (decode + channel stddev): a valid image with variance
+  // is fine at ANY size, a near-uniform one is blank regardless of size.
+  let dir: string | undefined;
+  try {
+    dir = await mkdtemp(join(tmpdir(), "ds-imgstat-"));
+    const f = join(dir, "img");
+    await writeFile(f, buf);
+    const { stdout } = await execFileP("python3", [BLANK_STATS_SCRIPT, f], { timeout: 15_000 });
+    const stat = JSON.parse(stdout.trim());
+    if (stat.ok === false) {
+      // Distinguish "PIL not installed" (cannot decode — fall through to the size
+      // floor, do NOT reject) from a real decode failure (corrupt/empty → blank).
+      if (stat.reason === "no-pil") {
+        // fall through to byte-size floor below
+      } else {
+        return { blank: true, reason: `image failed to decode (${stat.error}) — corrupt/empty bytes` };
+      }
+    } else if (stat.ok && typeof stat.std === "number") {
+      if (stat.std < BLANK_STDDEV) {
+        return { blank: true, reason: `near-uniform frame (channel stddev ${stat.std}) — flux degenerate-frame failure` };
+      }
+      return { blank: false, reason: "" };
+    }
+  } catch {
+    // PIL/python unavailable or timed out — fall back to a raw byte-size floor.
+  } finally {
+    if (dir) await rm(dir, { recursive: true, force: true }).catch(() => {});
+  }
+  // Fallback only when the decoder could not run.
+  if (buf.length < BLANK_MIN_BYTES) {
+    return { blank: true, reason: `frame is only ${buf.length}B and could not be decoded — degenerate/blank` };
+  }
+  return { blank: false, reason: "" };
+}
 
 // Quality/realism floor applied to EVERY AI image, on top of each skill's own
 // negatives. FAL (flux/schnell) reliably drifts into wireframe / perspective-grid
@@ -120,8 +182,18 @@ export class FalProvider {
       throw new Error(`FAL ${res.status}: ${text}`);
     }
 
-    const json = (await res.json()) as { images: { url: string }[] };
+    const json = (await res.json()) as {
+      images: { url: string }[];
+      has_nsfw_concepts?: boolean[];
+    };
     if (!json.images?.length) throw new Error("FAL returned no images");
+    // FAL blacks out frames it flags as NSFW — surfacing it explains an otherwise
+    // mysterious solid-dark hero. Treat a flagged frame as unusable.
+    if (json.has_nsfw_concepts?.[0]) {
+      throw new Error(
+        "FAL flagged the prompt (has_nsfw_concepts) and returns a blacked-out frame — rephrase the bgPrompt to a wider, less close-up scene.",
+      );
+    }
 
     return {
       url: json.images[0].url,
@@ -156,6 +228,13 @@ export class FalBackgroundProvider {
     const res = await fetch(img.url);
     if (!res.ok) throw new Error(`Failed to fetch FAL image: ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
+    // Pixel-validate before inlining: a near-uniform/blank frame must not ship as
+    // a "filled" hero. Throwing here lets generateDeck record a warning and fall
+    // back to the procedural gradient instead of a solid-black panel.
+    const check = await inspectImageBytes(buf);
+    if (check.blank) {
+      throw new Error(`FAL background rejected: ${check.reason}`);
+    }
     return `data:image/jpeg;base64,${buf.toString("base64")}`;
   }
 }

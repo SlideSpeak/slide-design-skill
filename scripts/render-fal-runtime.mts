@@ -14,6 +14,7 @@ import {
   renderDeckShell,
   FalProvider,
   FalBackgroundProvider,
+  CachedBackgroundProvider,
   FederatedImageResolver,
   inspectImageBytes,
   type LLMClient,
@@ -50,12 +51,15 @@ const falBg = new FalBackgroundProvider(fal);
 // FAL_REF_IMAGE=<url|data-uri>: anchor every background on a reference image
 // (approved moodboard, brand shot). Routes to the nano-banana edit endpoint.
 const refImage = process.env.FAL_REF_IMAGE;
-const bg = refImage
+const baseBg = refImage
   ? {
       generate: (prompt: string, w: number, h: number, opts?: { negative?: string }) =>
         falBg.generate(prompt, w, h, { ...opts, referenceImages: [refImage] }),
     }
   : falBg;
+// Content-hash disk cache: an identical background across re-renders is paid for
+// once. Bypass with SLIDESPEAK_FAL_CACHE=0.
+const bg = new CachedBackgroundProvider(baseBg);
 
 // Load the skill up front so inline images resolve through FAL using the skill's
 // own image-style (prompt template, negatives, treatment). This is a FAL-only

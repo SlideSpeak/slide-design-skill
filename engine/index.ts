@@ -8,6 +8,7 @@ import { GLOBAL_IMAGE_NEGATIVES } from "./image-providers.ts";
 import { applyTreatment, postProcessFilterFor } from "./image-treatments.ts";
 import { postProcessDataUri } from "./image-postprocess.ts";
 import { validateSlideTree } from "./validate.ts";
+import { estimateFalCostUSD } from "./fal-cost.ts";
 import type {
   GenerateDeckArgs,
   GenerateDeckResult,
@@ -63,6 +64,12 @@ export {
   inspectImageBytes,
 } from "./image-providers.ts";
 export type { ProviderConfig, FederatedImageResolverDeps } from "./image-providers.ts";
+export {
+  FalImageCache,
+  CachedBackgroundProvider,
+  falCacheKey,
+  defaultFalCacheDir,
+} from "./fal-cache.ts";
 
 export interface LLMClient {
   generateSlideTree(systemPrompt: string): Promise<unknown>;
@@ -177,6 +184,13 @@ export async function generateDeck(
     }
   }
 
+  // Hard ceiling on total FAL image-generation calls (backgrounds + FAL inline).
+  // Bounds credit spend; the generous default leaves normal decks untouched.
+  const envFalCap = Number(process.env.SLIDESPEAK_MAX_FAL_CALLS);
+  const maxFalCalls =
+    args.maxFalCalls ?? (Number.isFinite(envFalCap) && envFalCap > 0 ? envFalCap : 30);
+  let falCalls = 0;
+
   // Per-slide background generation. Each slide whose tree-node carries a
   // bgPrompt gets a fresh AI-rendered gradient inlined as data-URI into
   // slots["bg-image"]. Templates with {{@gradient-bg bgSlot=bg-image}}
@@ -189,6 +203,13 @@ export async function generateDeck(
         warnings.push(`Slide ${si} bgPrompt rejected: ${guard.reason}`);
         continue;
       }
+      if (falCalls >= maxFalCalls) {
+        warnings.push(
+          `FAL call ceiling (${maxFalCalls}) reached — slide ${si} background skipped.`,
+        );
+        continue;
+      }
+      falCalls += 1;
       try {
         // Full-bleed backgrounds get the SAME artifact guard + stylistic
         // treatment as resolver-path images: the global negatives (no grid/
@@ -230,6 +251,12 @@ export async function generateDeck(
         );
         break;
       }
+      if (falCalls >= maxFalCalls) {
+        warnings.push(
+          `FAL call ceiling (${maxFalCalls}) reached at slide ${si} image ${ii}.`,
+        );
+        break;
+      }
       const guard = guardImagePrompt(imgReq.subject);
       if (!guard.allowed) {
         warnings.push(`Image rejected: ${guard.reason}`);
@@ -246,6 +273,7 @@ export async function generateDeck(
         }
         resolvedImages.set(`${si}-${ii}`, resolved);
         imagesUsed += 1;
+        if (resolved.source === "fal") falCalls += 1;
       } catch (e) {
         warnings.push(`Image resolve failed for "${imgReq.subject}": ${String(e)}`);
       }
@@ -269,9 +297,16 @@ export async function generateDeck(
     html: renderSlide(slide, ctx, { index, total }),
   }));
 
+  if (falCalls > 0) {
+    warnings.push(
+      `[cost] ${falCalls} FAL image call(s), ~$${estimateFalCostUSD(falCalls).toFixed(2)} (approx, flux/schnell rate).`,
+    );
+  }
+
   return {
     slides,
     imagesUsed,
+    falCallsUsed: falCalls,
     warnings,
     read: plan.read,
     planRationale: plan.rationale,

@@ -136,6 +136,14 @@ export interface GenerateDeckArgs {
   userPrompt: string;
   slideCount: number;
   imageBudget?: number;
+  /**
+   * Hard ceiling on total FAL image-generation calls for this deck (backgrounds +
+   * FAL-resolved inline images combined). Bounds credit spend. Resolution order:
+   * arg > env SLIDESPEAK_MAX_FAL_CALLS > 30 (generous: covers any normal deck).
+   * When reached, further AI imagery is skipped with a warning and slides fall
+   * back to their procedural background / no inline image.
+   */
+  maxFalCalls?: number;
   language?: string;
   /** Deck is explicitly sample/illustrative content — skips the fake-precise-number lint. */
   illustrative?: boolean;
@@ -146,6 +154,8 @@ export interface GenerateDeckArgs {
 export interface GenerateDeckResult {
   slides: { type: string; html: string }[];
   imagesUsed: number;
+  /** Total FAL image-generation calls made (backgrounds + FAL-sourced inline). Always <= maxFalCalls. */
+  falCallsUsed: number;
   warnings: string[];
   /** The design read the engine derived for this brief (presentation type, audience, register, …). */
   read?: import("./deck-plan.ts").DesignRead;

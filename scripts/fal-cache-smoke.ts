@@ -5,9 +5,10 @@ import { tmpdir } from "node:os";
 import {
   FalImageCache,
   CachedBackgroundProvider,
+  CachedImageResolver,
   falCacheKey,
 } from "../engine/fal-cache.ts";
-import type { BackgroundGenerator } from "../engine/types.ts";
+import type { BackgroundGenerator, ImageRequest, ResolvedImage } from "../engine/types.ts";
 
 let pass = 0,
   fail = 0;
@@ -27,6 +28,26 @@ function countingGen(): { gen: BackgroundGenerator; calls: () => number } {
       async generate(prompt: string) {
         calls += 1;
         return `data:image/jpeg;base64,${Buffer.from(prompt).toString("base64")}`;
+      },
+    },
+    calls: () => calls,
+  };
+}
+function countingResolver(): {
+  res: { resolve(req: ImageRequest): Promise<ResolvedImage> };
+  calls: () => number;
+} {
+  let calls = 0;
+  return {
+    res: {
+      async resolve(req: ImageRequest): Promise<ResolvedImage> {
+        calls += 1;
+        return {
+          url: `data:image/jpeg;base64,${Buffer.from(req.subject).toString("base64")}`,
+          source: "fal",
+          width: req.width ?? 0,
+          height: req.height ?? 0,
+        };
       },
     },
     calls: () => calls,
@@ -83,6 +104,38 @@ async function main() {
     await dec3.generate("hero sunrise", 1920, 1080);
     await dec3.generate("hero sunrise", 1920, 1080);
     check("kill-switch bypasses cache (inner each call)", c3.calls() === 2, `calls=${c3.calls()}`);
+    delete process.env.SLIDESPEAK_FAL_CACHE;
+
+    // --- CachedImageResolver (inline images[]) ---
+    const ir = countingResolver();
+    const ires = new CachedImageResolver(ir.res, "schoolbook", new FalImageCache(dir));
+    const req = { subject: "saturn", category: "illustration", width: 800, height: 800 };
+    const r1 = await ires.resolve(req);
+    const r2 = await ires.resolve(req);
+    check("inline: identical resolve calls inner once", ir.calls() === 1, `calls=${ir.calls()}`);
+    check("inline: cached url matches", r1.url === r2.url);
+    check("inline: cache hit stamped cached:true", r2.cached === true);
+    check("inline: first (miss) result not stamped cached", r1.cached !== true);
+    await ires.resolve({ subject: "mars", category: "illustration", width: 800, height: 800 });
+    check("inline: different subject calls inner again", ir.calls() === 2, `calls=${ir.calls()}`);
+
+    const ir2 = countingResolver();
+    const ires2 = new CachedImageResolver(ir2.res, "storytime", new FalImageCache(dir));
+    await ires2.resolve(req);
+    check("inline: namespace isolates identical subject", ir2.calls() === 1, `calls=${ir2.calls()}`);
+
+    const ir3 = countingResolver();
+    const ires3 = new CachedImageResolver(ir3.res, "schoolbook", new FalImageCache(dir));
+    const p = await ires3.resolve(req);
+    check("inline: persisted hit across instances (inner not called)", ir3.calls() === 0, `calls=${ir3.calls()}`);
+    check("inline: persisted hit stamped cached:true", p.cached === true);
+
+    process.env.SLIDESPEAK_FAL_CACHE = "0";
+    const ir4 = countingResolver();
+    const ires4 = new CachedImageResolver(ir4.res, "schoolbook", new FalImageCache(dir));
+    await ires4.resolve(req);
+    await ires4.resolve(req);
+    check("inline: kill-switch bypasses cache", ir4.calls() === 2, `calls=${ir4.calls()}`);
     delete process.env.SLIDESPEAK_FAL_CACHE;
   } finally {
     await rm(dir, { recursive: true, force: true });

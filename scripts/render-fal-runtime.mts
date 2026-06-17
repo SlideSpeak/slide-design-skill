@@ -15,6 +15,7 @@ import {
   FalProvider,
   FalBackgroundProvider,
   CachedBackgroundProvider,
+  CachedImageResolver,
   FederatedImageResolver,
   inspectImageBytes,
   type LLMClient,
@@ -97,6 +98,16 @@ const inlineResolver: ImageResolver = {
     return { ...r, url: `data:image/jpeg;base64,${buf.toString("base64")}` };
   },
 };
+// Content-hash disk cache over the inline resolver: an identical inline image
+// (same subject+category+size under this skill) across re-renders is paid for
+// once. Inline-only decks (the teaching registers) re-pay the full FAL cost on
+// every re-render without this; the background cache does not cover images[].
+// Bypass with SLIDESPEAK_FAL_CACHE=0. Namespaced by skill so the same subject
+// under two skills (different assembled prompts) keeps distinct cache entries.
+const cachedInlineResolver: ImageResolver = new CachedImageResolver(
+  inlineResolver,
+  skillName,
+);
 
 console.log(`rendering ${skillName} with per-slide FAL backgrounds${refImage ? " (reference-anchored, nano-banana)" : ""}…`);
 const bleedCount = payload.slides.filter((s: { bgPrompt?: string }) => typeof s.bgPrompt === "string").length;
@@ -119,7 +130,7 @@ const result = await generateDeck(
     slideCount: payload.slides.length,
     imageBudget: inlineImgCount,
   },
-  { skillsRoot, llm, images: inlineImgCount > 0 ? inlineResolver : noImg, backgroundGenerator: bg },
+  { skillsRoot, llm, images: inlineImgCount > 0 ? cachedInlineResolver : noImg, backgroundGenerator: bg },
 );
 console.log(`generated ${result.slides.length} slides in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 for (const w of result.warnings) console.log("  warning:", w);

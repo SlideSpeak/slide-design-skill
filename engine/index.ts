@@ -67,6 +67,7 @@ export type { ProviderConfig, FederatedImageResolverDeps } from "./image-provide
 export {
   FalImageCache,
   CachedBackgroundProvider,
+  CachedImageResolver,
   falCacheKey,
   defaultFalCacheDir,
 } from "./fal-cache.ts";
@@ -273,7 +274,9 @@ export async function generateDeck(
         }
         resolvedImages.set(`${si}-${ii}`, resolved);
         imagesUsed += 1;
-        if (resolved.source === "fal") falCalls += 1;
+        // A cache hit (resolved.cached) made no API call -> it neither consumes
+        // the spend ceiling nor shows up in the cost warning.
+        if (resolved.source === "fal" && !resolved.cached) falCalls += 1;
       } catch (e) {
         warnings.push(`Image resolve failed for "${imgReq.subject}": ${String(e)}`);
       }

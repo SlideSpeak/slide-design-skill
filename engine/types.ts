@@ -104,6 +104,9 @@ export interface ResolvedImage {
   attribution?: string;
   width: number;
   height: number;
+  // True when this result was served from the disk cache (no provider/API call
+  // was made). Lets the spend counter exclude cache hits from the FAL tally.
+  cached?: boolean;
 }
 
 export interface SlideTreeNode {

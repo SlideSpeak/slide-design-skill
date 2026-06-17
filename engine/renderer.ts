@@ -65,7 +65,16 @@ export function renderSlide(
   let html: string;
   if (safeType) {
     const componentHtml = pickComponent(ctx.skill.components, safeType);
-    html = componentHtml ? interpolate(componentHtml, slots, ctx) : renderFallback(node, ctx);
+    // `{{image:N-M}}` couples a template to an absolute deck index, which breaks
+    // when a slide TYPE that carries images is used more than once (e.g. two
+    // picture-spread slides). `{{image:self-M}}` resolves to the CURRENT slide's
+    // index so a reused image-bearing template references its OWN image. Absolute
+    // refs are untouched — fully backward-compatible.
+    const resolvedComponent =
+      componentHtml && meta
+        ? componentHtml.replace(/\{\{\s*image:self-/gi, `{{image:${meta.index}-`)
+        : componentHtml;
+    html = resolvedComponent ? interpolate(resolvedComponent, slots, ctx) : renderFallback(node, ctx);
   } else {
     html = renderFallback(node, ctx);
   }

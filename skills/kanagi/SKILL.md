@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: kanagi
 version: 0.1.0
 description: "Workshop-specimen language for a heritage Japanese blade maker selling craft to professional buyers. Plaster ground, graphite ink, one oxide-red seal. Use for craft-heritage launch and distribution decks where material precision is the argument."

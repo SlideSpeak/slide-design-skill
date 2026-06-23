@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: opex
 version: 0.1.0
 description: "Internal management presentation for a large traditional industrial manufacturing group. Conservative, structured, content-heavy steering-committee style: white ground, deep navy ink, one corporate blue accent, hairline-ruled grids, charts, tables, risk matrices, org hierarchies, roadmaps. Use for board, steering-committee and transformation-programme decks that must look like real enterprise communication, not a startup pitch."

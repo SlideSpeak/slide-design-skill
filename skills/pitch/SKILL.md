@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: pitch
 version: 0.1.0
 description: "High-stakes startup pitch decks. Bold, confident, one-claim-per-slide, founder-voice. Use when the user asks for 'pitch deck', 'investor deck', 'fundraising deck', 'demo day deck', 'YC-style', 'seed pitch', 'series A deck'."

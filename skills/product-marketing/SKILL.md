@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: product-marketing
 version: 0.1.0
 description: "Product launch and marketing decks. Benefit-led, customer-voice, visual-anchor heavy. Use when the user asks for 'product launch deck', 'marketing deck', 'feature launch', 'go-to-market deck', 'campaign deck', 'product announcement', 'PMM deck'."

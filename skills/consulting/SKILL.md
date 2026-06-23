@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: consulting
 version: 0.1.0
 description: "McKinsey/BCG-tier strategy decks. Dense, structured, signal-color callouts on neutral grounds. Use when the user asks for 'strategy', 'consulting', 'case', 'recommendation', 'McKinsey-style', 'BCG-style', 'consulting deck'."

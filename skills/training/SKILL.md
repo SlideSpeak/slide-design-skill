@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: training
 version: 0.1.0
 description: "Workshop, training, and onboarding decks. Approachable, instructional, scaffolded. Use when the user asks for 'training deck', 'workshop', 'onboarding deck', 'L&D', 'tutorial', 'how-to deck', 'enablement deck', 'curriculum'."

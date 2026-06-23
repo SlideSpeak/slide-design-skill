@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: neue-klasse
 version: 0.1.0
 description: "Executive automotive strategy deck in the visual language of BMW Group / bmw.com: precise, technical, confident, premium. Structured grids, restrained colour, a motorsport tricolour signature, charts/matrices/journey maps/timelines. Use for premium automotive product & transformation strategy."

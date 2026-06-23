@@ -1,4 +1,6 @@
 ---
+metadata:
+  internal: true
 name: academic
 version: 0.1.0
 description: "University-tier research and lecture decks. Citation-heavy, evidence-led, restrained. Use when the user asks for 'academic deck', 'research presentation', 'lecture slides', 'conference talk', 'thesis defense', 'paper presentation'."

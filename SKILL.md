@@ -14,6 +14,12 @@ with real data-viz, tables, and imagery.
 **Style is discovered, not chosen.** There is no theme menu and no preset to pick: every
 deck gets its own tokens, slide templates, and look, generated from the brief.
 
+**AI images are optional.** Hero and background imagery is generated through
+[fal.ai](https://fal.ai) — set a `FAL_KEY` to turn it on, and it produces consistent,
+on-brand visuals across the whole deck (and skips the usual AI-image fails). Without a key
+the skill still works end to end; it just renders the deck without AI imagery. No key is
+required to install or run it.
+
 ## When to use
 
 Use when the user wants to create, design, or improve any presentation: a pitch or

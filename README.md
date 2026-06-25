@@ -32,6 +32,50 @@ Then ask your agent to design a presentation. It uses this engine to derive a st
 your brief, plan the deck, and render it — for pitch decks, sales and strategy decks,
 keynotes, training and teaching decks, data and report decks, or just "make me some slides."
 
+## Examples
+
+A few decks the engine produced — each a different brief, each its own generated style.
+Nothing chosen from a menu.
+
+<table>
+<tr>
+<td align="center" width="25%"><a href="assets/examples/chromafield.jpg"><img src="assets/examples/chromafield.jpg" width="100%"></a><br><b>Work is a verb</b><br><sub>Keynote · bold type</sub></td>
+<td align="center" width="25%"><a href="assets/examples/couture.jpg"><img src="assets/examples/couture.jpg" width="100%"></a><br><b>Maison Vela</b><br><sub>Brand · fashion</sub></td>
+<td align="center" width="25%"><a href="assets/examples/broadsheet.jpg"><img src="assets/examples/broadsheet.jpg" width="100%"></a><br><b>The Trade Ledger</b><br><sub>Data report</sub></td>
+<td align="center" width="25%"><a href="assets/examples/memphis.jpg"><img src="assets/examples/memphis.jpg" width="100%"></a><br><b>Fizz</b><br><sub>Brand · memphis</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><a href="assets/examples/synthwave.jpg"><img src="assets/examples/synthwave.jpg" width="100%"></a><br><b>The next decade of software</b><br><sub>Keynote · neon</sub></td>
+<td align="center" width="25%"><a href="assets/examples/fieldnote.jpg"><img src="assets/examples/fieldnote.jpg" width="100%"></a><br><b>Read a balance sheet</b><br><sub>Teaching</sub></td>
+<td align="center" width="25%"><a href="assets/examples/hypergradient.jpg"><img src="assets/examples/hypergradient.jpg" width="100%"></a><br><b>The trust layer for AI</b><br><sub>Investor pitch</sub></td>
+<td align="center" width="25%"><a href="assets/examples/gridform.jpg"><img src="assets/examples/gridform.jpg" width="100%"></a><br><b>Cost-to-serve teardown</b><br><sub>Strategy</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><a href="assets/examples/risoclub.jpg"><img src="assets/examples/risoclub.jpg" width="100%"></a><br><b>Loud Paper</b><br><sub>Editorial · risograph</sub></td>
+<td align="center" width="25%"><a href="assets/examples/obscura.jpg"><img src="assets/examples/obscura.jpg" width="100%"></a><br><b>Aria One</b><br><sub>Product · dark</sub></td>
+<td align="center" width="25%"><a href="assets/examples/storytime.jpg"><img src="assets/examples/storytime.jpg" width="100%"></a><br><b>The Water Cycle</b><br><sub>Teaching · illustrated</sub></td>
+<td align="center" width="25%"><a href="assets/examples/anvil.jpg"><img src="assets/examples/anvil.jpg" width="100%"></a><br><b>Anvil</b><br><sub>Investor pitch</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><a href="assets/examples/regal.jpg"><img src="assets/examples/regal.jpg" width="100%"></a><br><b>Skincare, the slow way</b><br><sub>Product</sub></td>
+<td align="center" width="25%"><a href="assets/examples/tickertape.jpg"><img src="assets/examples/tickertape.jpg" width="100%"></a><br><b>Trading desk review</b><br><sub>Data · dark</sub></td>
+<td align="center" width="25%"><a href="assets/examples/schoolbook.jpg"><img src="assets/examples/schoolbook.jpg" width="100%"></a><br><b>The Solar System</b><br><sub>Teaching</sub></td>
+<td align="center" width="25%"><a href="assets/examples/address.jpg"><img src="assets/examples/address.jpg" width="100%"></a><br><b>The grid that gives back</b><br><sub>Pitch · energy</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><a href="assets/examples/rawstack.jpg"><img src="assets/examples/rawstack.jpg" width="100%"></a><br><b>Plainbuild</b><br><sub>Product · playful</sub></td>
+<td align="center" width="25%"><a href="assets/examples/meander.jpg"><img src="assets/examples/meander.jpg" width="100%"></a><br><b>We replant the coast</b><br><sub>Brand · nature</sub></td>
+<td align="center" width="25%"><a href="assets/examples/pylon.jpg"><img src="assets/examples/pylon.jpg" width="100%"></a><br><b>The machines that build</b><br><sub>Keynote · industrial</sub></td>
+<td align="center" width="25%"><a href="assets/examples/vela.jpg"><img src="assets/examples/vela.jpg" width="100%"></a><br><b>A living shoreline</b><br><sub>Report · photographic</sub></td>
+</tr>
+<tr>
+<td align="center" width="25%"><a href="assets/examples/kelvin.jpg"><img src="assets/examples/kelvin.jpg" width="100%"></a><br><b>Energy stored as heat</b><br><sub>Pitch · climate</sub></td>
+<td align="center" width="25%"><a href="assets/examples/vision.jpg"><img src="assets/examples/vision.jpg" width="100%"></a><br><b>Strategy review</b><br><sub>Clean · data</sub></td>
+<td align="center" width="25%"><a href="assets/examples/story.jpg"><img src="assets/examples/story.jpg" width="100%"></a><br><b>Patient craft</b><br><sub>Editorial · photographic</sub></td>
+<td align="center" width="25%"><a href="assets/examples/workshop.jpg"><img src="assets/examples/workshop.jpg" width="100%"></a><br><b>Hands-on training</b><br><sub>Teaching</sub></td>
+</tr>
+</table>
+
 ## How a deck gets made
 
 ```

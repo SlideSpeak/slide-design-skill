@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>gridform deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo%3Awght%40600%3B700%3B800%3B900&family=Inter%3Awght%40400%3B500%3B600&family=Space%20Mono%3Awght%40400%3B700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-page: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-ink: #0A0A0A;
+  --color-signal: #E2231A;
+  --color-signal-subtle: #9E1810;
+  --color-muted: #5C5C5C;
+  --color-rule: #0A0A0A;
+  --font-header: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-data: 'Space Mono', ui-monospace, 'SF Mono', monospace;
+  --font-weight-header: 800;
+  --font-weight-body: 400;
+  --font-weight-data: 700;
+  --size-h1: 180px;
+  --size-h2: 92px;
+  --size-h3: 52px;
+  --size-h4: 30px;
+  --size-h5: 22px;
+  --size-h6: 18px;
+  --size-h7: 15px;
+  --size-body-1: 21px;
+  --size-body-2: 18px;
+  --size-body-3: 16px;
+  --size-body-4: 14px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-card: 0px;
+  --radius-button: 0px;
+  --radius-input: 0px;
+  --elevation-card: none;
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 0px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+/* Bounded-island layout — STRUCTURE ONLY, carries no look (no color, border,
+   shadow, gap, padding, type). Pin a header and footer band, let the middle
+   stage fill the height between them, and make repeated cards grow to fill the
+   stage. This is the anti-float contract: content occupies the whole slide
+   instead of clustering under the headline with an empty lower third. Look
+   (gap, padding, radius, color) lives in chrome.css. */
+.slide-flow .flow-head,
+.slide-flow .flow-foot { flex: none; min-height: 0; }
+.slide-flow .flow-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* sparse content: center it in the stage instead of pinning it to the top */
+.slide-flow .flow-stage.flow-center { justify-content: center; }
+/* a grid stage that fills the height AND stretches its rows to consume it */
+.slide-flow .flow-grid-fill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: stretch;
+}
+/* a card/cell that grows to fill its grid or flex track top-to-bottom */
+.flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
+/* the body inside a filling card: a full-height column that can distribute its
+   own rows (center a sparse card, or space-between a header+content card) */
+.flow-fill-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.flow-fill-body.flow-center { justify-content: center; }
+.flow-fill-body.flow-between { justify-content: space-between; }
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* GRIDFORM — look layer (emitted after the neutral baseSlideCss).
+   Swiss / International-Typographic brutalism for dense reporting: stark white
+   ground, massive black grotesque type, an EXPOSED black grid printed as a
+   structural system, one vermillion red used only as a signal. Zero radius,
+   ruthless alignment. The grid is the signature mark; it is on every slide. */
+
+.slide {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  letter-spacing: -0.02em;
+  line-height: 0.94;
+  margin: 0;
+}
+
+/* ── THE EXPOSED GRID — signature mark, on every slide ──
+   A thick black frame at the page edge, a faint printed grid lattice across the
+   field, and the working area inset inside the frame. page.safe is 0 so the
+   frame itself sets the margin. */
+.gf-frame {
+  position: absolute;
+  inset: 40px;
+  border: 3px solid var(--color-ink);
+  pointer-events: none;
+  z-index: 1;
+}
+.gf-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M80 0H0V80' fill='none' stroke='%230A0A0A' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E");
+  background-position: 0 0;
+}
+/* corner register ticks — the printed crop mark, a drawn signature device */
+.gf-register {
+  position: absolute;
+  z-index: 3;
+  width: 22px; height: 22px;
+  pointer-events: none;
+}
+
+/* The working surface inside the frame. */
+.gf-page {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 76px 84px 64px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* hairline rules — the structural device that segments every exhibit */
+.gf-rule { height: 1px; background: var(--color-ink); width: 100%; flex: none; }
+.gf-rule-heavy { height: 3px; background: var(--color-ink); width: 100%; flex: none; }
+.gf-rule-red { height: 4px; background: var(--color-signal); width: 64px; flex: none; }
+
+/* ── Chrome built once: eyebrow, register chip, action title, source ── */
+.gf-kickrow { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex: none; }
+.slide .eyebrow {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--color-ink);
+}
+.slide .eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 14px; height: 14px;
+  background: var(--color-signal);
+  margin-right: 12px;
+  vertical-align: -1px;
+}
+.gf-chip {
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  padding: 3px 12px;
+}
+.gf-chip:empty { display: none; }
+
+.gf-action {
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 50px;
+  line-height: 0.98;
+  color: var(--color-ink);
+  max-width: 1600px;
+}
+.gf-action strong, .slide strong { color: var(--color-signal); font-weight: 800; }
+.slide .gf-body strong { color: var(--color-signal); font-weight: 600; }
+
+.slide .source {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-muted);
+  border-top: 3px solid var(--color-ink);
+  padding-top: 10px;
+  flex: none;
+}
+.gf-pageno { font-family: var(--font-data); font-weight: 700; font-size: 14px; color: var(--color-ink); }
+.gf-notes {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--color-muted);
+  line-height: 1.4;
+  flex: none;
+}
+.gf-notes .dir-list { display: flex; flex-direction: column; gap: 2px; }
+.gf-notes:empty { display: none; }
+
+/* ── Exhibit frame: the ruled two-panel surface (chart + how-to-read) ── */
+.gf-exhibit-row {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  flex: 1;
+  min-height: 0;
+  border: 3px solid var(--color-ink);
+}
+.gf-exhibit { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.gf-exhibit-main { border-right: 3px solid var(--color-ink); }
+.gf-band {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 2px solid var(--color-ink);
+  flex: none;
+}
+.gf-band-title { font-family: var(--font-header); font-weight: 800; font-size: 20px; color: var(--color-ink); }
+.gf-band-unit { font-family: var(--font-data); font-weight: 400; font-size: 14px; color: var(--color-muted); }
+.gf-exbody { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 22px 24px; }
+
+/* worst-lever red dot — the one reserved signal moment on the bridge */
+.gf-worst {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px;
+  border-top: 2px solid var(--color-ink);
+  font-family: var(--font-body); font-size: 16px; color: var(--color-ink);
+  flex: none;
+}
+.gf-worst strong { color: var(--color-ink); font-weight: 600; }
+.gf-dot { width: 14px; height: 14px; background: var(--color-signal); flex: none; }
+
+/* how-to-read panel: equal-height rows that fill the panel, red square markers */
+.gf-read-title { font-family: var(--font-header); font-weight: 800; font-size: 18px; color: var(--color-ink); padding: 12px 20px; border-bottom: 2px solid var(--color-ink); flex: none; }
+.gf-read-body { padding: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.gf-read-body .dir-list { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.gf-read-body .dir-list > div {
+  position: relative;
+  display: flex; flex-direction: column; justify-content: center;
+  flex: 1; min-height: 0;
+  padding: 14px 20px 14px 44px;
+  border-bottom: 1px solid var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.36;
+  color: var(--color-ink);
+}
+.gf-read-body .dir-list > div:last-child { border-bottom: none; }
+.gf-read-body .dir-list > div::before {
+  content: "";
+  position: absolute;
+  left: 20px; top: 22px;
+  width: 9px; height: 9px;
+  background: var(--color-ink);
+}
+.gf-read-body .dir-list > div:first-child::before { background: var(--color-signal); }
+
+/* ── COVER ── */
+.gf-cover { position: relative; z-index: 2; height: 100%; box-sizing: border-box; padding: 76px 84px 64px; display: flex; flex-direction: column; justify-content: space-between; }
+.gf-cover-lattice {
+  position: absolute; inset: 40px; z-index: 0;
+  background-image:
+    repeating-linear-gradient(to right, transparent 0, transparent 159px, rgba(10,10,10,0.05) 159px, rgba(10,10,10,0.05) 160px),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 159px, rgba(10,10,10,0.05) 159px, rgba(10,10,10,0.05) 160px);
+}
+.gf-cover-top { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; border-bottom: 3px solid var(--color-ink); padding-bottom: 18px; }
+.gf-cover-meta { font-family: var(--font-data); font-weight: 700; font-size: 16px; color: var(--color-ink); }
+.gf-cover-mid { display: flex; flex-direction: column; gap: 26px; }
+.gf-cover-title { font-family: var(--font-header); font-weight: 900; font-size: 172px; line-height: 0.88; letter-spacing: -0.035em; color: var(--color-ink); max-width: 1640px; }
+.gf-cover-title .gf-uline { box-shadow: inset 0 -16px 0 var(--color-signal); }
+.gf-cover-sub { font-family: var(--font-body); font-weight: 400; font-size: 26px; line-height: 1.34; color: var(--color-ink); max-width: 1200px; }
+.gf-cover-foot { display: grid; grid-template-columns: repeat(3, auto) 1fr; gap: 0 56px; border-top: 3px solid var(--color-ink); padding-top: 18px; }
+.gf-cover-cell { display: flex; flex-direction: column; gap: 5px; }
+.gf-cover-label { font-family: var(--font-body); font-size: 14px; color: var(--color-muted); }
+.gf-cover-val { font-family: var(--font-data); font-weight: 700; font-size: 19px; color: var(--color-ink); }
+.gf-cover-reg { justify-self: end; align-self: end; font-family: var(--font-data); font-weight: 700; font-size: 17px; color: var(--color-signal); }
+
+/* ── INDEX (ruled register of questions) ── */
+.gf-index { flex: 1; min-height: 0; display: flex; counter-reset: gf-q; }
+.gf-index .dir-list { display: flex; flex-direction: column; width: 100%; flex: 1; min-height: 0; }
+.gf-index .dir-list > div {
+  position: relative;
+  display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 40px;
+  flex: 1; min-height: 0;
+  padding: 0 12px;
+  border-top: 1px solid var(--color-ink);
+  counter-increment: gf-q;
+}
+.gf-index .dir-list > div:last-child { border-bottom: 1px solid var(--color-ink); }
+.gf-index .dir-list > div::before {
+  content: counter(gf-q, decimal-leading-zero);
+  font-family: var(--font-header); font-weight: 900; font-size: 92px; line-height: 1;
+  color: var(--color-ink); letter-spacing: -0.04em;
+}
+.gf-index .dir-list > div > span { font-family: var(--font-header); font-weight: 700; font-size: 38px; line-height: 1.04; color: var(--color-ink); }
+.slide[data-current] .gf-index .dir-list > div { color: var(--color-muted); }
+.gf-index-foot { display: flex; justify-content: space-between; border-top: 3px solid var(--color-ink); padding-top: 10px; font-family: var(--font-body); font-size: 15px; color: var(--color-muted); flex: none; }
+
+/* ── VERDICT (confrontational statement, oversized figure) ── */
+.gf-verdict { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 520px; gap: 0; }
+.gf-verdict-main { display: flex; flex-direction: column; justify-content: center; padding-right: 56px; }
+.gf-verdict-title { font-family: var(--font-header); font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.025em; color: var(--color-ink); }
+.gf-verdict-support { font-family: var(--font-body); font-size: 22px; line-height: 1.5; color: var(--color-ink); max-width: 760px; margin-top: 30px; }
+.gf-verdict-fig { border-left: 3px solid var(--color-ink); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-left: 48px; }
+.gf-verdict-fig:empty { display: none; }
+.gf-verdict-num { font-family: var(--font-header); font-weight: 900; font-size: 168px; line-height: 0.84; letter-spacing: -0.045em; color: var(--color-ink); }
+.gf-verdict-num .u { font-family: var(--font-data); font-weight: 700; font-size: 30px; color: var(--color-signal); display: block; margin-top: 16px; letter-spacing: 0; }
+
+/* ── BIGNUMBER (metric-hero) — fills the band: figure anchored high, caption
+   mid, a ruled context strip pinned to the bottom of the stage ── */
+.gf-big { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 30px; padding: 26px 0 8px; }
+.gf-big-figure { font-family: var(--font-header); font-weight: 900; font-size: 320px; line-height: 0.78; letter-spacing: -0.05em; color: var(--color-ink); display: flex; align-items: baseline; gap: 0; }
+.gf-big-figure .gf-big-unit { font-family: var(--font-data); font-weight: 700; font-size: 42px; color: var(--color-signal); letter-spacing: 0; margin-left: 24px; align-self: flex-start; margin-top: 34px; }
+.gf-big-caption { font-family: var(--font-header); font-weight: 700; font-size: 40px; line-height: 1.06; color: var(--color-ink); max-width: 1500px; }
+.gf-big-context { font-family: var(--font-data); font-weight: 400; font-size: 19px; color: var(--color-ink); border-top: 3px solid var(--color-ink); padding-top: 16px; }
+
+/* ── BREAKDOWN (ranked bars) shares the exhibit frame ── */
+
+/* ── LEDGER (numbered initiative rows) — a ruled ledger: an oversized index
+   numeral, the claim with an inline-red load-bearing phrase, owner and the
+   sized prize on one line; the prize tail pulls right via the inline marker ── */
+.gf-ledger-head { display: flex; justify-content: space-between; gap: 0; font-family: var(--font-body); font-size: 14px; color: var(--color-muted); border-bottom: 3px solid var(--color-ink); padding: 0 4px 8px 96px; flex: none; }
+.gf-ledger { flex: 1; min-height: 0; counter-reset: gf-lev; }
+.gf-ledger .dir-list { display: flex; flex-direction: column; height: 100%; }
+.gf-ledger .dir-list > div {
+  position: relative;
+  display: flex; align-items: center; gap: 0;
+  flex: 1; min-height: 0;
+  padding: 0 4px 0 96px;
+  border-bottom: 1px solid var(--color-ink);
+  counter-increment: gf-lev;
+}
+.gf-ledger .dir-list > div:last-child { border-bottom: none; }
+.gf-ledger .dir-list > div::before {
+  content: counter(gf-lev, decimal-leading-zero);
+  position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-header); font-weight: 900; font-size: 44px; color: var(--color-ink); letter-spacing: -0.03em;
+  width: 80px;
+}
+.gf-ledger .dir-list > div > span { font-family: var(--font-body); font-size: 20px; line-height: 1.3; color: var(--color-ink); width: 100%; }
+.gf-ledger strong { color: var(--color-signal); font-weight: 600; }
+
+/* ── DATATABLE: the ruled scorecard ── */
+.gf-table-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 3px solid var(--color-ink); }
+.gf-tablebody { flex: 1; min-height: 0; display: flex; }
+.dir-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); height: 100%; }
+.dir-table thead th {
+  background: var(--color-ink);
+  font-family: var(--font-data); font-weight: 700; font-size: 16px; color: var(--color-page);
+  text-align: right; padding: 14px 20px; white-space: nowrap;
+}
+.dir-table thead th.dir-table-corner, .dir-table thead th:nth-child(2) { text-align: left; }
+.dir-table tbody th {
+  text-align: left; font-family: var(--font-header); font-weight: 700; font-size: 18px; color: var(--color-ink);
+  padding: 14px 20px; border-bottom: 1px solid var(--color-ink); border-right: 1px solid var(--color-ink);
+}
+.dir-table tbody td {
+  text-align: right; font-family: var(--font-data); font-weight: 700; font-size: 19px; color: var(--color-ink);
+  font-variant-numeric: tabular-nums; padding: 14px 20px; border-bottom: 1px solid var(--color-ink); border-right: 1px solid var(--color-ink);
+}
+.dir-table tbody td:last-child, .dir-table tbody th:last-child { border-right: none; }
+.dir-table tbody tr:last-child th, .dir-table tbody tr:last-child td { border-bottom: none; }
+.dir-table strong { color: var(--color-signal); font-weight: 700; }
+.gf-insight { padding: 13px 20px; border-top: 3px solid var(--color-ink); font-family: var(--font-body); font-size: 16px; color: var(--color-ink); flex: none; }
+.gf-insight:empty { display: none; }
+.gf-insight strong { color: var(--color-signal); font-weight: 600; }
+
+/* ── MANDATE (quote / pull-statement) ── */
+.gf-mandate { flex: 1; min-height: 0; display: grid; grid-template-columns: 220px 1fr; gap: 0; align-items: stretch; }
+.gf-mandate-mark { border-right: 3px solid var(--color-ink); display: flex; align-items: flex-start; justify-content: center; padding-top: 6px; }
+.gf-mandate-fig { font-family: var(--font-header); font-weight: 900; font-size: 180px; line-height: 0.8; color: var(--color-signal); letter-spacing: -0.04em; }
+.gf-mandate-body { display: flex; flex-direction: column; justify-content: center; padding-left: 56px; }
+.gf-mandate-quote { font-family: var(--font-header); font-weight: 800; font-size: 62px; line-height: 1.02; letter-spacing: -0.02em; color: var(--color-ink); max-width: 1300px; }
+.gf-mandate-quote strong { color: var(--color-signal); }
+.gf-mandate-attr { font-family: var(--font-data); font-weight: 700; font-size: 18px; color: var(--color-ink); margin-top: 34px; }
+.gf-mandate-attr::before { content: ""; display: inline-block; width: 40px; height: 4px; background: var(--color-signal); margin-right: 16px; vertical-align: 5px; }
+
+/* ── CLOSING ── */
+.gf-closing { position: relative; z-index: 2; height: 100%; box-sizing: border-box; padding: 76px 84px 64px; display: flex; flex-direction: column; justify-content: space-between; }
+.gf-closing-top { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 3px solid var(--color-ink); padding-bottom: 16px; }
+.gf-closing-reg { font-family: var(--font-data); font-weight: 700; font-size: 17px; color: var(--color-signal); }
+.gf-closing-line { font-family: var(--font-header); font-weight: 800; font-size: 84px; line-height: 0.96; letter-spacing: -0.03em; color: var(--color-ink); max-width: 1560px; }
+.gf-closing-line strong { color: var(--color-signal); }
+.gf-closing-target { font-family: var(--font-data); font-weight: 700; font-size: 26px; color: var(--color-ink); margin-top: 26px; }
+.gf-closing-foot { display: flex; justify-content: space-between; align-items: baseline; border-top: 3px solid var(--color-ink); padding-top: 16px; font-family: var(--font-body); font-size: 18px; color: var(--color-ink); }
+.gf-closing-foot .gf-mono { font-family: var(--font-data); font-weight: 700; }
+
+body { margin: 0; background: #d6d6d6; padding: 0; } .slide { margin: 0 0 24px; box-shadow: none; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<section data-family="cover" data-slide-type="cover" data-density="editorial" class="slide slide-cover">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-cover-lattice" aria-hidden="true"></div>
+  <svg class="gf-register" style="left:30px; top:30px;" viewBox="0 0 22 22" aria-hidden="true"><path d="M0 11h22M11 0v22" stroke="#E2231A" stroke-width="2"/></svg>
+  <svg class="gf-register" style="right:30px; bottom:30px;" viewBox="0 0 22 22" aria-hidden="true"><path d="M0 11h22M11 0v22" stroke="#E2231A" stroke-width="2"/></svg>
+  <div class="gf-cover">
+    <div class="gf-cover-top">
+      <span class="eyebrow">Operating-model and cost diagnostic</span>
+      <span class="gf-cover-meta">Q3 2027</span>
+    </div>
+    <div class="gf-cover-mid">
+      <h1 class="gf-cover-title">Cost-to-serve teardown</h1>
+      <div class="gf-cover-sub">A line-by-line teardown of the cost to serve one parcel, the levers that close the gap to benchmark, and the decisions leadership must take.</div>
+    </div>
+    <div class="gf-cover-foot">
+      <div class="gf-cover-cell"><span class="gf-cover-label">Client</span><span class="gf-cover-val">Meridian Logistics</span></div>
+      <div class="gf-cover-cell"><span class="gf-cover-label">Engagement</span><span class="gf-cover-val">Cost-out and operating model</span></div>
+      <div class="gf-cover-cell"><span class="gf-cover-label">Status</span><span class="gf-cover-val">Confidential draft</span></div>
+      <div class="gf-cover-reg">GF / 01</div>
+    </div>
+  </div>
+</section>
+
+<section data-family="timeline" data-slide-type="index" data-density="balanced" class="slide slide-index" data-current="1">
+  <style>.slide[data-current="1"] .gf-index .dir-list > div:nth-child(1) { color:var(--color-ink); }
+.slide[data-current="1"] .gf-index .dir-list > div:nth-child(1)::before { color:var(--color-signal); }
+.slide[data-current="1"] .gf-index .dir-list > div:nth-child(1) > span { color:var(--color-ink); }</style>
+  <div class="gf-frame" aria-hidden="true"></div>
+  <svg class="gf-register" style="left:30px; top:30px;" viewBox="0 0 22 22" aria-hidden="true"><path d="M0 11h22M11 0v22" stroke="#E2231A" stroke-width="2"/></svg>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">Contents</span></div>
+    <h2 class="gf-action" style="margin-top:14px; margin-bottom:24px;">The teardown answers four questions, in order</h2>
+    <div class="gf-index" data-visual-event="item-marker"><div class="dir-list dir-list-questions"><div><span>Where does the cost per parcel actually go</span></div><div><span>How big is the gap to the benchmark</span></div><div><span>Which levers close it, and in what order</span></div><div><span>How does the program phase to the target</span></div></div></div>
+    <div class="gf-index-foot"><span>Page numbers refer to the working exhibits, not the appendix.</span><span class="gf-pageno">GF / 02</span></div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="verdict" data-density="editorial" class="slide slide-verdict">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">Where the cost per parcel goes</span></div>
+    <div class="gf-rule-red" style="margin-top:26px; margin-bottom:30px;"></div>
+    <div class="gf-verdict">
+      <div class="gf-verdict-main">
+        <h2 class="gf-verdict-title">Cost to serve has outrun price, and the gap is <strong>bounded, not structural</strong>.</h2>
+        <div class="gf-verdict-support gf-body">Meridian serves a parcel for EUR 4.18 against a EUR 3.40 peer benchmark. The 23% premium is concentrated in four operational lines, every one of which is addressable without touching price.</div>
+      </div>
+      <div class="gf-verdict-fig" data-visual-event="oversized-number">
+        <div class="gf-verdict-num">4.18<span class="u">EUR / parcel</span></div>
+      </div>
+    </div>
+    <div class="source"><span>Cost base EUR 294M, FY27 management accounts. Benchmark is the median of four regional peers, normalised for drop density. Illustrative.</span><span class="gf-pageno">3</span></div>
+  </div>
+</section>
+
+<section data-family="metric-hero" data-slide-type="bignumber" data-density="editorial" class="slide slide-bignumber">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">How big is the gap to the benchmark</span></div>
+    <div class="gf-rule-heavy" style="margin-top:22px;"></div>
+    <div class="gf-big">
+      <div class="gf-big-figure" data-visual-event="oversized-number">0.78<span class="gf-big-unit">EUR / parcel above benchmark</span></div>
+      <div class="gf-big-caption">The gap is EUR 0.78 a parcel, a 23% premium the current price cannot absorb.</div>
+      <div class="gf-big-context">Today EUR 4.18   ·   benchmark EUR 3.40   ·   gap EUR 0.78   ·   addressable cost-out 14% of the base, EUR 41.2M run-rate</div>
+    </div>
+    <div class="source"><span>Source: Meridian management accounts FY27; peer benchmarking set; team analysis. Illustrative.</span><span class="gf-pageno">4</span></div>
+  </div>
+</section>
+
+<section data-family="flow-diagram" data-slide-type="bridge" data-density="data-dense" class="slide slide-bridge">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">Which levers close it, and in what order</span></div>
+    <h2 class="gf-action" style="margin-top:14px; margin-bottom:22px;">Four levers walk the EUR 4.18 down to the EUR 3.40 benchmark.</h2>
+    <div class="gf-exhibit-row">
+      <div class="gf-exhibit gf-exhibit-main">
+        <div class="gf-band"><span class="gf-band-title">Cost-per-parcel bridge to benchmark</span><span class="gf-band-unit">EUR per parcel</span></div>
+        <div class="gf-exbody" data-visual-event="chartlet"><svg data-visual-event="chart" viewBox="0 0 920 440" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><line x1="56" x2="904" y1="336" y2="336" stroke="#1A1A1A" stroke-width="2" stroke-opacity="0.85"/><rect x="70.1" y="48.0" width="113.1" height="288.0" fill="#0A0A0A"/><text x="126.7" y="34.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="26" fill="#1A1A1A" text-anchor="middle" font-weight="700" letter-spacing="-0.01em">4.18</text><text x="126.7" y="360.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Today</text><line x1="183.2" x2="211.5" y1="48.0" y2="48.0" stroke="#1A1A1A" stroke-width="1" stroke-opacity="0.35"/><rect x="211.5" y="48.0" width="113.1" height="21.4" fill="#E2231A"/><text x="268.0" y="40.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#E2231A" text-anchor="middle" font-weight="600">−0.31</text><text x="268.0" y="360.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Line-haul</text><text x="268.0" y="379.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">consolidation</text><line x1="324.5" x2="352.8" y1="69.4" y2="69.4" stroke="#1A1A1A" stroke-width="1" stroke-opacity="0.35"/><rect x="352.8" y="69.4" width="113.1" height="15.2" fill="#E2231A"/><text x="409.3" y="61.4" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#E2231A" text-anchor="middle" font-weight="600">−0.22</text><text x="409.3" y="360.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Depot</text><text x="409.3" y="379.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">automation</text><line x1="465.9" x2="494.1" y1="84.5" y2="84.5" stroke="#1A1A1A" stroke-width="1" stroke-opacity="0.35"/><rect x="494.1" y="84.5" width="113.1" height="13.1" fill="#E2231A"/><text x="550.7" y="76.5" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#E2231A" text-anchor="middle" font-weight="600">−0.19</text><text x="550.7" y="360.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Route density</text><line x1="607.2" x2="635.5" y1="97.6" y2="97.6" stroke="#1A1A1A" stroke-width="1" stroke-opacity="0.35"/><rect x="635.5" y="97.6" width="113.1" height="4.1" fill="#E2231A"/><text x="692.0" y="89.6" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#E2231A" text-anchor="middle" font-weight="600">−0.06</text><text x="692.0" y="360.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Returns</text><text x="692.0" y="379.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">handling</text><line x1="748.5" x2="776.8" y1="101.7" y2="101.7" stroke="#1A1A1A" stroke-width="1" stroke-opacity="0.35"/><rect x="776.8" y="101.7" width="113.1" height="234.3" fill="#0A0A0A"/><text x="833.3" y="87.7" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="26" fill="#1A1A1A" text-anchor="middle" font-weight="700" letter-spacing="-0.01em">3.40</text><text x="833.3" y="360.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Benchmark</text><text x="904" y="24" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#0A0A0A" font-weight="600">Bridge reconciles to benchmark</text></svg></div>
+        <div class="gf-worst"><span class="gf-dot" aria-hidden="true"></span>Worst-run lever: <strong>Returns handling</strong></div>
+      </div>
+      <div class="gf-exhibit">
+        <div class="gf-read-title">How to read the bridge</div>
+        <div class="gf-read-body"><div class="dir-list dir-list-read-items"><div><span><strong>Line-haul consolidation</strong> is the largest step at EUR 0.31, trunking volume onto fewer, fuller runs</span></div><div><span><strong>Depot automation</strong> removes EUR 0.22 of manual sortation labour per parcel</span></div><div><span><strong>Route density</strong> takes EUR 0.19 as stops per route rise toward peer levels</span></div><div><span><strong>Returns handling</strong> is only EUR 0.06 but the worst-run lever per unit, and the quickest to fix</span></div></div></div>
+      </div>
+    </div>
+    <div class="gf-notes" style="margin-top:14px;"><div class="dir-list dir-list-footnotes"><div><span>1. Deltas are per-parcel run-rate at full ramp</span></div><div><span>2. Returns marked worst-run by cost-per-event, not by total euros</span></div></div></div>
+    <div class="source"><span>Source: Meridian cost model; activity-based costing pilot; team analysis. Illustrative.</span><span class="gf-pageno">5</span></div>
+  </div>
+</section>
+
+<section data-family="comparison" data-slide-type="breakdown" data-density="data-dense" class="slide slide-breakdown">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">Where the cost per parcel goes</span></div>
+    <h2 class="gf-action" style="margin-top:14px; margin-bottom:22px;">Line-haul and last-mile labour carry <strong>two thirds of the cost base</strong>.</h2>
+    <div class="gf-exhibit-row">
+      <div class="gf-exhibit gf-exhibit-main">
+        <div class="gf-band"><span class="gf-band-title">Cost per parcel by activity line</span><span class="gf-band-unit">EUR per parcel, ranked</span></div>
+        <div class="gf-exbody" data-visual-event="chartlet"><svg data-visual-event="chart" viewBox="0 0 920 344" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><text x="242" y="40.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#0A0A0A" text-anchor="end">Last-mile labour</text><rect x="260" y="18.0" width="560.0" height="32.0" fill="#0A0A0A"/><text x="830.0" y="40.0" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="#0A0A0A" font-weight="600">1.46</text><text x="242" y="92.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#0A0A0A" text-anchor="end">Line-haul and trunking</text><rect x="260" y="70.0" width="452.6" height="32.0" fill="#0A0A0A"/><text x="722.6" y="92.0" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="#0A0A0A" font-weight="600">1.18</text><text x="242" y="144.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#0A0A0A" text-anchor="end">Depot sortation</text><rect x="260" y="122.0" width="237.8" height="32.0" fill="#0A0A0A"/><text x="507.8" y="144.0" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="#0A0A0A" font-weight="600">0.62</text><text x="242" y="196.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#0A0A0A" text-anchor="end">Returns and failed delivery</text><rect x="260" y="174.0" width="184.1" height="32.0" fill="#E2231A"/><text x="454.1" y="196.0" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="#0A0A0A" font-weight="600">0.48</text><text x="242" y="248.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#0A0A0A" text-anchor="end">Customer and admin</text><rect x="260" y="226.0" width="107.4" height="32.0" fill="#0A0A0A"/><text x="377.4" y="248.0" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="#0A0A0A" font-weight="600">0.28</text><text x="242" y="300.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="18" fill="#0A0A0A" text-anchor="end">Packaging and consumables</text><rect x="260" y="278.0" width="61.4" height="32.0" fill="#0A0A0A"/><text x="331.4" y="300.0" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="17" fill="#0A0A0A" font-weight="600">0.16</text></svg></div>
+      </div>
+      <div class="gf-exhibit">
+        <div class="gf-read-title">How to read the ranking</div>
+        <div class="gf-read-body"><div class="dir-list dir-list-read-items"><div><span><strong>Last-mile labour</strong> is the single largest line at EUR 1.46, set by stops per route and shift cover</span></div><div><span><strong>Line-haul</strong> at EUR 1.18 falls fastest under consolidation, with no new capital</span></div><div><span><strong>Depot sortation</strong> at EUR 0.62 is the automation target</span></div><div><span><strong>Returns</strong> is highlighted: small in euros, worst-run per event, the fastest payback in the set</span></div></div></div>
+      </div>
+    </div>
+    <div class="gf-notes" style="margin-top:14px;"><div class="dir-list dir-list-footnotes"><div><span>1. Lines sum to the EUR 4.18 cost to serve</span></div><div><span>2. Ranking is FY27 run-rate, not in-year realised</span></div></div></div>
+    <div class="source"><span>Source: Meridian activity-based costing; finance review; team analysis. Illustrative.</span><span class="gf-pageno">6</span></div>
+  </div>
+</section>
+
+<section data-family="matrix" data-slide-type="matrix" data-density="data-dense" class="slide slide-matrix">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">Which levers close it, and in what order</span></div>
+    <h2 class="gf-action" style="margin-top:14px; margin-bottom:22px;">Route density and dynamic dispatch sit in the <strong>do-first quadrant</strong>.</h2>
+    <div class="gf-exhibit-row">
+      <div class="gf-exhibit gf-exhibit-main">
+        <div class="gf-band"><span class="gf-band-title">Initiative prioritisation: impact against ease</span><span class="gf-band-unit">Impact is run-rate savings, ease is time-to-value</span></div>
+        <div class="gf-exbody" data-visual-event="chartlet"><svg data-visual-event="chart" viewBox="0 0 720 540" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><line x1="380" x2="380" y1="40" y2="470" stroke="#5C5C5C" stroke-width="1"/><line x1="80" x2="680" y1="255" y2="255" stroke="#5C5C5C" stroke-width="1"/><text x="380" y="524" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="12" fill="#5C5C5C" text-anchor="middle" letter-spacing="0.04em">Harder to implement</text><text transform="rotate(-90 24 255)" x="24" y="255" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="12" fill="#5C5C5C" text-anchor="middle" letter-spacing="0.04em">Lower impact</text><text x="94" y="64" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="13" fill="#5C5C5C" font-weight="600">Big bets</text><text x="666" y="64" text-anchor="end" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="13" fill="#5C5C5C" font-weight="600">Do first</text><text x="94" y="456" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="13" fill="#5C5C5C" font-weight="600">Park</text><text x="666" y="456" text-anchor="end" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="13" fill="#5C5C5C" font-weight="600">Quick wins</text><circle cx="548.0" cy="117.4" r="10" fill="#E2231A"/><text x="534.0" y="121.4" text-anchor="end" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="700">Dynamic dispatch</text><circle cx="500.0" cy="151.8" r="7" fill="#0A0A0A"/><text x="514.0" y="155.8" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Route density</text><circle cx="296.0" cy="108.8" r="7" fill="#0A0A0A"/><text x="310.0" y="112.8" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Line-haul</text><circle cx="320.0" cy="341.0" r="7" fill="#0A0A0A"/><text x="334.0" y="345.0" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Depot automation</text><circle cx="524.0" cy="298.0" r="7" fill="#0A0A0A"/><text x="510.0" y="302.0" text-anchor="end" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Returns triage</text><circle cx="416.0" cy="212.0" r="7" fill="#0A0A0A"/><text x="430.0" y="216.0" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Driver scheduling</text><circle cx="260.0" cy="272.2" r="7" fill="#0A0A0A"/><text x="274.0" y="276.2" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Failed delivery</text><circle cx="212.0" cy="349.6" r="7" fill="#0A0A0A"/><text x="226.0" y="353.6" text-anchor="start" style="font-family:var(--font-data, Inter, system-ui, sans-serif)" font-size="14" fill="#0A0A0A" font-weight="500">Packaging</text></svg></div>
+      </div>
+      <div class="gf-exhibit">
+        <div class="gf-read-title">What the grid says to do</div>
+        <div class="gf-read-body"><div class="dir-list dir-list-read-items"><div><span><strong>Do first</strong>: dynamic dispatch and route density, high impact and quick to stand up, start in Q1</span></div><div><span><strong>Big bets</strong>: line-haul consolidation is high impact but harder, run it as a Q1 to Q2 workstream</span></div><div><span><strong>Quick wins</strong>: returns triage and driver scheduling are easy and fund the program early</span></div><div><span><strong>Park</strong>: packaging right-sizing is low impact, sequence it last</span></div></div></div>
+      </div>
+    </div>
+    <div class="gf-notes" style="margin-top:14px;"><div class="dir-list dir-list-footnotes"><div><span>1. Axes are relative rankings within the initiative set</span></div><div><span>2. Bubble area carries euros in the working file</span></div></div></div>
+    <div class="source"><span>Source: Prioritisation workshop; initiative register; team analysis. Illustrative.  ·  x Harder to implement to Easier to implement  ·  y Lower impact to Higher impact</span><span class="gf-pageno">7</span></div>
+  </div>
+</section>
+
+<section data-family="cards-grid" data-slide-type="ledger" data-density="data-dense" class="slide slide-ledger">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">Which levers close it, and in what order</span></div>
+    <h2 class="gf-action" style="margin-top:14px; margin-bottom:18px;">Eight initiatives carry the cost-out, each with an owner and a sized prize.</h2>
+    <div class="gf-ledger-head"><span>Lever, owner and sized prize</span><span>Run-rate, EUR M / year</span></div>
+    <div class="gf-ledger" data-visual-event="item-marker"><div class="dir-list dir-list-lever-rows"><div><span><strong>Line-haul consolidation</strong> trunks volume onto fewer, fuller runs.   Network ops.   EUR 12.6M / yr</span></div><div><span><strong>Dynamic dispatch</strong> re-optimises routes through the day.   Field engineering.   EUR 11.4M / yr</span></div><div><span><strong>Route-density redesign</strong> lifts stops per route toward peers.   Network planning.   EUR 7.8M / yr</span></div><div><span><strong>Depot automation</strong> removes manual sortation labour.   Depot operations.   EUR 6.2M / yr</span></div><div><span><strong>Returns triage</strong> clears the worst-run lever first.   Customer operations.   EUR 2.1M / yr</span></div><div><span><strong>Driver scheduling</strong> matches shift cover to parcel curves.   Workforce planning.   EUR 1.9M / yr</span></div><div><span><strong>Failed-delivery reduction</strong> cuts redelivery attempts.   Customer operations.   EUR 1.4M / yr</span></div><div><span><strong>Packaging right-sizing</strong> lowers cube and line-haul fill cost.   Procurement.   EUR 0.9M / yr</span></div></div></div>
+    <div class="gf-notes" style="margin-top:14px;"><div class="dir-list dir-list-footnotes"><div><span>1. Run-rate at full ramp, not first-year</span></div><div><span>2. Owners are functional leads accountable for delivery</span></div></div></div>
+    <div class="source"><span>Source: Initiative register; functional sizing workshops; team analysis. Illustrative.</span><span class="gf-pageno">8</span></div>
+  </div>
+</section>
+
+<section data-family="table" data-slide-type="datatable" data-density="data-dense" class="slide slide-datatable">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">How does the program phase to the target</span></div>
+    <h2 class="gf-action" style="margin-top:14px; margin-bottom:20px;">The four do-first levers return their stand-up cost <strong>inside nine months</strong>.</h2>
+    <div class="gf-table-wrap">
+      <div class="gf-band"><span class="gf-band-title">Initiative scorecard: do-first set</span><span class="gf-band-unit">Run-rate and one-off in EUR M, payback in months</span></div>
+      <div class="gf-tablebody" data-visual-event="chartlet"><table data-visual-event="table" class="dir-table"><thead><tr><th class="dir-table-corner"></th><th>Run-rate EUR M</th><th>One-off EUR M</th><th>Payback mo</th></tr></thead><tbody><tr><th scope="row">Dynamic dispatch</th><td>11.4</td><td>2.1</td><td>7</td></tr><tr><th scope="row">Route density</th><td>7.8</td><td>1.6</td><td>8</td></tr><tr><th scope="row">Line-haul consolidation</th><td>12.6</td><td>3.4</td><td>9</td></tr><tr><th scope="row">Returns triage</th><td>2.1</td><td>0.4</td><td>5</td></tr></tbody></table></div>
+      <div class="gf-insight">Returns triage pays back fastest at <strong>5 months</strong>; line-haul is the largest prize at EUR 12.6M but the slowest of the four to recover its cost.</div>
+    </div>
+    <div class="gf-notes" style="margin-top:14px;"><div class="dir-list dir-list-footnotes"><div><span>1. Payback is one-off cost divided by monthly run-rate at full ramp</span></div><div><span>2. Run-rate excludes first-year ramp drag</span></div></div></div>
+    <div class="source"><span>Source: Initiative business cases; finance review; team analysis. Illustrative.</span><span class="gf-pageno">9</span></div>
+  </div>
+</section>
+
+<section data-family="quote" data-slide-type="mandate" data-density="editorial" class="slide slide-mandate">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <svg class="gf-register" style="right:30px; top:30px;" viewBox="0 0 22 22" aria-hidden="true"><path d="M0 11h22M11 0v22" stroke="#E2231A" stroke-width="2"/></svg>
+  <div class="gf-page">
+    <div class="gf-kickrow"><span class="eyebrow">The mandate</span></div>
+    <div class="gf-mandate" style="margin-top:26px;">
+      <div class="gf-mandate-mark" data-visual-event="signature-mark"><span class="gf-mandate-fig">14%</span></div>
+      <div class="gf-mandate-body">
+        <div class="gf-mandate-quote">Hold price for two quarters and let the <strong>cost-out</strong>, not a price rise, close the gap.</div>
+        <div class="gf-mandate-attr">Operating-model diagnostic, lead finding</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="closing" data-slide-type="closing" data-density="editorial" class="slide slide-closing">
+  <div class="gf-frame" aria-hidden="true"></div>
+  <div class="gf-cover-lattice" aria-hidden="true"></div>
+  <svg class="gf-register" style="left:30px; top:30px;" viewBox="0 0 22 22" aria-hidden="true"><path d="M0 11h22M11 0v22" stroke="#E2231A" stroke-width="2"/></svg>
+  <svg class="gf-register" style="right:30px; bottom:30px;" viewBox="0 0 22 22" aria-hidden="true"><path d="M0 11h22M11 0v22" stroke="#E2231A" stroke-width="2"/></svg>
+  <div class="gf-closing">
+    <div class="gf-closing-top"><span class="eyebrow">The decision</span><span class="gf-closing-reg">GF / 11</span></div>
+    <div>
+      <div class="gf-closing-line">Approve the capital, name the owners, <strong>hold price</strong>, and start in Q1.</div>
+      <div class="gf-closing-target">EUR 41.2M run-rate  ·  22% cost-to-serve reduction  ·  EUR 4.18 to EUR 3.40 per parcel</div>
+    </div>
+    <div class="gf-closing-foot"><span>Operating-model diagnostic team</span><span class="gf-mono">Confidential draft · Q3 2027</span></div>
+  </div>
+</section>
+</body>
+</html>

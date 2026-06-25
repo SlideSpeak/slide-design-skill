@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>broadsheet deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source%20Serif%204%3Aopsz%2Cwght%408..60%2C400%3B8..60%2C500%3B8..60%2C600%3B8..60%2C700&family=IBM%20Plex%20Mono%3Awght%40400%3B500%3B600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-page: #F4F1E9;
+  --color-card: #FBF9F3;
+  --color-ink: #1B1916;
+  --color-signal: #8A2B1F;
+  --color-signal-subtle: #5E1E15;
+  --color-muted: #6A6258;
+  --color-rule: #C7BFAF;
+  --font-header: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-data: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-weight-header: 600;
+  --font-weight-body: 400;
+  --font-weight-data: 500;
+  --size-h1: 104px;
+  --size-h2: 64px;
+  --size-h3: 40px;
+  --size-h4: 26px;
+  --size-body-1: 20px;
+  --size-body-2: 18px;
+  --size-body-3: 16px;
+  --size-body-4: 14px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-card: 0px;
+  --radius-button: 0px;
+  --radius-input: 0px;
+  --elevation-card: 0 0 0 rgba(0,0,0,0);
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 88px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+/* Bounded-island layout — STRUCTURE ONLY, carries no look (no color, border,
+   shadow, gap, padding, type). Pin a header and footer band, let the middle
+   stage fill the height between them, and make repeated cards grow to fill the
+   stage. This is the anti-float contract: content occupies the whole slide
+   instead of clustering under the headline with an empty lower third. Look
+   (gap, padding, radius, color) lives in chrome.css. */
+.slide-flow .flow-head,
+.slide-flow .flow-foot { flex: none; min-height: 0; }
+.slide-flow .flow-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* sparse content: center it in the stage instead of pinning it to the top */
+.slide-flow .flow-stage.flow-center { justify-content: center; }
+/* a grid stage that fills the height AND stretches its rows to consume it */
+.slide-flow .flow-grid-fill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: stretch;
+}
+/* a card/cell that grows to fill its grid or flex track top-to-bottom */
+.flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
+/* the body inside a filling card: a full-height column that can distribute its
+   own rows (center a sparse card, or space-between a header+content card) */
+.flow-fill-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.flow-fill-body.flow-center { justify-content: center; }
+.flow-fill-body.flow-between { justify-content: space-between; }
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* BROADSHEET — look layer (emitted after the neutral baseSlideCss).
+   A serious newspaper printed on warm newsprint: a print serif, thin column
+   rules, ruled agate tables, a masthead nameplate, a drop-cap. Ink-on-paper.
+   The only colour is the editorial red (#8A2B1F), used as ink, never a fill. */
+
+.slide {
+  background: var(--color-page);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  letter-spacing: -0.012em;
+  line-height: 1.04;
+}
+.slide h3 { line-height: 1.1; }
+.slide h4 { line-height: 1.16; }
+.slide strong { font-weight: 700; color: var(--color-ink); }
+.slide em { font-style: italic; }
+
+/* Newsprint paper: a barely-there warm-grey horizontal-line halftone, so the
+   sheet reads as printed stock without muddying running text. */
+.slide-flow,
+.slide-paper {
+  position: relative;
+  background-image:
+    repeating-linear-gradient(180deg, rgba(27,25,22,0.018) 0 1px, transparent 1px 4px);
+}
+
+/* ── Mono metadata: datelines, folios, table figures, chart values ───────── */
+.bs-mono {
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: var(--color-muted);
+}
+.bs-kicker {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--color-signal);
+}
+
+/* ── Masthead nameplate: hairline rule over a serif wordmark over a heavier
+      red rule, mono metadata threaded across. The deck's signature mark. ─── */
+.bs-masthead {
+  position: relative;
+  padding-top: 14px;
+  border-top: 1.5px solid var(--color-ink);
+}
+.bs-masthead::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 64px;
+  background:
+    repeating-linear-gradient(180deg, rgba(138,43,31,0.05) 0 1px, transparent 1px 5px);
+  pointer-events: none;
+}
+.bs-nameplate {
+  font-family: var(--font-header);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  color: var(--color-ink);
+}
+.bs-mast-rule {
+  height: 4px;
+  background: var(--color-signal);
+  margin-top: 16px;
+}
+.bs-mast-rule-thin {
+  height: 1px;
+  background: var(--color-rule);
+  margin: 10px 0;
+}
+.bs-mast-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+}
+
+/* ── Running head + foot folio (every interior page) ─────────────────────── */
+.bs-runhead {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.bs-runhead .bs-section {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: var(--color-signal);
+}
+.bs-runhead .bs-rule-grow { flex: 1; height: 1px; background: var(--color-rule); }
+.bs-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 10px;
+  border-top: 1.5px solid var(--color-ink);
+}
+.bs-foot .bs-folio {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-ink);
+}
+
+/* ── Headlines + standfirst ──────────────────────────────────────────────── */
+.bs-headline { color: var(--color-ink); margin: 0; }
+.bs-standfirst {
+  font-family: var(--font-header);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-muted);
+  line-height: 1.36;
+}
+.bs-byline {
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+/* ── Running columns separated by thin vertical rules ────────────────────── */
+.bs-cols { column-rule: 1px solid var(--color-rule); }
+.bs-col {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--color-ink);
+  line-height: 1.5;
+  hyphens: auto;
+}
+.bs-colrule { width: 1px; background: var(--color-rule); align-self: stretch; }
+
+/* ── Drop-cap: red serif initial three lines deep (consumed via .bs-col:first-letter) */
+.bs-dropcap::first-letter {
+  font-family: var(--font-header);
+  font-weight: 700;
+  color: var(--color-signal);
+  float: left;
+  font-size: 5.0em;
+  line-height: 0.78;
+  padding: 6px 12px 0 0;
+}
+
+/* ── Dispatch briefs: ruled news items ───────────────────────────────────── */
+.bs-brief { border-top: 1px solid var(--color-rule); padding-top: 16px; }
+.bs-brief .bs-brief-head {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.12;
+  color: var(--color-ink);
+  margin-bottom: 10px;
+  position: relative;
+  padding-left: 18px;
+}
+.bs-brief .bs-brief-head::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 9px;
+  width: 8px; height: 8px;
+  background: var(--color-signal);
+}
+.bs-brief .bs-brief-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.46;
+  color: var(--color-ink);
+}
+
+/* ── Indicator / markets box: one giant serif figure ─────────────────────── */
+.bs-figure {
+  font-family: var(--font-header);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.86;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+.bs-figure .bs-fig-accent { color: var(--color-signal); }
+.bs-delta { font-family: var(--font-data); font-weight: 600; color: var(--color-signal); }
+
+/* ── Pulled quotation (leader column) ────────────────────────────────────── */
+.bs-quote {
+  font-family: var(--font-header);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.14;
+  color: var(--color-ink);
+}
+.bs-quote-mark { color: var(--color-signal); }
+
+/* ── Ruled agate table (newspaper data table) ────────────────────────────── */
+.dir-table { font-family: var(--font-data); width: 100%; border-collapse: collapse; }
+.dir-table thead th {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+  text-align: right;
+  padding: 12px 18px 10px 0;
+  border-bottom: 2px solid var(--color-ink);
+}
+.dir-table thead th:first-child { text-align: left; }
+.dir-table tbody th {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 18px;
+  text-align: left;
+  color: var(--color-ink);
+  padding: 14px 18px 14px 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: middle;
+  width: 34%;
+}
+.dir-table tbody td {
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 18px;
+  text-align: right;
+  color: var(--color-ink);
+  padding: 14px 18px 14px 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.dir-table tbody tr:last-child th,
+.dir-table tbody tr:last-child td { border-bottom: 2px solid var(--color-ink); }
+
+/* ── Chart + analysis caption furniture ──────────────────────────────────── */
+.bs-extitle {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--color-ink);
+  border-bottom: 1.5px solid var(--color-ink);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.bs-exunit {
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+.bs-source {
+  font-family: var(--font-data);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+/* analysis column bullets (consumes {{@list}}) */
+.bs-analysis .dir-list { display: flex; flex-direction: column; gap: 16px; }
+.bs-analysis .dir-list > div {
+  position: relative;
+  padding-left: 20px;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.42;
+  color: var(--color-ink);
+}
+.bs-analysis .dir-list > div::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 9px;
+  width: 8px; height: 8px;
+  background: var(--color-signal);
+}
+
+/* ── Section label (above-the-head hairline) ─────────────────────────────── */
+.bs-seclabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  color: var(--color-signal);
+}
+.bs-seclabel::before {
+  content: "";
+  width: 30px; height: 2px;
+  background: var(--color-signal);
+}
+
+body { margin: 0; background: #d6d6d6; padding: 0; } .slide { margin: 0 0 24px; box-shadow: none; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<section data-slide-type="front-page" class="slide" data-family="cover" data-density="balanced" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:0;">
+    <div class="flow-head bs-masthead" data-visual-event="signature-mark">
+      <div class="bs-mast-meta">
+        <span class="bs-mono">Quarterly Briefing No. 14</span>
+        <span class="bs-kicker" style="width:fit-content; max-width:100%;">Markets and economics</span>
+        <span class="bs-mono">For the desk</span>
+      </div>
+      <div class="bs-mast-rule-thin"></div>
+      <div class="bs-nameplate" style="font-size:118px; text-align:center;">The Trade Ledger</div>
+      <div class="bs-mast-rule"></div>
+      <div class="bs-mast-meta" style="margin-top:10px;">
+        <span class="bs-mono">Q3 2027  ·  Global edition</span>
+        <span class="bs-mono">By the Trade Realignment Desk</span>
+      </div>
+    </div>
+    <div class="flow-stage flow-center" style="padding-top:40px;">
+      <h1 class="bs-headline" style="font-size:92px; font-weight:700; max-width:1640px; margin-bottom:26px;">Global trade is rerouting faster than the tariffs that triggered it</h1>
+      <div class="bs-standfirst" style="font-size:30px; max-width:1300px; margin-bottom:30px;">Container flows, supplier maps and input costs are realigning around a smaller set of trusted corridors. The adjustment is structural, and it is moving quicker than most boards have planned for.</div>
+      <div style="display:grid; grid-template-columns:1fr 1px 1fr; gap:0 48px; max-width:1640px;">
+        <div class="bs-col bs-dropcap" style="font-size:20px;">Three quarters into the realignment, the pattern is no longer noise. Trade between the largest blocs is contracting while a band of connector economies absorbs the rerouted volume. Freight rates, factory orders and inventory cover all point the same way: companies are paying a premium now to hold a supply chain they can predict later. This briefing reads the quarter through five questions, with the figures the desk is watching.</div>
+        <div class="bs-colrule"></div>
+        <div class="bs-col" style="font-size:20px; color:var(--color-muted); font-style:italic;">Container flows, supplier maps and input costs are realigning around a smaller set of trusted corridors. The adjustment is structural, and it is moving quicker than most boards have planned for.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="lead" class="slide" data-family="statement" data-density="data-dense" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">The realignment</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Filed Q3 2027</span>
+      </div>
+      <h2 class="bs-headline" style="font-size:62px; font-weight:700; max-width:1700px; margin-top:22px;">The premium for a predictable supply chain has become a line item, not a risk</h2>
+      <div class="bs-standfirst" style="font-size:26px; max-width:1400px; margin-top:14px;">What looked like a temporary detour around tariff walls in 2025 has hardened into a standing cost of doing business across three continents.</div>
+      <div class="bs-byline" style="margin-top:14px;">By the Trade Realignment Desk</div>
+    </div>
+    <div class="flow-stage">
+      <div style="flex:1; display:grid; grid-template-columns:1fr 1px 1fr 1px 1fr; gap:0 44px; min-height:0;">
+        <div class="bs-col bs-dropcap" data-visual-event="signature-mark" style="font-size:19px;">Boards spent 2025 treating supply-chain disruption as weather: unpleasant, temporary, something to wait out. The figures this quarter say otherwise. The cost of rerouting around the largest trade blocs has stopped spiking and started flattening into a stable, higher baseline. That is the signature of a structural shift, not a shock.</div>
+        <div class="bs-colrule"></div>
+        <div class="bs-col" style="font-size:19px;">The mechanism is straightforward. Firms are dual-sourcing inputs, holding more inventory, and paying to move goods through corridors that clear customs predictably rather than cheaply. Each choice is rational on its own. Together they have lifted landed input costs by roughly a tenth and they are not coming back down. The connector economies that sit between the blocs are the visible winners.</div>
+        <div class="bs-colrule"></div>
+        <div class="bs-col" style="font-size:19px; position:relative;">
+          For planners the practical question has changed. It is no longer whether to diversify but how fast, and what to pay for resilience that competitors are already buying. The desk reads the quarter as the point where the realignment stopped being a scenario and became the operating environment.
+          <div style="border-top:1.5px solid var(--color-ink); border-bottom:1.5px solid var(--color-ink); padding:18px 0; margin-top:22px; font-family:var(--font-header); font-weight:700; font-size:25px; line-height:1.18; color:var(--color-signal);" data-visual-event="item-marker">The cheapest corridor and the most reliable corridor are no longer the same route, and balance sheets now show it.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-foot"><span class="bs-mono">The realignment</span><span class="bs-folio">2</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="dispatch" class="slide" data-family="cards-grid" data-density="data-dense" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">In brief</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Q3 2027</span>
+      </div>
+      <h2 class="bs-headline" style="font-size:54px; font-weight:700; margin-top:20px;">Four dispatches from the quarter</h2>
+    </div>
+    <div class="flow-stage">
+      <div class="flow-grid-fill" style="grid-template-columns:1fr 1fr; gap:0 56px;">
+        <div class="bs-brief flow-fill flow-fill-body flow-center" data-visual-event="item-marker">
+          <div class="bs-brief-head">Freight reroutes around two chokepoints</div>
+          <div class="bs-brief-body">Vessels are taking longer trusted routes over shorter contested ones. Average voyage length on the Asia to Europe lane rose 9 percent, lifting rates even as total volume slipped.</div>
+        </div>
+        <div class="bs-brief flow-fill flow-fill-body flow-center" data-visual-event="item-marker">
+          <div class="bs-brief-head">Supplier maps shorten and thicken</div>
+          <div class="bs-brief-body">The median manufacturer now lists 2.3 qualified suppliers per critical input, up from 1.4 a year ago. Redundancy is being bought deliberately, not discovered in a crisis.</div>
+        </div>
+        <div class="bs-brief flow-fill flow-fill-body flow-center" data-visual-event="item-marker">
+          <div class="bs-brief-head">Connector economies absorb the spillover</div>
+          <div class="bs-brief-body">A band of mid-sized economies between the major blocs captured most of the rerouted assembly work, posting double-digit export growth while bloc-to-bloc trade contracted.</div>
+        </div>
+        <div class="bs-brief flow-fill flow-fill-body flow-center" data-visual-event="item-marker">
+          <div class="bs-brief-head">Inventory cover ratchets higher</div>
+          <div class="bs-brief-body">Days of inventory on hand rose to 58 from 49 across surveyed sectors. Working capital is the price firms are paying to hold a chain they can predict.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-foot"><span class="bs-mono">Four dispatches from the quarter</span><span class="bs-folio">3</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="indicator" class="slide" data-family="metric-hero" data-density="balanced" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">The figure</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Markets box</span>
+      </div>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="border-top:2px solid var(--color-ink); border-bottom:2px solid var(--color-ink); padding:48px 0; display:grid; grid-template-columns:auto 1px 1fr; gap:0 64px; align-items:center;">
+        <div>
+          <div class="bs-figure" style="font-size:280px;" data-visual-event="oversized-number">11.2%</div>
+          <div class="bs-mono" style="font-size:20px; margin-top:14px; color:var(--color-ink);">Rise in landed input cost, year on year</div>
+        </div>
+        <div style="background:var(--color-rule); align-self:stretch;"></div>
+        <div style="display:flex; flex-direction:column; gap:22px;">
+          <div class="bs-headline" style="font-family:var(--font-header); font-weight:600; font-size:36px; line-height:1.22;">Diversification and longer trusted routes have lifted the cost of a delivered input by more than a tenth, and the increase is holding rather than fading</div>
+          <div class="bs-delta" style="font-size:24px;">Held flat for two quarters</div>
+          <div class="bs-mono" style="font-size:17px; color:var(--color-muted); line-height:1.5;">Bloc-to-bloc volume  -6%  ·  connector exports  +14%  ·  inventory cover  58 days</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-foot"><span class="bs-source">Trade Ledger desk index of landed input cost across surveyed sectors, Q3 2027. Illustrative.</span><span class="bs-folio">4</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="chart-story" class="slide" data-family="split-visual" data-density="data-dense" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">Charted</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Desk graphic</span>
+      </div>
+      <h2 class="bs-headline" style="font-size:50px; font-weight:700; max-width:1640px; margin-top:18px;">The rerouted volume is landing in a band of connector economies</h2>
+    </div>
+    <div class="flow-stage">
+      <div style="flex:1; display:grid; grid-template-columns:1.25fr 1px 1fr; gap:0 52px; min-height:0;">
+        <div style="display:flex; flex-direction:column; min-height:0;">
+          <div class="bs-extitle">Export growth by trade role, year on year</div>
+          <div class="bs-exunit" style="margin-bottom:14px;">Percent change in goods exports, Q3 2027 vs Q3 2026</div>
+          <div style="flex:1; min-height:0;" data-visual-event="chartlet"><svg data-visual-event="chart" viewBox="0 0 920 560" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><line x1="56" x2="904" y1="456.0" y2="456.0" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="460.6" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">−7.5</text><line x1="56" x2="904" y1="410.7" y2="410.7" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="415.2" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">−5.0</text><line x1="56" x2="904" y1="365.3" y2="365.3" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="369.9" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">−2.5</text><text x="46.0" y="324.6" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">0.0</text><line x1="56" x2="904" y1="274.7" y2="274.7" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="279.2" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">2.5</text><line x1="56" x2="904" y1="229.3" y2="229.3" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="233.9" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">5.0</text><line x1="56" x2="904" y1="184.0" y2="184.0" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="188.6" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">7.5</text><line x1="56" x2="904" y1="138.7" y2="138.7" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="143.2" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">10.0</text><line x1="56" x2="904" y1="93.3" y2="93.3" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="97.9" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">12.5</text><line x1="56" x2="904" y1="48.0" y2="48.0" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="46.0" y="52.5" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">15.0</text><line x1="56" x2="904" y1="320" y2="320" stroke="#1B1916" stroke-width="2"/><rect x="88.2" y="62.5" width="105.2" height="257.5" fill="#8A2B1F"/><text x="140.8" y="52.5" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1B1916" text-anchor="middle" font-weight="700">14.2</text><text x="140.8" y="484.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#6A6258" text-anchor="middle">Connectors</text><rect x="257.8" y="155.0" width="105.2" height="165.0" fill="#B9AE99"/><text x="310.4" y="145.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1B1916" text-anchor="middle" font-weight="700">9.1</text><text x="310.4" y="484.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#6A6258" text-anchor="middle">Near-shore</text><rect x="427.4" y="203.9" width="105.2" height="116.1" fill="#B9AE99"/><text x="480.0" y="193.9" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1B1916" text-anchor="middle" font-weight="700">6.4</text><text x="480.0" y="484.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#6A6258" text-anchor="middle">Neutral</text><rect x="597.0" y="320.0" width="105.2" height="50.8" fill="#B9AE99"/><text x="649.6" y="310.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1B1916" text-anchor="middle" font-weight="700">−2.8</text><text x="649.6" y="484.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#6A6258" text-anchor="middle">Bloc A</text><rect x="766.6" y="320.0" width="105.2" height="110.6" fill="#B9AE99"/><text x="819.2" y="310.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1B1916" text-anchor="middle" font-weight="700">−6.1</text><text x="819.2" y="484.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#6A6258" text-anchor="middle">Bloc B</text><text x="904" y="24" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#8A2B1F" font-weight="600">Connectors lead, blocs contract</text></svg></div>
+        </div>
+        <div class="bs-colrule"></div>
+        <div class="bs-analysis flow-fill-body flow-center" style="min-height:0;" data-visual-event="item-marker">
+          <div class="bs-seclabel" style="margin-bottom:18px;">What it means</div>
+          <div class="dir-list dir-list-analysis"><div><span><strong>Connector economies</strong> posted the steepest gains as assembly and final-stage work rerouted toward them</span></div><div><span><strong>Near-shore suppliers</strong> grew on proximity, capturing inputs that no longer travel the long contested lanes</span></div><div><span>The two <strong>major blocs</strong> are the only roles in contraction, trading less with each other quarter on quarter</span></div><div><span>The pattern is <strong>consistent across sectors</strong>, which is what marks it as structural rather than a one-off swing</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-foot"><span class="bs-source">Trade Ledger desk classification of 42 economies by trade role; national customs data. Illustrative.</span><span class="bs-folio">5</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="agate" class="slide" data-family="table" data-density="data-dense" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">The table</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Corridor watch</span>
+      </div>
+      <h2 class="bs-headline" style="font-size:50px; font-weight:700; max-width:1640px; margin-top:18px;">Rates and transit times by major shipping corridor</h2>
+    </div>
+    <div class="flow-stage flow-center">
+      <div data-visual-event="chartlet"><table data-visual-event="table" class="dir-table"><thead><tr><th class="dir-table-corner"></th><th>Rate index</th><th>Transit days</th><th>Volume chg %</th><th>Reliability</th></tr></thead><tbody><tr><th scope="row">Asia to N. Europe</th><td>168</td><td>41</td><td>-6.0</td><td>71</td></tr><tr><th scope="row">Asia to US West</th><td>154</td><td>22</td><td>-3.1</td><td>78</td></tr><tr><th scope="row">Intra-bloc short-haul</th><td>96</td><td>9</td><td>-8.4</td><td>88</td></tr><tr><th scope="row">Connector transshipment</th><td>142</td><td>27</td><td>14.2</td><td>84</td></tr><tr><th scope="row">Near-shore overland</th><td>121</td><td>5</td><td>11.0</td><td>93</td></tr></tbody></table></div>
+      <div style="display:flex; align-items:baseline; gap:14px; margin-top:22px;">
+        <span style="flex:none; width:10px; height:10px; background:var(--color-signal); margin-top:6px;"></span>
+        <div class="bs-col" style="font-size:19px; max-width:1500px;">The contested long-haul lanes carry the highest rate index and the worst reliability, while connector and near-shore corridors combine growth with the most dependable clearance times.</div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-source" style="margin-bottom:8px;">Rate index 100 = Q3 2024 baseline. Reliability is on-time arrival, percent. Transit days are door-to-port averages.</div>
+      <div class="bs-foot"><span class="bs-source">Trade Ledger corridor monitor; carrier schedules; customs clearance logs, Q3 2027. Illustrative.</span><span class="bs-folio">6</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="trendline" class="slide" data-family="timeline" data-density="data-dense" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">The trend</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Cost index</span>
+      </div>
+      <h2 class="bs-headline" style="font-size:50px; font-weight:700; max-width:1640px; margin-top:18px;">Landed input cost spiked, then settled into a higher standing baseline</h2>
+    </div>
+    <div class="flow-stage">
+      <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
+        <div class="bs-exunit" style="margin-bottom:12px;">Landed input cost index, 100 = Q1 2025</div>
+        <div style="flex:1; min-height:0;" data-visual-event="chartlet"><svg data-visual-event="chart" viewBox="0 0 920 632" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><defs><linearGradient id="lc-grad" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#8A2B1F" stop-opacity="0.22"/><stop offset="100%" stop-color="#8A2B1F" stop-opacity="0"/></linearGradient></defs><path d="M 64.0 238.3 L 179.4 225.3 L 294.9 209.0 L 410.3 186.2 L 525.7 169.9 L 641.1 176.4 L 756.6 179.7 L 872.0 179.7 L 872 564 L 64 564 Z" fill="#8A2B1F" fill-opacity="0.9"/><line x1="64" x2="872" y1="564.0" y2="564.0" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="568.5" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">0</text><line x1="64" x2="872" y1="498.9" y2="498.9" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="503.4" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">20</text><line x1="64" x2="872" y1="433.7" y2="433.7" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="438.3" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">40</text><line x1="64" x2="872" y1="368.6" y2="368.6" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="373.1" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">60</text><line x1="64" x2="872" y1="303.4" y2="303.4" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="308.0" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">80</text><line x1="64" x2="872" y1="238.3" y2="238.3" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="242.8" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">100</text><line x1="64" x2="872" y1="173.1" y2="173.1" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="177.7" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">120</text><line x1="64" x2="872" y1="108.0" y2="108.0" stroke="#6A6258" stroke-width="0.5" stroke-dasharray="2 4"/><text x="54.0" y="112.5" text-anchor="end" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="13" fill="#1B1916">140</text><path d="M 64.0 238.3 L 179.4 225.3 L 294.9 209.0 L 410.3 186.2 L 525.7 169.9 L 641.1 176.4 L 756.6 179.7 L 872.0 179.7" fill="none" stroke="#8A2B1F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="64.0" cy="238.3" r="5" fill="#8A2B1F"/><text x="64.0" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q1 25</text><text x="179.4" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q3 25</text><text x="294.9" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q1 26</text><text x="410.3" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q3 26</text><circle cx="525.7" cy="169.9" r="7" fill="#8A2B1F"/><text x="525.7" y="155.9" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="16" fill="#1B1916" text-anchor="middle" font-weight="700">121</text><text x="525.7" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q1 27</text><text x="641.1" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q2 27</text><text x="756.6" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Q3 27</text><circle cx="872.0" cy="179.7" r="5" fill="#8A2B1F"/><text x="872.0" y="165.7" style="font-family:var(--font-data, ui-monospace, monospace);font-variant-numeric:tabular-nums" font-size="16" fill="#1B1916" text-anchor="middle" font-weight="700">118</text><text x="872.0" y="592.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="15" fill="#6A6258" text-anchor="middle">Now</text><text x="872" y="41" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#8A2B1F" font-weight="600">Flattening, not falling</text><line x1="410.3" y1="46" x2="410.3" y2="177.2" stroke="#1B1916" stroke-width="1"/><polygon points="406.3,176.2 414.3,176.2 410.3,183.2" fill="#1B1916"/><rect x="327.7" y="12" width="165.1" height="34" fill="#FFFFFF" stroke="#1B1916" stroke-width="1"/><text x="410.3" y="34.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="14" fill="#1B1916" text-anchor="middle" font-weight="500">Tariff walls go up</text><line x1="872.0" y1="90" x2="872.0" y2="170.7" stroke="#1B1916" stroke-width="1"/><polygon points="868.0,169.7 876.0,169.7 872.0,176.7" fill="#1B1916"/><rect x="715.5" y="56" width="196.5" height="34" fill="#FFFFFF" stroke="#1B1916" stroke-width="1"/><text x="813.8" y="78.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="14" fill="#1B1916" text-anchor="middle" font-weight="500">Settles 18% above base</text></svg></div>
+        <div style="display:flex; align-items:baseline; gap:14px; margin-top:18px; border-top:1.5px solid var(--color-ink); padding-top:16px;">
+          <span class="bs-seclabel" style="flex:none;">The read</span>
+          <div class="bs-col" style="font-size:20px;">The curve is the whole argument. Costs climbed through 2025 and 2026 as firms rerouted and dual-sourced, then stopped rising in 2027. They are not retreating. An 18 percent higher baseline is the new floor, and planning that assumes a return to the old level is planning for a quarter that is not coming.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-foot"><span class="bs-source">Trade Ledger desk index of landed input cost, indexed to Q1 2025. Illustrative.</span><span class="bs-folio">7</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="pull" class="slide" data-family="quote" data-density="editorial" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:24px;">
+    <div class="flow-head">
+      <div class="bs-runhead">
+        <span class="bs-section" style="width:fit-content; max-width:100%;">Leader</span>
+        <span class="bs-rule-grow"></span>
+        <span class="bs-mono">Comment</span>
+      </div>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="max-width:1500px; margin:0 auto; border-left:4px solid var(--color-signal); padding-left:48px;" data-visual-event="signature-mark">
+        <div class="bs-quote" style="font-size:62px;"><span class="bs-quote-mark">&ldquo;</span>Resilience used to be a slide in the risk appendix. This quarter it moved to the front of the cost sheet, and it is not moving back.<span class="bs-quote-mark">&rdquo;</span></div>
+        <div class="bs-byline" style="font-size:22px; margin-top:34px;">From the Trade Ledger leader column, Q3 2027</div>
+        <div class="bs-mono" style="font-size:17px; color:var(--color-muted); margin-top:14px; line-height:1.5; max-width:1100px;">The desk&#39;s view: firms that treated diversification as insurance are now finding it priced like a fixed cost, and the ones that waited are buying the same resilience later at a worse rate.</div>
+      </div>
+    </div>
+    <div class="flow-foot">
+      <div class="bs-foot"><span class="bs-mono">Comment</span><span class="bs-folio">8</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-type="colophon" class="slide" data-family="closing" data-density="editorial" style="background:var(--color-page);">
+  <div class="slide-flow" style="padding:var(--page-safe); gap:0;">
+    <div class="flow-head bs-masthead" data-visual-event="signature-mark">
+      <div class="bs-mast-meta">
+        <span class="bs-mono">Q3 2027</span>
+        <span class="bs-kicker" style="width:fit-content; max-width:100%;">End of briefing</span>
+        <span class="bs-mono">Trade Realignment Desk</span>
+      </div>
+      <div class="bs-mast-rule-thin"></div>
+      <div class="bs-nameplate" style="font-size:96px; text-align:center;">The Trade Ledger</div>
+      <div class="bs-mast-rule"></div>
+    </div>
+    <div class="flow-stage flow-center">
+      <h1 class="bs-headline" style="font-size:64px; font-weight:700; text-align:center; max-width:1560px; margin:0 auto;">Plan for the higher baseline, buy resilience before the next reroute prices it</h1>
+      <div class="bs-standfirst" style="font-size:26px; text-align:center; max-width:1200px; margin:28px auto 0;">The next quarterly briefing tracks whether the connector economies hold their gains and whether the cost floor finally starts to ease. Filed for the desk.</div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

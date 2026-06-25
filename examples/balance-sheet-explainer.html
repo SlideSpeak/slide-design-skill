@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>fieldnote deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat%3Awght%40500%3B600%3B700&family=Nunito%20Sans%3Aital%2Cwght%400%2C400%3B0%2C600%3B0%2C700%3B0%2C800%3B1%2C400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-page: #FBF7EC;
+  --color-card: #FFFDF6;
+  --color-ink: #2A3340;
+  --color-signal: #FFD23F;
+  --color-signal-subtle: #FBE6A6;
+  --color-muted: #6E7682;
+  --color-rule: #CFC7B4;
+  --font-header: 'Caveat', 'Comic Sans MS', cursive;
+  --font-body: 'Nunito Sans', system-ui, sans-serif;
+  --font-data: 'Caveat', 'Comic Sans MS', cursive;
+  --font-weight-header: 700;
+  --font-weight-body: 400;
+  --font-weight-data: 700;
+  --size-h1: 104px;
+  --size-h2: 70px;
+  --size-h3: 46px;
+  --size-h4: 30px;
+  --size-body-1: 22px;
+  --size-body-2: 19px;
+  --size-body-3: 17px;
+  --size-body-4: 15px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-card: 10px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --elevation-card: 3px 5px 0 rgba(42, 51, 64, 0.12);
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 92px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+/* Bounded-island layout — STRUCTURE ONLY, carries no look (no color, border,
+   shadow, gap, padding, type). Pin a header and footer band, let the middle
+   stage fill the height between them, and make repeated cards grow to fill the
+   stage. This is the anti-float contract: content occupies the whole slide
+   instead of clustering under the headline with an empty lower third. Look
+   (gap, padding, radius, color) lives in chrome.css. */
+.slide-flow .flow-head,
+.slide-flow .flow-foot { flex: none; min-height: 0; }
+.slide-flow .flow-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* sparse content: center it in the stage instead of pinning it to the top */
+.slide-flow .flow-stage.flow-center { justify-content: center; }
+/* a grid stage that fills the height AND stretches its rows to consume it */
+.slide-flow .flow-grid-fill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: stretch;
+}
+/* a card/cell that grows to fill its grid or flex track top-to-bottom */
+.flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
+/* the body inside a filling card: a full-height column that can distribute its
+   own rows (center a sparse card, or space-between a header+content card) */
+.flow-fill-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.flow-fill-body.flow-center { justify-content: center; }
+.flow-fill-body.flow-between { justify-content: space-between; }
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* FIELDNOTE — look layer (emitted after the neutral baseSlideCss).
+   A hand-drawn sketchnote notebook: warm cream ruled-and-dot-grid paper, a
+   handwriting display face, a clean humanist sans for the reading, highlighter
+   swipes, doodled marks, peeled sticky notes and hand-circled number badges.
+   Marks structure the page, never uniform corporate boxes. */
+
+/* Paper ground: warm cream with a layered ruled-line + dot-grid texture so every
+   slide reads as a real notebook page, plus a torn left-margin pencil rule. */
+.slide {
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--color-page);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='2' cy='2' r='1.1' fill='%232A3340' fill-opacity='0.11'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 39px, rgba(42,51,64,0.07) 39px, rgba(42,51,64,0.07) 40px);
+  background-size: 40px 40px, 100% 40px;
+}
+/* torn left-margin rule, the classic notebook red line drawn loose in pencil */
+.slide::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 132px;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(229,82,59,0) 0, rgba(229,82,59,0.32) 6%, rgba(229,82,59,0.32) 94%, rgba(229,82,59,0) 100%);
+  z-index: 0;
+}
+
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  letter-spacing: 0.004em;
+  line-height: 1.02;
+  color: var(--color-ink);
+}
+.slide h3 { line-height: 1.08; }
+.slide h4 { line-height: 1.14; }
+
+/* Kicker: a hand-written tab, sentence case, with a small drawn check-tick. */
+.fn-kicker {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-muted);
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+  align-items: center;
+  gap: 12px;
+}
+.fn-kicker::before {
+  content: "";
+  width: 22px;
+  height: 18px;
+  flex: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'%3E%3Cpath d='M3 11 L9 17 L21 3' fill='none' stroke='%23E5523B' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+/* Highlighter swipe: a skewed marker stroke behind a word, overshooting it. The
+   signature "this is the point" gesture, in marker yellow. */
+.fn-mark {
+  position: relative;
+  display: inline;
+  white-space: pre-wrap;
+}
+.fn-mark::before {
+  content: "";
+  position: absolute;
+  left: -0.14em;
+  right: -0.18em;
+  top: 0.16em;
+  bottom: 0.02em;
+  background: var(--color-signal);
+  opacity: 0.66;
+  transform: skewX(-9deg) rotate(-0.7deg);
+  border-radius: 4px 9px 6px 8px;
+  z-index: -1;
+}
+
+/* Body: clean humanist sans, comfortable for the reading. */
+.fn-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--color-ink);
+  line-height: 1.5;
+}
+.fn-muted { color: var(--color-muted); }
+
+/* Hand-circled number / item badge: a pen ellipse around a Caveat numeral. */
+.fn-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  flex: none;
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--color-ink);
+}
+.fn-badge::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cpath d='M35 5 C56 6 66 20 64 36 C62 54 48 65 33 64 C16 63 5 50 6 33 C7 17 19 6 36 6' fill='none' stroke='%232A3340' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+.fn-badge.fn-badge-hl::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--color-signal);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+/* Sticky note: a peeled-and-stuck square, the depth moment. The ::after paints
+   the lifted corner shadow so it sits a millimetre above the paper. */
+.fn-sticky {
+  position: relative;
+  background: linear-gradient(168deg, #FFE680 0%, #FFD23F 100%);
+  padding: 22px 24px;
+  border-radius: 3px 3px 8px 3px;
+  transform: rotate(-1.6deg);
+  box-sizing: border-box;
+}
+.fn-sticky.fn-sticky-r { transform: rotate(1.4deg); }
+.fn-sticky::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  left: 18px;
+  bottom: -7px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(42, 51, 64, 0.18);
+  filter: blur(6px);
+  z-index: -1;
+}
+.fn-sticky .fn-sticky-cap {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-ink);
+  opacity: 0.62;
+}
+.fn-sticky .fn-sticky-body {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.4;
+  color: var(--color-ink);
+}
+
+/* Hand-drawn loose box: a rounded ink outline grouping a thing, hand-wobbled. */
+.fn-box {
+  position: relative;
+  padding: 26px 28px;
+  box-sizing: border-box;
+  background: rgba(255, 253, 246, 0.55);
+}
+.fn-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2.4px solid var(--color-ink);
+  border-radius: 14px 9px 13px 8px / 9px 13px 8px 14px;
+  pointer-events: none;
+}
+
+/* Pencil rule, drawn slightly soft, used as a hand divider. */
+.fn-rule {
+  height: 2px;
+  background: var(--color-rule);
+  border-radius: 2px;
+  width: 100%;
+}
+
+/* Emphasis inside body copy: the key term gets a marker swipe, not bold-grey. */
+.slide strong {
+  font-weight: 700;
+  color: var(--color-ink);
+  position: relative;
+  background: linear-gradient(to top, rgba(255,210,63,0.62) 0, rgba(255,210,63,0.62) 42%, transparent 42%);
+  padding: 0 2px;
+}
+
+/* Inline {{@list}} checklist: the dir-list IS the filling grid (overrides the
+   base display:contents), so hand-ticked rows fill the stage as equal tracks. */
+.fn-checklist .dir-list {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+.fn-checklist .dir-list > div {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-items: center;
+  gap: 22px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--color-ink);
+  padding: 6px 0;
+  border-bottom: 2px dotted var(--color-rule);
+}
+.fn-checklist .dir-list > div:last-child { border-bottom: none; }
+/* drawn hand-tick box in front of every checklist row */
+.fn-checklist .dir-list > div::before {
+  content: "";
+  width: 44px;
+  height: 44px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect x='4' y='5' width='40' height='39' rx='6' fill='none' stroke='%232A3340' stroke-width='2.6'/%3E%3Cpath d='M12 25 L21 35 L40 11' fill='none' stroke='%23E5523B' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+/* Table: a hand-ruled ledger, not a corporate grid. Pencil rules, ink heads. */
+.fn-ledger .dir-table { font-family: var(--font-body); }
+.fn-ledger .dir-table thead th {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: 27px;
+  color: var(--color-ink);
+  text-align: left;
+  padding: 6px 24px 14px 0;
+  border-bottom: 2.6px solid var(--color-ink);
+}
+.fn-ledger .dir-table tbody th {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--color-ink);
+  text-align: left;
+  padding: 18px 24px 18px 0;
+  border-bottom: 2px dotted var(--color-rule);
+  vertical-align: top;
+  width: 32%;
+}
+.fn-ledger .dir-table tbody td {
+  font-size: 19px;
+  color: var(--color-ink);
+  padding: 18px 24px 18px 0;
+  border-bottom: 2px dotted var(--color-rule);
+  vertical-align: top;
+}
+.fn-ledger .dir-table tbody tr:last-child th,
+.fn-ledger .dir-table tbody tr:last-child td { border-bottom: none; }
+
+/* Keep all hand content above the paper texture + margin rule. */
+.slide-flow, .slide-flow * { position: relative; z-index: 1; }
+
+body { margin: 0; background: #d6d6d6; padding: 0; } .slide { margin: 0 0 24px; box-shadow: none; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<section data-family="cover" data-slide-type="cover" data-density="editorial" class="slide">
+  <div class="slide-flow" style="justify-content:space-between; padding-left:60px;">
+    <div class="flow-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:40px;">
+      <span class="fn-kicker">A 10-minute field note</span>
+      <!-- big hand-circled lesson number, the open-notebook mark -->
+      <svg viewBox="0 0 150 150" width="138" height="138" style="flex:none; margin-top:-6px;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="signature-mark">
+        <path d="M75 12 C120 14 138 44 134 78 C130 116 100 138 70 136 C32 134 12 104 14 70 C16 38 40 14 78 13" fill="none" stroke="#2A3340" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M62 96 L62 50 L50 60" fill="none" stroke="#E5523B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="96" y="98" font-family="'Caveat',cursive" font-weight="700" font-size="58" fill="#2A3340" text-anchor="middle">·1</text>
+      </svg>
+    </div>
+    <div class="flow-stage flow-center" style="max-width:1500px;">
+      <h1 style="font-size:150px; font-weight:700; line-height:0.92; margin:0;"><span class="fn-mark">How to read a balance sheet</span></h1>
+      <div class="fn-body" style="font-size:30px; max-width:1100px; margin-top:34px; color:var(--color-muted);">A one-page walk-through of the statement that tells you what a company owns, what it owes, and what is actually left over.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:18px;">
+      <span class="fn-rule" style="width:120px;"></span>
+      <span style="font-family:var(--font-header); font-weight:700; font-size:28px; color:var(--color-muted);">Finance, sketched out</span>
+    </div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="big-idea" data-density="editorial" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">The one idea</span></div>
+    <div class="flow-stage flow-center" style="max-width:1480px;">
+      <h2 style="font-size:96px; font-weight:700; line-height:1.0; margin:0;">A balance sheet always balances.</h2>
+      <div class="fn-body" style="font-size:25px; line-height:1.5; max-width:1040px; margin-top:30px;">Everything the company owns was paid for somehow, either with borrowed money or with the owners&#39; money. So what it owns must equal what it owes plus what is left over. That is the whole trick.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; justify-content:flex-end;">
+      <div class="fn-sticky fn-sticky-r" style="max-width:420px;">
+        <div class="fn-sticky-cap">Remember</div>
+        <div class="fn-sticky-body" style="margin-top:8px;">Assets = Liabilities + Equity. If it does not balance, something is wrong with the books, not the rule.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="split-visual" data-slide-type="anatomy" data-density="balanced" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">Label the parts</span>
+      <h2 style="font-size:64px; font-weight:700; margin:10px 0 0;">Three boxes, top to bottom</h2>
+    </div>
+    <div class="flow-stage" style="display:grid; grid-template-columns:1.05fr 0.95fr; gap:64px; align-items:center; margin-top:20px;">
+      <!-- the framed figure plate, drawn like a taped-in sketch with a dashed cut line -->
+      <div style="position:relative; height:100%; min-height:0; display:flex;">
+        <svg viewBox="0 0 560 520" style="width:100%; height:auto; align-self:center;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="visual-plate">
+          <rect x="18" y="18" width="524" height="484" rx="16" fill="#FFFDF6" stroke="#2A3340" stroke-width="2.6" stroke-dasharray="2 10" stroke-linecap="round"/>
+          <rect x="150" y="92" width="260" height="120" rx="10" fill="#FFD23F" fill-opacity="0.5" stroke="#2A3340" stroke-width="2.4"/>
+          <rect x="150" y="238" width="260" height="86" rx="10" fill="none" stroke="#2A3340" stroke-width="2.4"/>
+          <rect x="150" y="348" width="260" height="86" rx="10" fill="none" stroke="#2A3340" stroke-width="2.4"/>
+          <path d="M280 212 L280 238 M280 324 L280 348" stroke="#2A3340" stroke-width="2.4"/>
+          <text x="280" y="466" font-family="'Caveat',cursive" font-weight="700" font-size="30" fill="#6E7682" text-anchor="middle">one page, three stacked boxes</text>
+        </svg>
+      </div>
+      <!-- the hand-numbered labels, each with a drawn leader dot -->
+      <div style="display:flex; flex-direction:column; gap:30px;">
+        <div style="display:grid; grid-template-columns:62px 1fr; gap:24px; align-items:start;">
+          <span class="fn-badge">1</span>
+          <div><div style="font-family:var(--font-header); font-weight:700; font-size:40px; line-height:1; color:var(--color-ink);">Assets</div><div class="fn-body fn-muted" style="font-size:20px; margin-top:8px;">What the company owns. Cash, stock it can sell, buildings, machines. Listed most-liquid first.</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:62px 1fr; gap:24px; align-items:start;">
+          <span class="fn-badge">2</span>
+          <div><div style="font-family:var(--font-header); font-weight:700; font-size:40px; line-height:1; color:var(--color-ink);">Liabilities</div><div class="fn-body fn-muted" style="font-size:20px; margin-top:8px;">What it owes to other people. Bills, loans, money due to suppliers. Sorted by when it is due.</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:62px 1fr; gap:24px; align-items:start;">
+          <span class="fn-badge">3</span>
+          <div><div style="font-family:var(--font-header); font-weight:700; font-size:40px; line-height:1; color:var(--color-ink);">Equity</div><div class="fn-body fn-muted" style="font-size:20px; margin-top:8px;">What is left for the owners after the debts. Assets minus liabilities. The owners&#39; real stake.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="flow-diagram" data-slide-type="walk-through" data-density="balanced" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">Do this in order</span>
+      <h2 style="font-size:62px; font-weight:700; margin:10px 0 0;">Four passes down the page</h2>
+    </div>
+    <div class="flow-stage" style="display:grid; grid-template-columns:1fr 64px 1fr 64px 1fr 64px 1fr; align-items:stretch; margin-top:24px; padding-bottom:8px;">
+      <!-- step 1 -->
+      <div class="fn-box flow-fill-body" style="height:100%; justify-content:space-evenly;">
+        <div style="display:flex; align-items:center; gap:16px;"><span class="fn-badge fn-badge-hl">1</span><div style="font-family:var(--font-header); font-weight:700; font-size:36px; line-height:1.02; color:var(--color-ink);">Find the cash</div></div>
+        <div class="fn-body fn-muted" style="font-size:20px; margin-top:18px;">Start top-left. Cash is the line that cannot lie. A healthy firm has enough to cover the near-term bills.</div>
+      </div>
+      <svg viewBox="0 0 64 40" width="64" style="align-self:center; justify-self:center;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="item-marker"><path d="M4 20 C22 12 42 28 58 20" fill="none" stroke="#E5523B" stroke-width="3" stroke-linecap="round"/><path d="M50 12 L60 20 L50 28" fill="none" stroke="#E5523B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <!-- step 2 -->
+      <div class="fn-box flow-fill-body" style="height:100%; justify-content:space-evenly;">
+        <div style="display:flex; align-items:center; gap:16px;"><span class="fn-badge">2</span><div style="font-family:var(--font-header); font-weight:700; font-size:36px; line-height:1.02; color:var(--color-ink);">Check the debts</div></div>
+        <div class="fn-body fn-muted" style="font-size:20px; margin-top:18px;">Drop to liabilities. Split short-term from long-term. Lots due soon is a warning worth circling.</div>
+      </div>
+      <svg viewBox="0 0 64 40" width="64" style="align-self:center; justify-self:center;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="item-marker"><path d="M4 20 C22 28 42 12 58 20" fill="none" stroke="#E5523B" stroke-width="3" stroke-linecap="round"/><path d="M50 12 L60 20 L50 28" fill="none" stroke="#E5523B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <!-- step 3 -->
+      <div class="fn-box flow-fill-body" style="height:100%; justify-content:space-evenly;">
+        <div style="display:flex; align-items:center; gap:16px;"><span class="fn-badge">3</span><div style="font-family:var(--font-header); font-weight:700; font-size:36px; line-height:1.02; color:var(--color-ink);">Read the equity</div></div>
+        <div class="fn-body fn-muted" style="font-size:20px; margin-top:18px;">Look at what is left for the owners. Growing equity over years means the company is building value.</div>
+      </div>
+      <svg viewBox="0 0 64 40" width="64" style="align-self:center; justify-self:center;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="item-marker"><path d="M4 20 C22 12 42 28 58 20" fill="none" stroke="#E5523B" stroke-width="3" stroke-linecap="round"/><path d="M50 12 L60 20 L50 28" fill="none" stroke="#E5523B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <!-- step 4 -->
+      <div class="fn-box flow-fill-body" style="height:100%; justify-content:space-evenly;">
+        <div style="display:flex; align-items:center; gap:16px;"><span class="fn-badge fn-badge-hl">4</span><div style="font-family:var(--font-header); font-weight:700; font-size:36px; line-height:1.02; color:var(--color-ink);">Test the balance</div></div>
+        <div class="fn-body fn-muted" style="font-size:20px; margin-top:18px;">Add assets, add liabilities plus equity. They must match. Now you have read the whole statement.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="metric-hero" data-slide-type="key-figure" data-density="balanced" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">The number to memorise</span></div>
+    <div class="flow-stage" style="display:grid; grid-template-columns:1fr 0.92fr; align-items:stretch; gap:72px; margin-top:8px;">
+      <div class="flow-fill-body flow-center" style="position:relative; align-items:center;">
+        <!-- the big circled figure, the loose pen ellipse round the whole number -->
+        <div style="position:relative; display:inline-block;">
+          <span style="font-family:var(--font-header); font-weight:700; font-size:300px; line-height:0.86; color:var(--color-ink);" data-visual-event="oversized-number">1.5</span>
+          <svg viewBox="0 0 620 380" style="position:absolute; inset:-44px -56px; width:calc(100% + 112px); height:calc(100% + 88px);" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="signature-mark"><path d="M310 22 C500 20 600 96 596 190 C592 300 470 360 300 358 C120 356 22 286 24 188 C26 96 130 26 320 24" fill="none" stroke="#E5523B" stroke-width="4.4" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-family:var(--font-header); font-weight:700; font-size:44px; color:var(--color-muted); margin-top:48px; text-align:center;">a comfortable current ratio</div>
+      </div>
+      <div class="flow-fill-body flow-between" style="padding:14px 0;">
+        <div class="fn-body" style="font-size:28px; line-height:1.5;">Divide what the company owns and can sell soon by what it owes soon. That is the current ratio. Around 1.5 means it can pay its near-term bills with room to spare.</div>
+        <div class="fn-sticky" style="max-width:460px;">
+          <div class="fn-sticky-cap">So what</div>
+          <div class="fn-sticky-body" style="margin-top:8px;">Below 1.0 means the bills due soon are bigger than the cash on hand. Circle it and ask why.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="timeline" data-slide-type="data-read" data-density="data-dense" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">Read it like a sketch</span>
+      <h2 style="font-size:60px; font-weight:700; margin:10px 0 0;">Where the money is parked</h2>
+    </div>
+    <div class="flow-stage" style="display:grid; grid-template-columns:1.35fr 0.65fr; gap:56px; align-items:center; margin-top:18px;">
+      <div class="fn-box" style="height:100%; display:flex; align-items:center;">
+        <svg data-visual-event="chart" viewBox="0 0 920 440" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><line x1="56" x2="904" y1="336" y2="336" stroke="#1F3A5F" stroke-width="2"/><rect x="96.3" y="48.0" width="131.4" height="288.0" fill="#FF6A13"/><text x="162.0" y="38.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1F3A5F" text-anchor="middle" font-weight="700">44</text><text x="162.0" y="364.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Cash</text><rect x="308.3" y="192.0" width="131.4" height="144.0" fill="#1F3A5F"/><text x="374.0" y="182.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1F3A5F" text-anchor="middle" font-weight="700">22</text><text x="374.0" y="364.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Inventory</text><rect x="520.3" y="178.9" width="131.4" height="157.1" fill="#1F3A5F"/><text x="586.0" y="168.9" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1F3A5F" text-anchor="middle" font-weight="700">24</text><text x="586.0" y="364.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Equipment</text><rect x="732.3" y="270.5" width="131.4" height="65.5" fill="#1F3A5F"/><text x="798.0" y="260.5" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#1F3A5F" text-anchor="middle" font-weight="700">10</text><text x="798.0" y="364.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#B8C0CC" text-anchor="middle">Other</text><text x="904" y="24" text-anchor="end" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#FF6A13" font-weight="600">Cash is the tallest bar here, so this firm keeps its assets liquid and flexible.</text></svg>
+      </div>
+      <div class="fn-sticky fn-sticky-r" style="align-self:center;">
+        <div class="fn-sticky-cap">Read it</div>
+        <div class="fn-sticky-body" style="margin-top:8px;">Cash is the tallest bar here, so this firm keeps its assets liquid and flexible.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="cards-grid" data-slide-type="checklist" data-density="balanced" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:40px;">
+      <div><span class="fn-kicker">Before you trust it</span><h2 style="font-size:62px; font-weight:700; margin:10px 0 0;">A quick health check</h2></div>
+      <!-- a doodled bracket pinning the list together -->
+      <svg viewBox="0 0 60 150" width="50" style="flex:none; margin-top:8px;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M44 8 C18 14 18 60 30 75 C18 90 18 136 44 142" fill="none" stroke="#2A3340" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </div>
+    <div class="fn-checklist flow-stage" style="margin-top:18px;">
+      <div class="dir-list dir-list-items"><div><span>Enough cash to cover the bills due in the next year</span></div><div><span>Debt that is shrinking, or at least not racing ahead of growth</span></div><div><span>Equity that has grown over the last few years</span></div><div><span>No single mystery line that is suspiciously large</span></div><div><span>The two sides actually add up to the same total</span></div></div>
+    </div>
+    <div class="flow-foot fn-body fn-muted" style="font-size:20px; padding-top:14px;">Tick all five and the statement is probably honest and healthy. Miss one and start asking questions.</div>
+  </div>
+</section>
+
+<section data-family="comparison" data-slide-type="look-closer" data-density="balanced" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">Do not mix these up</span>
+      <h2 style="font-size:62px; font-weight:700; margin:10px 0 0;">Owns versus owes</h2>
+    </div>
+    <div class="flow-stage" style="display:grid; grid-template-columns:1fr 88px 1fr; align-items:stretch; margin-top:20px; padding-bottom:6px;">
+      <div class="fn-box flow-fill-body" style="height:100%; justify-content:space-evenly;">
+        <div style="font-family:var(--font-header); font-weight:700; font-size:50px; line-height:1; color:var(--color-ink);"><span class="fn-mark">An asset</span></div>
+        <div class="fn-body" style="font-size:23px; line-height:1.55;">A thing of value the company controls. It can be turned into cash, used to make money, or sold. It sits on the left.</div>
+      </div>
+      <!-- the "vs" hand-drawn between them -->
+      <div style="justify-self:center; align-self:center; text-align:center;">
+        <svg viewBox="0 0 80 80" width="78" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="signature-mark"><circle cx="40" cy="40" r="32" fill="#FFFDF6" stroke="#2A3340" stroke-width="2.6"/><text x="40" y="52" font-family="'Caveat',cursive" font-weight="700" font-size="34" fill="#E5523B" text-anchor="middle">vs</text></svg>
+      </div>
+      <div class="fn-box flow-fill-body" style="height:100%; justify-content:space-evenly;">
+        <div style="font-family:var(--font-header); font-weight:700; font-size:50px; line-height:1; color:var(--color-ink);"><span class="fn-mark">A liability</span></div>
+        <div class="fn-body" style="font-size:23px; line-height:1.55;">A claim someone else has on the company. It is money that has to leave the business later. It sits on the right.</div>
+      </div>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:18px; padding-top:12px;">
+      <span style="font-family:var(--font-header); font-weight:700; font-size:30px; color:var(--color-muted);">The takeaway:</span>
+      <span class="fn-body" style="font-size:22px; font-weight:600;">Same item, different side. A loan is cash you hold today and a debt you owe tomorrow.</span>
+    </div>
+  </div>
+</section>
+
+<section data-family="table" data-slide-type="gotchas" data-density="data-dense" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">Common mistakes</span>
+      <h2 style="font-size:60px; font-weight:700; margin:10px 0 0;">What trips people up</h2>
+    </div>
+    <div class="flow-stage" style="display:grid; grid-template-columns:1.55fr 0.45fr; gap:52px; align-items:center; margin-top:16px;">
+      <div class="fn-ledger flow-fill" style="display:flex; align-items:center;">
+        <table data-visual-event="table" class="dir-table"><thead><tr><th class="dir-table-corner"></th><th>The trap</th><th>The fix</th></tr></thead><tbody><tr><th scope="row">Reading only assets</th><td>A big asset pile looks great until you see the debt behind it|Always read liabilities and equity in the same pass
+A debt due next month and one due in ten years are not the same|Split short-term from long-term before you judge
+One page is a single day, not the whole story|Compare two or three years to see the real trend</td><td></td></tr><tr><th scope="row">Ignoring the dates</th><td></td><td></td></tr><tr><th scope="row">Trusting one snapshot</th><td></td><td></td></tr></tbody></table>
+      </div>
+      <div class="fn-sticky" style="align-self:center;">
+        <div class="fn-sticky-cap">Watch out</div>
+        <div class="fn-sticky-body" style="margin-top:8px;">A balance sheet is a photo, not a film. Always line up a few years side by side.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="closing" data-slide-type="recap" data-density="editorial" class="slide">
+  <div class="slide-flow" style="padding-left:60px;">
+    <div class="flow-head"><span class="fn-kicker">Our field note, recapped</span>
+      <h2 style="font-size:78px; font-weight:700; margin:10px 0 0;"><span class="fn-mark">Now you can read one in a minute</span></h2>
+    </div>
+    <div class="flow-stage flow-center">
+      <!-- the lesson walked back along a hand-drawn spine with three node dots -->
+      <div style="position:relative; padding-top:60px;">
+        <svg viewBox="0 0 1680 90" style="position:absolute; top:14px; left:0; width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-visual-event="signature-mark"><path d="M40 50 C300 18 460 78 840 46 C1230 14 1390 78 1640 44" fill="none" stroke="#2A3340" stroke-width="2.8" stroke-dasharray="2 9" stroke-linecap="round"/></svg>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:60px;">
+          <div style="text-align:center;"><span class="fn-badge fn-badge-hl" style="margin-bottom:18px;">1</span><div class="fn-body" style="font-size:23px; font-weight:600; margin-top:10px;">Three boxes: owns, owes, left over</div></div>
+          <div style="text-align:center;"><span class="fn-badge fn-badge-hl" style="margin-bottom:18px;">2</span><div class="fn-body" style="font-size:23px; font-weight:600; margin-top:10px;">Walk it: cash, debt, equity, balance</div></div>
+          <div style="text-align:center;"><span class="fn-badge fn-badge-hl" style="margin-bottom:18px;">3</span><div class="fn-body" style="font-size:23px; font-weight:600; margin-top:10px;">Compare a few years, then trust it</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot" style="display:flex; justify-content:center;">
+      <div class="fn-sticky" style="max-width:560px; text-align:center;">
+        <div class="fn-sticky-body">Keep this page handy. The next statement you open will feel a lot less like a wall of numbers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

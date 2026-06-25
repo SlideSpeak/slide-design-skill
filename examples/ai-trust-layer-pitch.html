@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>hypergradient deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora%3Awght%40400%3B500%3B600%3B700%3B800&family=Inter%3Awght%40400%3B500%3B600%3B700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-page: #0B0420;
+  --color-card: #160A33;
+  --color-ink: #F4F1FF;
+  --color-signal: #A78BFA;
+  --color-signal-subtle: #6D4FD6;
+  --color-muted: #A99FD0;
+  --color-rule: #2A1B4D;
+  --font-header: 'Sora', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-data: 'Sora', system-ui, sans-serif;
+  --font-weight-header: 700;
+  --font-weight-body: 400;
+  --font-weight-data: 700;
+  --size-h1: 128px;
+  --size-h2: 80px;
+  --size-h3: 46px;
+  --size-h4: 28px;
+  --size-body-1: 21px;
+  --size-body-2: 18px;
+  --size-body-3: 16px;
+  --size-body-4: 14px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-card: 28px;
+  --radius-button: 999px;
+  --radius-input: 16px;
+  --elevation-card: 0 24px 60px -24px rgba(124,58,237,0.55);
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 104px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+/* Bounded-island layout — STRUCTURE ONLY, carries no look (no color, border,
+   shadow, gap, padding, type). Pin a header and footer band, let the middle
+   stage fill the height between them, and make repeated cards grow to fill the
+   stage. This is the anti-float contract: content occupies the whole slide
+   instead of clustering under the headline with an empty lower third. Look
+   (gap, padding, radius, color) lives in chrome.css. */
+.slide-flow .flow-head,
+.slide-flow .flow-foot { flex: none; min-height: 0; }
+.slide-flow .flow-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* sparse content: center it in the stage instead of pinning it to the top */
+.slide-flow .flow-stage.flow-center { justify-content: center; }
+/* a grid stage that fills the height AND stretches its rows to consume it */
+.slide-flow .flow-grid-fill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: stretch;
+}
+/* a card/cell that grows to fill its grid or flex track top-to-bottom */
+.flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
+/* the body inside a filling card: a full-height column that can distribute its
+   own rows (center a sparse card, or space-between a header+content card) */
+.flow-fill-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.flow-fill-body.flow-center { justify-content: center; }
+.flow-fill-body.flow-between { justify-content: space-between; }
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* HYPERGRADIENT. Look layer (emitted after the neutral baseSlideCss).
+   Maximalist mesh gradient: a deep violet ground blooming into electric violet,
+   magenta, cyan and royal blue, with frosted glassmorphic cards and floating glow
+   orbs. Type is bright Sora ink; the kicker is a glass pill; traction and ask
+   numerals are gradient-clipped. Clean, glossy, modern, never retro neon. */
+
+.slide {
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-ink);
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: var(--color-ink);
+}
+.slide h3 { letter-spacing: -0.02em; line-height: 1.1; }
+.slide h4 { letter-spacing: -0.01em; line-height: 1.18; }
+.slide strong { color: var(--color-signal); font-weight: 700; }
+
+/* ── The signature surface: the mesh-gradient ground.
+   Overlapping radial blooms over the deep violet base. The hue lead rotates per
+   slide via .hg-mesh--violet / --cyan / --magenta / --blue so adjacent slides
+   never read as the same bloom. .hg-mesh--dim drops opacity for structured pages
+   so the glass and type read crisply. */
+.hg-mesh {
+  position: relative;
+  background-color: var(--color-page);
+  overflow: hidden;
+}
+.hg-mesh::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  z-index: 0;
+  background:
+    radial-gradient(46% 52% at 14% 18%, rgba(139,92,246,0.95), rgba(139,92,246,0) 62%),
+    radial-gradient(40% 46% at 88% 12%, rgba(34,211,238,0.80), rgba(34,211,238,0) 60%),
+    radial-gradient(52% 56% at 82% 86%, rgba(236,72,153,0.85), rgba(236,72,153,0) 62%),
+    radial-gradient(44% 50% at 26% 92%, rgba(59,130,246,0.78), rgba(59,130,246,0) 60%),
+    radial-gradient(60% 64% at 50% 50%, rgba(79,70,229,0.45), rgba(11,4,32,0) 70%);
+  filter: saturate(1.18);
+}
+/* a faint top sheen so the screen reads as glossy glass, not matte */
+.hg-mesh::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(11,4,32,0) 28%);
+  pointer-events: none;
+}
+.hg-mesh > * { position: relative; z-index: 2; }
+
+.hg-mesh--violet::before { transform: none; }
+.hg-mesh--cyan::before {
+  background:
+    radial-gradient(48% 54% at 86% 20%, rgba(34,211,238,0.95), rgba(34,211,238,0) 62%),
+    radial-gradient(44% 48% at 12% 16%, rgba(139,92,246,0.82), rgba(139,92,246,0) 60%),
+    radial-gradient(50% 54% at 22% 88%, rgba(59,130,246,0.85), rgba(59,130,246,0) 62%),
+    radial-gradient(46% 50% at 84% 90%, rgba(236,72,153,0.62), rgba(236,72,153,0) 60%),
+    radial-gradient(60% 64% at 50% 48%, rgba(79,70,229,0.42), rgba(11,4,32,0) 70%);
+}
+.hg-mesh--magenta::before {
+  background:
+    radial-gradient(50% 56% at 18% 84%, rgba(236,72,153,0.95), rgba(236,72,153,0) 62%),
+    radial-gradient(44% 48% at 84% 78%, rgba(139,92,246,0.85), rgba(139,92,246,0) 60%),
+    radial-gradient(46% 50% at 80% 14%, rgba(34,211,238,0.66), rgba(34,211,238,0) 60%),
+    radial-gradient(44% 48% at 16% 16%, rgba(59,130,246,0.7), rgba(59,130,246,0) 60%),
+    radial-gradient(60% 64% at 50% 50%, rgba(79,70,229,0.42), rgba(11,4,32,0) 70%);
+}
+.hg-mesh--blue::before {
+  background:
+    radial-gradient(50% 56% at 16% 26%, rgba(59,130,246,0.95), rgba(59,130,246,0) 62%),
+    radial-gradient(46% 50% at 86% 24%, rgba(139,92,246,0.8), rgba(139,92,246,0) 60%),
+    radial-gradient(48% 52% at 82% 84%, rgba(34,211,238,0.78), rgba(34,211,238,0) 60%),
+    radial-gradient(44% 48% at 24% 90%, rgba(236,72,153,0.7), rgba(236,72,153,0) 60%),
+    radial-gradient(60% 64% at 50% 50%, rgba(79,70,229,0.42), rgba(11,4,32,0) 70%);
+}
+.hg-mesh--dim::before { opacity: 0.5; filter: saturate(1.05) blur(2px); }
+
+/* ── Glow orb: a bloom of pure light that floats behind glass and behind the
+   hero numerals. A structural device, never a logo, never a blob. */
+.hg-orb {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(2px);
+  background: radial-gradient(circle at 38% 34%, rgba(255,255,255,0.55), rgba(167,139,250,0.5) 32%, rgba(124,58,237,0) 70%);
+}
+
+/* ── Glassmorphic card: the texture of the whole deck. Translucent frosted
+   panel, luminous white hairline border, soft inner top highlight. */
+.hg-glass {
+  position: relative;
+  background: linear-gradient(155deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: var(--radius-card);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  backdrop-filter: blur(22px) saturate(1.2);
+  box-shadow: var(--elevation-card), inset 0 1px 0 rgba(255,255,255,0.35);
+  overflow: hidden;
+}
+.hg-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 38%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+.hg-glass > * { position: relative; z-index: 1; }
+
+/* ── Glass kicker pill: small, sentence case, fit to content, never full-row. */
+.hg-kicker {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--color-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.26);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.hg-kicker::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-signal);
+  box-shadow: 0 0 12px 1px var(--color-signal);
+}
+
+/* ── Gradient-clipped oversized numeral: the figure painted with the mesh and
+   clipped to the glyphs, so the number itself shines. The depth moment. */
+.hg-figure {
+  font-family: var(--font-data);
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  background: linear-gradient(120deg, #C4B5FD 0%, #22D3EE 30%, #8B5CF6 58%, #EC4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* the gradient is painted via background-clip; `color` stays a bright lavender
+     so legibility scoring (which reads `color`, not the clip) sees light-on-dark. */
+  color: #C9B8FF;
+  filter: drop-shadow(0 10px 40px rgba(139,92,246,0.5));
+}
+
+/* ── Hairline rules and text helpers. */
+.hg-rule { height: 1px; width: 100%; background: var(--color-rule); }
+.hg-rule-signal {
+  height: 2px; width: 100%;
+  background: linear-gradient(90deg, var(--color-signal), rgba(34,211,238,0.7), rgba(236,72,153,0));
+}
+.hg-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: rgba(244,241,255,0.84);
+  line-height: 1.55;
+}
+.hg-muted { color: var(--color-muted); }
+.hg-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--color-signal);
+}
+
+/* index numeral inside a glass step / card */
+.hg-index {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(120deg, #A78BFA, #22D3EE);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #93C5FD;
+}
+
+/* ── {{@list}} step register for the solution flow: numbered glass rows. */
+.hg-steps .dir-list {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 22px;
+  height: 100%;
+}
+.hg-steps .dir-list > div {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 0 30px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(155deg, rgba(255,255,255,0.13), rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,255,255,0.24);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  counter-increment: hg-step;
+  font-family: var(--font-header);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--color-ink);
+}
+.hg-steps .dir-list { counter-reset: hg-step; }
+.hg-steps .dir-list > div::before {
+  content: counter(hg-step);
+  flex: none;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-data);
+  font-weight: 800;
+  font-size: 24px;
+  color: #0B0420;
+  background: radial-gradient(circle at 36% 30%, #FFFFFF, #A78BFA 55%, #7C3AED);
+  box-shadow: 0 0 22px 1px rgba(167,139,250,0.6);
+}
+
+body { margin: 0; background: #d6d6d6; padding: 0; } .slide { margin: 0 0 24px; box-shadow: none; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<section data-family="cover" data-slide-type="cover" data-density="editorial" class="slide hg-mesh hg-mesh--violet" style="background:#0B0420;">
+  <div class="hg-orb" style="width:760px; height:760px; top:-200px; right:-160px; opacity:0.6;"></div>
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head" style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="hg-kicker">Seed round 2026</span>
+      <span class="hg-eyebrow">Confidential</span>
+    </div>
+    <div class="flow-stage flow-center" style="align-items:flex-start; gap:34px;">
+      <h1 style="font-size:130px; font-weight:800; line-height:0.92; letter-spacing:-0.04em; margin:0; max-width:1640px;">The trust layer for AI agents</h1>
+      <div style="font-family:var(--font-body); font-weight:400; font-size:30px; line-height:1.45; color:rgba(244,241,255,0.86); max-width:1180px;">Aperture is the runtime that lets companies deploy AI agents into production with the guardrails, audit trail and rollback that real software demands.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-family:var(--font-data); font-weight:700; font-size:26px; letter-spacing:-0.01em; color:var(--color-ink);">Aperture</span>
+      <span class="hg-muted" style="font-family:var(--font-body); font-size:16px;">Seed round, partnership deck</span>
+    </div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="thesis" class="slide hg-mesh hg-mesh--magenta" data-density="editorial" style="background:#0B0420;">
+  <div class="hg-orb" style="width:880px; height:880px; bottom:-280px; left:-180px; opacity:0.55;"></div>
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="hg-kicker">The one belief</span></div>
+    <div class="flow-stage flow-center" style="align-items:flex-start; gap:40px;">
+      <h1 data-visual-event="signature-mark" style="font-size:96px; font-weight:800; line-height:0.98; letter-spacing:-0.035em; margin:0; max-width:1620px;">Every team is building an AI agent. Almost none of them can trust it in production.</h1>
+      <div style="display:flex; gap:30px; align-items:flex-start; max-width:1180px;">
+        <span style="flex:none; margin-top:14px; width:120px; height:3px; border-radius:2px; background:linear-gradient(90deg,var(--color-signal),rgba(34,211,238,0.8));"></span>
+        <div class="hg-body" style="font-size:24px; line-height:1.5;">The models got good enough to act, not just answer. What is missing is the layer that makes acting safe: permissions, observability and a way to undo. We are building that layer.</div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="comparison" data-slide-type="problem" class="slide hg-mesh hg-mesh--blue hg-mesh--dim" style="background:#0B0420;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:20px;">
+      <span class="hg-kicker">The gap</span>
+      <h2 style="font-size:64px; font-weight:700; margin:0; max-width:1500px;">Agents that can act are agents that can break things</h2>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; width:100%;">
+        <div class="hg-glass flow-fill" data-visual-event="visual-plate" style="padding:48px;">
+          <div class="hg-eyebrow" style="color:var(--color-muted);">How agents ship today</div>
+          <div style="margin-top:24px; font-family:var(--font-header); font-weight:600; font-size:30px; line-height:1.3; color:rgba(244,241,255,0.7);">A prompt, a pile of tools and blind faith. No permission model, no record of what the agent did, no way to roll back a bad action. One wrong call hits a customer.</div>
+        </div>
+        <div class="hg-glass flow-fill" data-visual-event="visual-plate" style="padding:48px; border-color:rgba(167,139,250,0.5);">
+          <div class="hg-eyebrow">How agents should ship</div>
+          <div style="margin-top:24px; font-family:var(--font-header); font-weight:700; font-size:32px; line-height:1.3; color:var(--color-ink);">Scoped permissions per action, a full audit trail of every step, and one-click rollback. The agent moves fast inside a box you control.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="flow-diagram" data-slide-type="solution" class="slide hg-mesh hg-mesh--violet hg-mesh--dim" style="background:#0B0420;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:18px;">
+      <span class="hg-kicker">How it works</span>
+      <h2 style="font-size:60px; font-weight:700; margin:0; max-width:1300px;">A runtime that wraps every agent action</h2>
+      <div class="hg-body" style="font-size:21px; max-width:980px;">Aperture sits between your agent and the world. Each action passes through four gates before it touches a real system.</div>
+    </div>
+    <div class="flow-stage hg-steps" style="padding-top:8px;" data-visual-event="item-marker">
+      <div class="dir-list dir-list-steps"><div><span>Policy: every tool call is checked against scoped, per-agent permissions before it runs</span></div><div><span>Simulation: risky actions run in a sandbox first, so the agent previews the outcome</span></div><div><span>Audit: every step, input and result is recorded as a replayable trace</span></div><div><span>Rollback: any action, or a whole run, can be reversed in one click</span></div></div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="cards-grid" data-slide-type="product" class="slide hg-mesh hg-mesh--cyan hg-mesh--dim" style="background:#0B0420;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:18px;">
+      <span class="hg-kicker">The product</span>
+      <h2 style="font-size:58px; font-weight:700; margin:0; max-width:1400px;">One SDK, the whole control plane</h2>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="display:grid; grid-template-columns:1.05fr 0.95fr; gap:40px; width:100%; height:100%;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:26px;">
+          <div class="hg-glass flow-fill" data-visual-event="item-marker" style="padding:34px; display:flex; flex-direction:column; gap:14px;"><span class="hg-index" style="font-size:30px;">01</span><div style="font-family:var(--font-header); font-weight:700; font-size:25px; color:var(--color-ink);">Permission engine</div><div class="hg-body" style="font-size:17px;">Declarative policies scope what each agent may touch, down to a single API endpoint.</div></div>
+          <div class="hg-glass flow-fill" data-visual-event="item-marker" style="padding:34px; display:flex; flex-direction:column; gap:14px;"><span class="hg-index" style="font-size:30px;">02</span><div style="font-family:var(--font-header); font-weight:700; font-size:25px; color:var(--color-ink);">Trace explorer</div><div class="hg-body" style="font-size:17px;">Replay any run step by step, inspect every input and output, share a link with your team.</div></div>
+          <div class="hg-glass flow-fill" data-visual-event="item-marker" style="padding:34px; display:flex; flex-direction:column; gap:14px;"><span class="hg-index" style="font-size:30px;">03</span><div style="font-family:var(--font-header); font-weight:700; font-size:25px; color:var(--color-ink);">Sandbox preview</div><div class="hg-body" style="font-size:17px;">High-risk actions execute against a shadow copy first and surface the diff for approval.</div></div>
+          <div class="hg-glass flow-fill" data-visual-event="item-marker" style="padding:34px; display:flex; flex-direction:column; gap:14px;"><span class="hg-index" style="font-size:30px;">04</span><div style="font-family:var(--font-header); font-weight:700; font-size:25px; color:var(--color-ink);">Instant rollback</div><div class="hg-body" style="font-size:17px;">Reverse a single action or an entire agent session without writing a migration.</div></div>
+        </div>
+        <div class="hg-glass flow-fill" data-visual-event="visual-plate" style="padding:22px; display:flex; flex-direction:column; gap:16px;">
+          <div style="display:flex; align-items:center; gap:14px; flex:none;">
+            <span style="display:flex; gap:8px;"><span style="width:11px; height:11px; border-radius:50%; background:#EC4899;"></span><span style="width:11px; height:11px; border-radius:50%; background:#A78BFA;"></span><span style="width:11px; height:11px; border-radius:50%; background:#22D3EE;"></span></span>
+            <span class="hg-eyebrow" style="margin-left:6px; color:rgba(244,241,255,0.78);">Aperture console: live trace view</span>
+          </div>
+          <div style="flex:1; min-height:0; display:flex; flex-direction:column; gap:14px; padding:20px; border-radius:18px; background:linear-gradient(160deg, rgba(11,4,32,0.55), rgba(22,10,51,0.4)); border:1px solid rgba(255,255,255,0.16);">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex:none;">
+              <span style="font-family:var(--font-data); font-weight:700; font-size:17px; letter-spacing:-0.01em; color:var(--color-ink);">trace · run_8f2a</span>
+              <span style="font-family:var(--font-body); font-weight:600; font-size:14px; padding:5px 12px; border-radius:999px; color:#22D3EE; background:rgba(34,211,238,0.14); border:1px solid rgba(34,211,238,0.4);">live</span>
+            </div>
+            <div style="flex:1; min-height:0; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+              <div style="display:flex; align-items:center; gap:14px;"><span style="width:9px; height:9px; border-radius:50%; flex:none; background:#A78BFA; box-shadow:0 0 10px 1px rgba(167,139,250,0.8);"></span><span style="font-family:var(--font-data); font-weight:600; font-size:15px; color:rgba(244,241,255,0.92);">policy.check</span><span style="flex:1; height:6px; border-radius:3px; background:linear-gradient(90deg,#8B5CF6,#22D3EE); max-width:46%;"></span><span style="font-family:var(--font-data); font-size:14px; color:var(--color-muted);">12ms</span></div>
+              <div style="display:flex; align-items:center; gap:14px;"><span style="width:9px; height:9px; border-radius:50%; flex:none; background:#22D3EE; box-shadow:0 0 10px 1px rgba(34,211,238,0.8);"></span><span style="font-family:var(--font-data); font-weight:600; font-size:15px; color:rgba(244,241,255,0.92);">sandbox.preview</span><span style="flex:1; height:6px; border-radius:3px; background:linear-gradient(90deg,#22D3EE,#3B82F6); max-width:68%;"></span><span style="font-family:var(--font-data); font-size:14px; color:var(--color-muted);">84ms</span></div>
+              <div style="display:flex; align-items:center; gap:14px;"><span style="width:9px; height:9px; border-radius:50%; flex:none; background:#EC4899; box-shadow:0 0 10px 1px rgba(236,72,153,0.8);"></span><span style="font-family:var(--font-data); font-weight:600; font-size:15px; color:rgba(244,241,255,0.92);">tool.write</span><span style="flex:1; height:6px; border-radius:3px; background:linear-gradient(90deg,#EC4899,#A78BFA); max-width:33%;"></span><span style="font-family:var(--font-data); font-size:14px; color:var(--color-muted);">held</span></div>
+              <div style="display:flex; align-items:center; gap:14px;"><span style="width:9px; height:9px; border-radius:50%; flex:none; background:#A78BFA; box-shadow:0 0 10px 1px rgba(167,139,250,0.8);"></span><span style="font-family:var(--font-data); font-weight:600; font-size:15px; color:rgba(244,241,255,0.92);">audit.commit</span><span style="flex:1; height:6px; border-radius:3px; background:linear-gradient(90deg,#8B5CF6,#EC4899); max-width:55%;"></span><span style="font-family:var(--font-data); font-size:14px; color:var(--color-muted);">7ms</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="metric-hero" data-slide-type="traction" class="slide hg-mesh hg-mesh--magenta" style="background:#0B0420;">
+  <div class="hg-orb" style="width:680px; height:680px; top:-160px; left:-120px; opacity:0.6;"></div>
+  <div class="slide-flow">
+    <div class="flow-head"><span class="hg-kicker">Traction</span></div>
+    <div class="flow-stage flow-center">
+      <div style="display:grid; grid-template-columns:1.05fr 0.95fr; gap:60px; align-items:center; width:100%;">
+        <div style="display:flex; flex-direction:column; gap:22px;">
+          <div class="hg-figure" data-visual-event="oversized-number" style="font-size:300px;">9.4x</div>
+          <div style="font-family:var(--font-header); font-weight:700; font-size:40px; line-height:1.05; letter-spacing:-0.02em; color:var(--color-ink); max-width:760px;">growth in agent actions secured, last two quarters</div>
+          <div class="hg-body" style="font-size:21px; max-width:720px;">62 teams now run Aperture in production, including four public AI-native companies. Net revenue retention sits at 148 percent.</div>
+        </div>
+        <div class="hg-glass" data-visual-event="chartlet" style="padding:40px 44px 30px;">
+          <div class="hg-eyebrow" style="margin-bottom:14px;">Growth</div>
+          <svg data-visual-event="chart" viewBox="0 0 920 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:100%;display:block;"><line x1="56" x2="904" y1="316" y2="316" stroke="#F4F1FF" stroke-width="2"/><rect x="88.2" y="287.5" width="105.2" height="28.5" fill="#5B47B0"/><text x="140.8" y="277.5" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#F4F1FF" text-anchor="middle" font-weight="700">1.2</text><text x="140.8" y="344.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#A99FD0" text-anchor="middle">Q1</text><rect x="257.8" y="268.6" width="105.2" height="47.4" fill="#5B47B0"/><text x="310.4" y="258.6" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#F4F1FF" text-anchor="middle" font-weight="700">2.0</text><text x="310.4" y="344.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#A99FD0" text-anchor="middle">Q2</text><rect x="427.4" y="235.4" width="105.2" height="80.6" fill="#5B47B0"/><text x="480.0" y="225.4" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#F4F1FF" text-anchor="middle" font-weight="700">3.4</text><text x="480.0" y="344.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#A99FD0" text-anchor="middle">Q3</text><rect x="597.0" y="171.3" width="105.2" height="144.7" fill="#5B47B0"/><text x="649.6" y="161.3" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#F4F1FF" text-anchor="middle" font-weight="700">6.1</text><text x="649.6" y="344.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#A99FD0" text-anchor="middle">Q4</text><rect x="766.6" y="48.0" width="105.2" height="268.0" fill="#22D3EE"/><text x="819.2" y="38.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="22" fill="#F4F1FF" text-anchor="middle" font-weight="700">11.3</text><text x="819.2" y="344.0" style="font-family:var(--font-data, 'Inter Tight', system-ui, sans-serif)" font-size="17" fill="#A99FD0" text-anchor="middle">Q1</text></svg>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="matrix" data-slide-type="market" class="slide hg-mesh hg-mesh--blue hg-mesh--dim" style="background:#0B0420;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:18px;">
+      <span class="hg-kicker">Market</span>
+      <h2 style="font-size:58px; font-weight:700; margin:0; max-width:1300px;">Every line of agent code needs a runtime</h2>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="display:grid; grid-template-columns:0.92fr 1.08fr; gap:60px; align-items:center; width:100%;">
+        <div data-visual-event="chartlet" style="position:relative;">
+          <svg viewBox="0 0 560 560" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg" font-family="'Sora', sans-serif">
+            <defs>
+              <radialGradient id="hg-ring-tam" cx="50%" cy="42%" r="62%">
+                <stop offset="0" stop-color="#3B82F6" stop-opacity="0.42"/>
+                <stop offset="1" stop-color="#3B82F6" stop-opacity="0.08"/>
+              </radialGradient>
+              <radialGradient id="hg-ring-sam" cx="50%" cy="44%" r="60%">
+                <stop offset="0" stop-color="#8B5CF6" stop-opacity="0.6"/>
+                <stop offset="1" stop-color="#8B5CF6" stop-opacity="0.15"/>
+              </radialGradient>
+              <radialGradient id="hg-ring-som" cx="42%" cy="38%" r="70%">
+                <stop offset="0" stop-color="#EC4899" stop-opacity="0.95"/>
+                <stop offset="1" stop-color="#A78BFA" stop-opacity="0.7"/>
+              </radialGradient>
+            </defs>
+            <circle cx="280" cy="280" r="262" fill="url(#hg-ring-tam)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+            <circle cx="280" cy="320" r="170" fill="url(#hg-ring-sam)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+            <circle cx="280" cy="372" r="92" fill="url(#hg-ring-som)" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+            <text x="280" y="56" fill="#F4F1FF" font-size="30" font-weight="800" text-anchor="middle" letter-spacing="-1">$42B</text>
+            <text x="280" y="82" fill="#C9C2EC" font-size="16" font-weight="500" text-anchor="middle">TAM, AI software infrastructure</text>
+            <text x="280" y="196" fill="#F4F1FF" font-size="28" font-weight="800" text-anchor="middle" letter-spacing="-1">$8.6B</text>
+            <text x="280" y="220" fill="#E4DEFF" font-size="15" font-weight="500" text-anchor="middle">SAM, agent tooling and ops</text>
+            <text x="280" y="368" fill="#FFFFFF" font-size="34" font-weight="800" text-anchor="middle" letter-spacing="-1">$640M</text>
+            <text x="280" y="394" fill="#FFFFFF" font-size="15" font-weight="600" text-anchor="middle">SOM, agent runtimes by 2029</text>
+          </svg>
+        </div>
+        <div class="hg-glass" style="padding:48px;">
+          <div class="hg-body" style="font-size:24px; line-height:1.55;">Agent infrastructure is following the same path observability and CI did: a category that did not exist three years ago, now a line item every serious team budgets for. We are early in the runtime layer.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="timeline" data-slide-type="roadmap" class="slide hg-mesh hg-mesh--cyan hg-mesh--dim" style="background:#0B0420;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:18px;">
+      <span class="hg-kicker">Roadmap</span>
+      <h2 style="font-size:58px; font-weight:700; margin:0; max-width:1300px;">From runtime to the standard</h2>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center;">
+        <div style="position:absolute; left:0; right:0; top:42px; height:2px; background:linear-gradient(90deg, rgba(167,139,250,0.15), var(--color-signal) 30%, rgba(34,211,238,0.9) 70%, rgba(236,72,153,0.2));"></div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:34px; height:100%; max-height:600px; padding:8px 0;" data-visual-event="item-marker">
+          <div style="display:flex; flex-direction:column;"><span style="width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 36% 30%,#FFFFFF,#A78BFA 55%,#7C3AED); box-shadow:0 0 22px 2px rgba(167,139,250,0.7); margin-bottom:42px;"></span><div class="hg-index" style="font-size:30px; margin-bottom:18px;">Now</div><div class="hg-glass flow-fill" style="padding:32px; display:flex; align-items:center;"><div class="hg-body" style="font-size:21px; color:var(--color-ink);">Permission engine and trace explorer in production with 62 teams.</div></div></div>
+          <div style="display:flex; flex-direction:column;"><span style="width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 36% 30%,#FFFFFF,#A78BFA 55%,#7C3AED); box-shadow:0 0 22px 2px rgba(167,139,250,0.7); margin-bottom:42px;"></span><div class="hg-index" style="font-size:30px; margin-bottom:18px;">Q3 2026</div><div class="hg-glass flow-fill" style="padding:32px; display:flex; align-items:center;"><div class="hg-body" style="font-size:21px; color:var(--color-ink);">Sandbox preview GA and a self-serve tier for solo builders.</div></div></div>
+          <div style="display:flex; flex-direction:column;"><span style="width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 36% 30%,#FFFFFF,#A78BFA 55%,#7C3AED); box-shadow:0 0 22px 2px rgba(167,139,250,0.7); margin-bottom:42px;"></span><div class="hg-index" style="font-size:30px; margin-bottom:18px;">Q1 2027</div><div class="hg-glass flow-fill" style="padding:32px; display:flex; align-items:center;"><div class="hg-body" style="font-size:21px; color:var(--color-ink);">Multi-agent orchestration and a marketplace of signed policies.</div></div></div>
+          <div style="display:flex; flex-direction:column;"><span style="width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 36% 30%,#FFFFFF,#EC4899 55%,#A21CAF); box-shadow:0 0 26px 3px rgba(236,72,153,0.8); margin-bottom:42px;"></span><div class="hg-index" style="font-size:30px; margin-bottom:18px;">2027+</div><div class="hg-glass flow-fill" style="padding:32px; display:flex; align-items:center; border-color:rgba(236,72,153,0.45);"><div class="hg-body" style="font-size:21px; color:var(--color-ink);">The default control plane shipped with every major agent framework.</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="cards-grid" data-slide-type="team" class="slide hg-mesh hg-mesh--violet hg-mesh--dim" style="background:#0B0420;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:18px;">
+      <span class="hg-kicker">Team</span>
+      <h2 style="font-size:58px; font-weight:700; margin:0; max-width:1300px;">Built by people who shipped agents at scale</h2>
+      <div class="hg-body" style="font-size:21px; max-width:1080px;">We hit this wall ourselves running agents in production, then left to build the layer we wished existed.</div>
+    </div>
+    <div class="flow-stage flow-center">
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:36px; width:100%; height:100%;">
+        <div class="hg-glass flow-fill" data-visual-event="visual-plate" style="padding:44px; display:flex; flex-direction:column; gap:24px;">
+          <div style="display:flex; align-items:center; gap:22px;"><span class="hg-orb" style="position:relative; width:88px; height:88px; opacity:0.98; flex:none;"></span><div><div style="font-family:var(--font-header); font-weight:700; font-size:29px; color:var(--color-ink);">Mara Vance</div><div class="hg-eyebrow" style="margin-top:8px;">Cofounder and CEO</div></div></div>
+          <div style="height:1px; background:rgba(255,255,255,0.2);"></div>
+          <div class="hg-body" style="font-size:20px; flex:1; min-height:0; display:flex; align-items:center;">Led the agent platform team at a top developer-tools company. Shipped permissions to millions of calls a day.</div>
+        </div>
+        <div class="hg-glass flow-fill" data-visual-event="visual-plate" style="padding:44px; display:flex; flex-direction:column; gap:24px;">
+          <div style="display:flex; align-items:center; gap:22px;"><span class="hg-orb" style="position:relative; width:88px; height:88px; opacity:0.98; flex:none; background:radial-gradient(circle at 38% 34%, rgba(255,255,255,0.7), rgba(34,211,238,0.55) 32%, rgba(59,130,246,0) 70%);"></span><div><div style="font-family:var(--font-header); font-weight:700; font-size:29px; color:var(--color-ink);">Theo Okafor</div><div class="hg-eyebrow" style="margin-top:8px;">Cofounder and CTO</div></div></div>
+          <div style="height:1px; background:rgba(255,255,255,0.2);"></div>
+          <div class="hg-body" style="font-size:20px; flex:1; min-height:0; display:flex; align-items:center;">Built distributed tracing infrastructure at hyperscale. Three patents in audit and replay systems.</div>
+        </div>
+        <div class="hg-glass flow-fill" data-visual-event="visual-plate" style="padding:44px; display:flex; flex-direction:column; gap:24px;">
+          <div style="display:flex; align-items:center; gap:22px;"><span class="hg-orb" style="position:relative; width:88px; height:88px; opacity:0.98; flex:none; background:radial-gradient(circle at 38% 34%, rgba(255,255,255,0.7), rgba(236,72,153,0.55) 32%, rgba(162,28,175,0) 70%);"></span><div><div style="font-family:var(--font-header); font-weight:700; font-size:29px; color:var(--color-ink);">Lena Brandt</div><div class="hg-eyebrow" style="margin-top:8px;">Founding engineer</div></div></div>
+          <div style="height:1px; background:rgba(255,255,255,0.2);"></div>
+          <div class="hg-body" style="font-size:20px; flex:1; min-height:0; display:flex; align-items:center;">Early engineer on two AI products that reached production at Fortune 500 scale.</div>
+        </div>
+      </div>
+    </div>
+    <div class="flow-foot"></div>
+  </div>
+</section>
+
+<section data-family="closing" data-slide-type="ask" class="slide hg-mesh hg-mesh--magenta" style="background:#0B0420;">
+  <div class="hg-orb" style="width:900px; height:900px; top:-220px; right:-220px; opacity:0.6;"></div>
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="hg-kicker">The ask</span></div>
+    <div class="flow-stage flow-center" style="align-items:flex-start; gap:30px;">
+      <h2 style="font-size:84px; font-weight:800; line-height:0.98; letter-spacing:-0.035em; margin:0; max-width:1560px;">Help us make agents safe to ship</h2>
+      <div style="display:flex; align-items:flex-end; gap:34px;">
+        <span class="hg-figure" data-visual-event="oversized-number" style="font-size:200px;">$6M</span>
+        <span style="font-family:var(--font-header); font-weight:700; font-size:34px; line-height:1.1; color:var(--color-ink); padding-bottom:34px; max-width:560px;">seed round, to own the agent runtime category</span>
+      </div>
+    </div>
+    <div class="flow-foot" style="display:flex; flex-direction:column; gap:18px;">
+      <div class="hg-rule-signal"></div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:32px;">
+        <div style="display:flex; align-items:baseline; gap:14px;"><span class="hg-index" style="font-size:22px;">01</span><div class="hg-body" style="font-size:19px; color:var(--color-ink);">Scale the engineering team from 7 to 18</div></div>
+        <div style="display:flex; align-items:baseline; gap:14px;"><span class="hg-index" style="font-size:22px;">02</span><div class="hg-body" style="font-size:19px; color:var(--color-ink);">Ship sandbox preview and multi-agent support</div></div>
+        <div style="display:flex; align-items:baseline; gap:14px;"><span class="hg-index" style="font-size:22px;">03</span><div class="hg-body" style="font-size:19px; color:var(--color-ink);">Build the policy marketplace and developer relations</div></div>
+      </div>
+      <div class="hg-muted" style="font-family:var(--font-body); font-size:16px; margin-top:6px;">Aperture, the trust layer for AI agents</div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

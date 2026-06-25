@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>chromafield deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo%3Awght%40500%3B600%3B700%3B800%3B900&family=Archivo%20Expanded%3Awght%40700%3B800%3B900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-page: #1024C4;
+  --color-card: #0B0B0C;
+  --color-ink: #FAFAF7;
+  --color-signal: #F5C518;
+  --color-signal-subtle: #FF5A1F;
+  --color-muted: #C9CBE8;
+  --color-rule: #3A45C9;
+  --font-header: 'Archivo', system-ui, sans-serif;
+  --font-body: 'Archivo', system-ui, sans-serif;
+  --font-data: 'Archivo', system-ui, sans-serif;
+  --font-weight-header: 800;
+  --font-weight-body: 500;
+  --font-weight-data: 800;
+  --size-h1: 300px;
+  --size-h2: 168px;
+  --size-h3: 92px;
+  --size-h4: 52px;
+  --size-body-1: 28px;
+  --size-body-2: 22px;
+  --size-body-3: 18px;
+  --size-body-4: 16px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 112px;
+  --radius-card: 0px;
+  --radius-button: 0px;
+  --radius-input: 0px;
+  --elevation-card: none;
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 112px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+/* Bounded-island layout — STRUCTURE ONLY, carries no look (no color, border,
+   shadow, gap, padding, type). Pin a header and footer band, let the middle
+   stage fill the height between them, and make repeated cards grow to fill the
+   stage. This is the anti-float contract: content occupies the whole slide
+   instead of clustering under the headline with an empty lower third. Look
+   (gap, padding, radius, color) lives in chrome.css. */
+.slide-flow .flow-head,
+.slide-flow .flow-foot { flex: none; min-height: 0; }
+.slide-flow .flow-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* sparse content: center it in the stage instead of pinning it to the top */
+.slide-flow .flow-stage.flow-center { justify-content: center; }
+/* a grid stage that fills the height AND stretches its rows to consume it */
+.slide-flow .flow-grid-fill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: stretch;
+}
+/* a card/cell that grows to fill its grid or flex track top-to-bottom */
+.flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
+/* the body inside a filling card: a full-height column that can distribute its
+   own rows (center a sparse card, or space-between a header+content card) */
+.flow-fill-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.flow-fill-body.flow-center { justify-content: center; }
+.flow-fill-body.flow-between { justify-content: space-between; }
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* CHROMAFIELD look layer (emitted after the neutral baseSlideCss).
+   Color-field type-posters: each slide root is one flat saturated field (set
+   inline per slide-type so the rotation is deterministic), with an oversized
+   grotesque statement set across it as the artwork. The only furniture is a slim
+   index numeral, a thick directional rule, an oversized stat numeral and the
+   split-field divide. Pure pigment and type, no card, no tint behind text. */
+
+.slide {
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-header);
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+}
+.slide h2 { letter-spacing: -0.025em; line-height: 0.96; }
+.slide h3 { letter-spacing: -0.02em; line-height: 1.0; }
+.slide h4 { letter-spacing: -0.012em; line-height: 1.08; }
+
+/* On-field ink helpers. Each field declares its own ink via these classes so
+   legibility is fixed per pigment: paper-white on the saturated/dark fields,
+   ink-black on the gold and paper fields. */
+.cf-ink-light { color: #FAFAF7; }
+.cf-ink-dark { color: #0B0B0C; }
+
+/* The oversized statement: the artwork. Grotesque, huge, tight, sentence case. */
+.cf-statement {
+  font-family: var(--font-header);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 0.9;
+  margin: 0;
+}
+
+/* The slim index numeral: the only chrome, a sequence marker pinned top-left in
+   the field's accent colour. Weight 600, tabular, never tracked caps. */
+.cf-index {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+.cf-index::after {
+  content: "";
+  width: 64px;
+  height: 4px;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* The kicker: a short sentence-case label in the accent colour, no tracking-out. */
+.cf-kicker {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+/* Support line: one short line under a statement, set on the field directly. */
+.cf-support {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+/* The directional rule: a thick accent bar that points the eye across the field. */
+.cf-rule {
+  height: 10px;
+  background: currentColor;
+  border: 0;
+  width: 220px;
+}
+
+/* The oversized stat numeral: the stat poster's whole subject. */
+.cf-figure {
+  font-family: var(--font-data);
+  font-weight: 900;
+  font-size: 420px;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+/* Inline emphasis inside a statement: the key word flips to the accent colour so
+   the field's accent reads inside the type, never bold-grey. */
+.slide strong { font-weight: 900; }
+
+/* Printed-grid trace: a faint ruling under structured fields (index, pillars),
+   a repeating-linear-gradient hairline grid, never a tint behind text. */
+.cf-grid-trace {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(250, 250, 247, 0.07) 0,
+    rgba(250, 250, 247, 0.07) 1px,
+    transparent 1px,
+    transparent 96px
+  );
+}
+.cf-grid-trace.cf-trace-dark {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(11, 11, 12, 0.08) 0,
+    rgba(11, 11, 12, 0.08) 1px,
+    transparent 1px,
+    transparent 96px
+  );
+}
+
+/* Pillars: three colour-blocked panels carved straight out of the field. Each is
+   a flat saturated block (a distinct exhibit surface), no card, no shadow, no
+   tint behind text. The block IS the surface. */
+.cf-pillar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 44px;
+}
+.cf-pillar .cf-pillar-no {
+  font-family: var(--font-data);
+  font-weight: 900;
+  font-size: 88px;
+  line-height: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+.cf-pillar .cf-pillar-name {
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 46px;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+}
+.cf-pillar .cf-pillar-note {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+/* Index movements: numbered rows that fill the field as equal tracks. The
+   dir-list IS the filling grid (override base display:contents) so the movement
+   rows stretch reliably and the numbers carry the structure. */
+.cf-movements .dir-list {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+.cf-movements .dir-list > div {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  border-top: 2px solid rgba(250, 250, 247, 0.28);
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 56px;
+  letter-spacing: -0.02em;
+}
+.cf-movements .dir-list > div:last-child { border-bottom: 2px solid rgba(250, 250, 247, 0.28); }
+
+/* The believe-line quote: a manifesto line, set large, the field's subject. */
+.cf-quote {
+  font-family: var(--font-header);
+  font-weight: 800;
+  font-size: 88px;
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  margin: 0;
+  text-wrap: balance;
+}
+.cf-attribution {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0;
+}
+
+body { margin: 0; background: #d6d6d6; padding: 0; } .slide { margin: 0 0 24px; box-shadow: none; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<section data-family="cover" data-slide-type="cover" class="slide cf-ink-light" data-density="editorial" style="background:#1024C4;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head" style="display:flex; align-items:flex-start; justify-content:space-between;">
+      <span class="cf-index" style="color:#F5C518;">01</span>
+      <!-- the field's signature mark: a flat accent block, the poster's stamp -->
+      <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="0" y="0" width="120" height="120" fill="#F5C518"/>
+        <rect x="32" y="32" width="56" height="56" fill="#1024C4"/>
+      </svg>
+    </div>
+    <div class="flow-stage flow-center">
+      <span class="cf-kicker" style="color:#F5C518; margin-bottom:28px;">A keynote on the future of work</span>
+      <h1 class="cf-statement" style="font-size:230px;">Work is a verb</h1>
+      <div class="cf-support" style="margin-top:40px; max-width:1180px;">Not a place you go. A thing you make. A talk about reclaiming the eight hours that built the modern world.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; justify-content:space-between; align-items:baseline; border-top:4px solid #F5C518; padding-top:22px;">
+      <span class="cf-kicker" style="color:#FAFAF7;">Mainstage, opening session</span>
+      <span class="cf-kicker" style="color:#FAFAF7;">A keynote</span>
+    </div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="thesis" class="slide cf-ink-light" data-density="editorial" style="background:#E8430F;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="cf-index" style="color:#0B0B0C;">02</span></div>
+    <div class="flow-stage flow-center">
+      <span class="cf-kicker" style="color:#0B0B0C; margin-bottom:30px;">The one belief</span>
+      <h1 class="cf-statement" style="font-size:178px;">The office was a workaround. The work was always the point.</h1>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:36px;">
+      <span class="cf-rule" style="color:#0B0B0C;"></span>
+      <div class="cf-support" style="max-width:1100px;">For a century we tied output to a building because we could not see the work itself. That constraint is gone. What we kept is the habit.</div>
+    </div>
+  </div>
+</section>
+
+<section data-family="timeline" data-slide-type="index" class="slide cf-ink-light" style="background:#0B0B0C; position:relative;">
+  <div class="cf-grid-trace"></div>
+  <div class="slide-flow" style="position:relative;">
+    <div class="flow-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:40px;">
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <span class="cf-index" style="color:#F5C518;">03</span>
+        <h2 style="font-size:118px; color:#FAFAF7; margin:0;">Where this talk goes</h2>
+      </div>
+      <!-- the talk's count as an oversized accent numeral, the field's mark -->
+      <div style="font-family:var(--font-data); font-weight:900; font-size:200px; line-height:0.78; color:#F5C518; flex:none;" data-visual-event="oversized-number">04</div>
+    </div>
+    <div class="cf-movements flow-grow" style="display:flex; flex-direction:column; margin-top:28px;" data-visual-event="visual-plate">
+      <div class="dir-list dir-list-movements"><div><span>01  Why the place won’t hold</span></div><div><span>02  What we actually trade for a wage</span></div><div><span>03  The cost of the commute we never counted</span></div><div><span>04  The work worth keeping</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="claim" class="slide cf-ink-light" data-density="editorial" style="background:#0B7A6E;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="cf-index" style="color:#F5C518;">05</span></div>
+    <div class="flow-stage flow-center">
+      <h1 class="cf-statement" style="font-size:200px;">Presence is not progress.</h1>
+      <div class="cf-support" style="margin-top:42px; max-width:1180px;">A chair filled is not a problem solved. We measured the wrong thing because it was the easy thing to measure.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:0;">
+      <span class="cf-rule" style="color:#F5C518; width:320px;"></span>
+    </div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="claim" class="slide cf-ink-light" data-density="editorial" style="background:#0B7A6E;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="cf-index" style="color:#F5C518;">06</span></div>
+    <div class="flow-stage flow-center">
+      <h1 class="cf-statement" style="font-size:200px;">Trust scales. Surveillance does not.</h1>
+      <div class="cf-support" style="margin-top:42px; max-width:1180px;">Every tool we buy to watch people is a tax on the people we already chose to hire. You cannot monitor your way to ownership.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:0;">
+      <span class="cf-rule" style="color:#F5C518; width:320px;"></span>
+    </div>
+  </div>
+</section>
+
+<section data-family="cards-grid" data-slide-type="pillars" class="slide cf-ink-light" style="background:#C81D6E;">
+  <div class="slide-flow">
+    <div class="flow-head" style="display:flex; flex-direction:column; gap:22px;">
+      <span class="cf-index" style="color:#F5C518;">04</span>
+      <h2 style="font-size:96px; color:#FAFAF7; margin:0;">What good work stands on</h2>
+    </div>
+    <div class="flow-grid-fill" style="grid-template-columns:repeat(3,1fr); gap:6px; margin-top:30px;">
+      <!-- block 1: ink panel -->
+      <div class="cf-pillar flow-fill cf-ink-light" style="background:#0B0B0C;" data-visual-event="visual-plate">
+        <div class="cf-pillar-no" style="color:#F5C518;">01</div>
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <div class="cf-pillar-name">Autonomy</div>
+          <div class="cf-pillar-note">Give people the problem and the room. Decide what done means together, then get out of the way.</div>
+        </div>
+      </div>
+      <!-- block 2: gold panel, dark ink -->
+      <div class="cf-pillar flow-fill cf-ink-dark" style="background:#F5C518;" data-visual-event="visual-plate">
+        <div class="cf-pillar-no" style="color:#C81D6E;">02</div>
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <div class="cf-pillar-name">Clarity</div>
+          <div class="cf-pillar-note">Write things down. A shared understanding beats a shared calendar every single time.</div>
+        </div>
+      </div>
+      <!-- block 3: cobalt panel -->
+      <div class="cf-pillar flow-fill cf-ink-light" style="background:#1024C4;" data-visual-event="visual-plate">
+        <div class="cf-pillar-no" style="color:#F5C518;">03</div>
+        <div style="display:flex; flex-direction:column; gap:18px;">
+          <div class="cf-pillar-name">Craft</div>
+          <div class="cf-pillar-note">Let people care about the thing they make. Pride is the cheapest motivation there is.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-family="metric-hero" data-slide-type="stat" class="slide cf-ink-dark" data-density="editorial" style="background:#F5C518;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="cf-index" style="color:#C81D6E;">08</span></div>
+    <div class="flow-stage flow-center" style="align-items:flex-start;">
+      <div class="cf-figure" style="color:#0B0B0C;" data-visual-event="oversized-number">227</div>
+      <div style="font-family:var(--font-header); font-weight:800; font-size:72px; line-height:0.94; letter-spacing:-0.02em; color:#C81D6E; margin-top:6px;">hours a year, lost to the commute</div>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:36px;">
+      <span class="cf-rule" style="color:#C81D6E; width:280px;"></span>
+      <div class="cf-support" style="max-width:1080px; color:#0B0B0C;">Nearly six working weeks, spent going to the place where the work was kept. That is the price of a habit, paid in lifetimes.</div>
+    </div>
+  </div>
+</section>
+
+<section data-family="comparison" data-slide-type="turn" class="slide" style="background:#1024C4; padding:0; position:relative; overflow:hidden;">
+  <!-- the split-field divide: two saturated pigments share the frame along a hard
+       vertical edge. The depth moment, the turn made visible in colour. -->
+  <div style="position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr;">
+    <div style="background:#1024C4;"></div>
+    <div style="background:#E8430F;" data-visual-event="visual-plate"></div>
+  </div>
+  <div style="position:relative; z-index:2; height:100%; display:grid; grid-template-columns:1fr 1fr; box-sizing:border-box;">
+    <!-- left half: cobalt, the from-claim -->
+    <div class="cf-ink-light" style="padding:var(--page-safe); display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box;">
+      <span class="cf-index" style="color:#F5C518;">09</span>
+      <h2 class="cf-statement" style="font-size:128px;">Manage the hours.</h2>
+      <span class="cf-kicker" style="color:#F5C518;">The century we are leaving</span>
+    </div>
+    <!-- right half: vermilion, the to-claim -->
+    <div class="cf-ink-light" style="padding:var(--page-safe); display:flex; flex-direction:column; justify-content:space-between; box-sizing:border-box;">
+      <!-- a thick directional arrow pointing the eye across the divide -->
+      <svg viewBox="0 0 120 60" width="120" height="60" style="align-self:flex-start;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M6 30 H100 M78 10 L112 30 L78 50" fill="none" stroke="#F5C518" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2 class="cf-statement" style="font-size:128px;">Trust the outcome.</h2>
+      <span class="cf-kicker" style="color:#F5C518;">The one we are building</span>
+    </div>
+  </div>
+</section>
+
+<section data-family="statement" data-slide-type="claim" class="slide cf-ink-light" data-density="editorial" style="background:#0B7A6E;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="cf-index" style="color:#F5C518;">10</span></div>
+    <div class="flow-stage flow-center">
+      <h1 class="cf-statement" style="font-size:200px;">Async is a kindness.</h1>
+      <div class="cf-support" style="margin-top:42px; max-width:1180px;">It gives the quiet person time to think and the parent time to live. The best idea is rarely the fastest hand in the room.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:0;">
+      <span class="cf-rule" style="color:#F5C518; width:320px;"></span>
+    </div>
+  </div>
+</section>
+
+<section data-family="quote" data-slide-type="believe" class="slide cf-ink-dark" data-density="editorial" style="background:#F4F1EA;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head"><span class="cf-index" style="color:#1024C4;">11</span></div>
+    <div class="flow-stage flow-center">
+      <!-- oversized quote mark drawn flat in the accent, the field's mark -->
+      <svg viewBox="0 0 200 130" width="132" height="86" style="margin-bottom:36px; flex:none;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20 120 V70 Q20 20 80 20 V52 Q56 52 56 78 H86 V120 Z" fill="#E8430F"/>
+        <path d="M120 120 V70 Q120 20 180 20 V52 Q156 52 156 78 H186 V120 Z" fill="#1024C4"/>
+      </svg>
+      <h1 class="cf-quote" style="font-size:104px; color:#0B0B0C; max-width:1560px;">Stop defending the building. Defend the work.</h1>
+    </div>
+    <div class="flow-foot" style="display:flex; align-items:center; gap:30px; border-top:4px solid #1024C4; padding-top:24px;">
+      <span class="cf-attribution" style="color:#1024C4;">The whole manifesto, in one line</span>
+    </div>
+  </div>
+</section>
+
+<section data-family="closing" data-slide-type="closing" class="slide cf-ink-light" data-density="editorial" style="background:#0B0B0C;">
+  <div class="slide-flow" style="justify-content:space-between;">
+    <div class="flow-head" style="display:flex; align-items:flex-start; justify-content:space-between;">
+      <span class="cf-index" style="color:#F5C518;">12</span>
+      <!-- a thick directional rule arrow, the call to move -->
+      <svg viewBox="0 0 140 48" width="140" height="48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M6 24 H118 M94 8 L130 24 L94 40" fill="none" stroke="#F5C518" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="flow-stage flow-center">
+      <h1 class="cf-statement" style="font-size:212px; color:#FAFAF7;" data-visual-event="oversized-number">Make work worth it</h1>
+      <div class="cf-support" style="margin-top:42px; max-width:1180px; color:#FAFAF7;">Stop defending the building. Start defending the focus, the trust and the craft it was always supposed to hold.</div>
+    </div>
+    <div class="flow-foot" style="display:flex; justify-content:space-between; align-items:baseline; border-top:4px solid #F5C518; padding-top:22px;">
+      <span class="cf-kicker" style="color:#F5C518;">The future of work</span>
+      <span class="cf-kicker" style="color:#F5C518;">Thank you</span>
+    </div>
+  </div>
+</section>
+</body>
+</html>

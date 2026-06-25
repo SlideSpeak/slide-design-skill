@@ -76,6 +76,15 @@ Nothing chosen from a menu.
 </tr>
 </table>
 
+The full rendered HTML for a few of these lives in [`examples/`](examples/) — real charts,
+tables and type, all hand-coded HTML (no images needed). Open one locally, or preview in the
+browser:
+[pitch](https://htmlpreview.github.io/?https://github.com/SlideSpeak/slide-design-skill/blob/main/examples/ai-trust-layer-pitch.html) ·
+[keynote](https://htmlpreview.github.io/?https://github.com/SlideSpeak/slide-design-skill/blob/main/examples/work-is-a-verb-keynote.html) ·
+[report](https://htmlpreview.github.io/?https://github.com/SlideSpeak/slide-design-skill/blob/main/examples/trade-ledger-report.html) ·
+[teaching](https://htmlpreview.github.io/?https://github.com/SlideSpeak/slide-design-skill/blob/main/examples/balance-sheet-explainer.html) ·
+[consulting](https://htmlpreview.github.io/?https://github.com/SlideSpeak/slide-design-skill/blob/main/examples/cost-to-serve-teardown.html)
+
 ## How a deck gets made
 
 ```
